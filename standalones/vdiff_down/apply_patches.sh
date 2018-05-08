@@ -6,3 +6,4 @@ patch -p1 <${commondir}/patches/mh-linux_ftg.patch
 
 # vdiff_down specific patches
 patch -p1 < ${scriptdir}/patches/mo_vdiff_downward_sweep_ftg.patch
+patch -p1 < ${scriptdir}/patches/make_public_ftg.patch

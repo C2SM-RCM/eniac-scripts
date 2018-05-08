@@ -1,0 +1,40 @@
+diff --git a/src/atm_phy_echam/mo_vdiff_solver.f90 b/src/atm_phy_echam/mo_vdiff_solver.f90
+index 2b50ac435..54be57615 100644
+--- a/src/atm_phy_echam/mo_vdiff_solver.f90
++++ b/src/atm_phy_echam/mo_vdiff_solver.f90
+@@ -52,6 +52,14 @@ MODULE mo_vdiff_solver
+ 
+   CHARACTER(len=*), PARAMETER :: thismodule = 'mo_vdiff_solver'
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  PUBLIC :: ibtm_mtrx, ibtm_var, ithv, itke, itrc_start, ixi, ixl, ixv, matrix_idx
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ CONTAINS
+   !>
+   !!
+diff --git a/src/atm_phy_schemes/mo_convect_tables.f90 b/src/atm_phy_schemes/mo_convect_tables.f90
+index 4e540c34f..dbf741f06 100644
+--- a/src/atm_phy_schemes/mo_convect_tables.f90
++++ b/src/atm_phy_schemes/mo_convect_tables.f90
+@@ -151,6 +151,16 @@ MODULE mo_convect_tables
+ 
+   !------------------------------------------------------------------------------
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++#ifdef __SPLINE_TEST__
++  PUBLIC :: dua, ua, za
++#endif
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ CONTAINS
+ 
+   SUBROUTINE init_convect_tables
