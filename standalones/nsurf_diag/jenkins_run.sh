@@ -47,8 +47,8 @@ run_command ./build_command >& standalone_build.log || exit 1
 
 # Sync run data and prepare run
 run_command rsync -aqv "${datadir}/experiments" ${workdir} || exit 1
-run_command cp ${commondir}/submit.sh ${workdir}/experiments/atm_amip_test || exit 1
-run_command cd ${workdir}/experiments/atm_amip_test || exit 1
+run_command cp ${commondir}/submit.sh ${expdir} || exit 1
+run_command cd ${expdir} || exit 1
 run_command ln -sf ${workdir}/build/*/bin/${testname} . || exit 1
 
 # Run tests

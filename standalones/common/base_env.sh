@@ -2,7 +2,8 @@
 
 testname="ftg_${testroutine}_test"
 ftginputdir="${SCRATCH}/data/icon-eniac/sa_${testroutine}/ftg/${compiler}/${slave}"
-ftgoutputdir="${workdir}/ftg"
+expdir="${workdir}/experiments/atm_amip_test"
+ftgoutputdir="${expdir}/ftg"
 dataftgdir="${datadir}/ftg/${compiler}/${slave}"
 fdepdir=/project/c14/data-eniac/standalones/fdependencies
 scriptdir="${workdir}/eniac-scripts/standalones/${testroutine}"
