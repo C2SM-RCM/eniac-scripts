@@ -9,7 +9,7 @@ datadir="$4"
 # Environment setup
 testroutine="nsurf_diag"
 workdir="$(pwd)"
-commondir="${workdir}/eniac-scripts/common"
+commondir="${workdir}/eniac-scripts/standalones/common"
 
 # Export slave, compiler, target, datadir, workdir, testroutine, testname, ftginputdir, ftgoutputdir and dataftgdir
 source ${commondir}/base_env.sh

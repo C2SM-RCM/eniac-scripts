@@ -5,7 +5,7 @@ ftginputdir="${SCRATCH}/data/icon-eniac/sa_${testroutine}/ftg/${compiler}/${slav
 ftgoutputdir="${workdir}/ftg"
 dataftgdir="${datadir}/ftg/${compiler}/${slave}"
 fdepdir=/project/c14/data-eniac/standalones/fdependencies
-scriptdir="${workdir}/eniac-scripts/${testroutine}"
+scriptdir="${workdir}/eniac-scripts/standalones/${testroutine}"
 
 export slave
 export compiler
