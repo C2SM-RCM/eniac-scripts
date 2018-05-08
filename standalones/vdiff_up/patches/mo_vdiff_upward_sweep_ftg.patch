@@ -333,7 +333,7 @@ index f3088575d..5abac892a 100644
 +    CALL ftg_destroy_serializer()
 +    
 +    CALL work_mpi_barrier()
-+    CALL finish('FTG EXIT', 'Output captured: vdiff_up', 0)
++!    CALL finish('FTG EXIT', 'Output captured: vdiff_up', 0)
 +    
 +  END IF
 +  

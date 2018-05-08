@@ -516,7 +516,7 @@ index 81bcf538a..0dd8a4a5b 100644
 +    CALL ftg_destroy_serializer()
 +    
 +    CALL work_mpi_barrier()
-+    CALL finish('FTG EXIT', 'Output captured: vdiff_down', 0)
++!    CALL finish('FTG EXIT', 'Output captured: vdiff_down', 0)
 +    
 +  END IF
 +  
