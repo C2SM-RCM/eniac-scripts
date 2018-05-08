@@ -12,11 +12,11 @@ Additional source files to inject into source tree. (i.e. src/tests/ftg_update_s
 Scripts
 =======
 
-jenkins_run.sh
+run_standalone_test.sh
 --------------
 Master script to run standalone validation scripts.
 
-jenkins_reference.sh
+create_reference.sh
 --------------
 Master script to generate standalone reference data.
 
