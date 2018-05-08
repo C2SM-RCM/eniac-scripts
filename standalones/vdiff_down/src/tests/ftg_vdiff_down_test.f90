@@ -20,8 +20,10 @@ PROGRAM ftg_vdiff_down_test
   &  imqv, mo_vdiff_solver__matrix_idx => matrix_idx, mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, &
   &  mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start &
   &  => itrc_start, mo_vdiff_solver__iv => iv, mo_vdiff_solver__iu => iu, mo_vdiff_solver__itke => itke
-  USE mo_convect_tables, ONLY: mo_convect_tables__za => za, mo_convect_tables__ua => ua, mo_convect_tables__tlucu => tlucu, &
-  &  mo_convect_tables__lookupoverflow => lookupoverflow, mo_convect_tables__dua => dua
+  USE mo_convect_tables, ONLY: mo_convect_tables__tlucu => tlucu, mo_convect_tables__lookupoverflow => lookupoverflow
+#ifdef __SPLINE_TEST__
+  USE mo_convect_tables, ONLY: mo_convect_tables__za => za, mo_convect_tables__ua => ua, mo_convect_tables__dua => dua
+#endif
   USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__tke_min => tke_min, mo_echam_vdiff_params__itop => itop, &
   &  mo_echam_vdiff_params__da1 => da1
   
@@ -335,7 +337,9 @@ CONTAINS
     
     ! GLOBALS
     CALL ftg_read("mo_echam_vdiff_params__da1", mo_echam_vdiff_params__da1)
+#ifdef __SPLINE_TEST__
     CALL ftg_read("mo_convect_tables__dua", mo_convect_tables__dua)
+#endif
     CALL ftg_allocate_and_read_allocatable("mo_vdiff_solver__ibtm_mtrx", mo_vdiff_solver__ibtm_mtrx)
     CALL ftg_allocate_and_read_allocatable("mo_vdiff_solver__ibtm_var", mo_vdiff_solver__ibtm_var)
     CALL ftg_read("mo_vdiff_solver__ih", mo_vdiff_solver__ih)
@@ -357,8 +361,10 @@ CONTAINS
     CALL ftg_read("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
     CALL ftg_read("mo_echam_vdiff_params__tke_min", mo_echam_vdiff_params__tke_min)
     CALL ftg_read("mo_convect_tables__tlucu", mo_convect_tables__tlucu)
+#ifdef __SPLINE_TEST__
     CALL ftg_read("mo_convect_tables__ua", mo_convect_tables__ua)
     CALL ftg_read("mo_convect_tables__za", mo_convect_tables__za)
+#endif
     CALL ftg_read("mo_vdiff_config__vdiff_config%lsfc_heat_flux", mo_vdiff_config__vdiff_config%lsfc_heat_flux)
     CALL ftg_read("mo_vdiff_config__vdiff_config%lsfc_mom_flux", mo_vdiff_config__vdiff_config%lsfc_mom_flux)
     
