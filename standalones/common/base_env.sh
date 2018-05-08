@@ -17,6 +17,7 @@ export testroutine
 export testname
 export scriptdir
 export commondir
+export expdir
 export ftginputdir
 export ftgoutputdir
 export dataftgdir
