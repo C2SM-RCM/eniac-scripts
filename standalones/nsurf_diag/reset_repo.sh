@@ -13,7 +13,7 @@ rm -f standalone_deps.txt
 rm -f standalone_deps.out
 rm -f validation.result
 rm -f validation.failed
-rm -r run/atm_amip_test
+rm -rf experiments/atm_amip_test
 
 # Remove standalone test source
 rm src/tests/ftg_nsurf_diag_test.f90
