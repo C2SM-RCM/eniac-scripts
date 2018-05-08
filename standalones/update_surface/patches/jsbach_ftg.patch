@@ -1,0 +1,84 @@
+diff --git a/src/base/mo_jsb_control.f90 b/src/base/mo_jsb_control.f90
+index 5666bd6..8e30a5c 100644
+--- a/src/base/mo_jsb_control.f90
++++ b/src/base/mo_jsb_control.f90
+@@ -26,6 +26,8 @@ MODULE mo_jsb_control
+   PUBLIC :: t_jsb_model_nml, jsb_models_nml, get_no_of_models
+   PUBLIC :: timer_aggregate, timer_integrate, timer_process_task, timer_process_msg, l_timer
+   PUBLIC :: max_no_of_models
++  PUBLIC :: no_of_models, is_standalone, debug, master_namelist_filename
++  PUBLIC :: restart_jsbach
+ 
+   LOGICAL :: is_standalone
+   LOGICAL :: restart_jsbach
+diff --git a/src/base/mo_jsb_grid.f90 b/src/base/mo_jsb_grid.f90
+index 017347e..e8a3722 100644
+--- a/src/base/mo_jsb_grid.f90
++++ b/src/base/mo_jsb_grid.f90
+@@ -10,6 +10,7 @@ MODULE mo_jsb_grid
+   PRIVATE
+ 
+   PUBLIC :: Register_grid, Register_vgrid, Get_grid, Get_vgrid
++  PUBLIC :: jsbach_grids, jsbach_vgrids
+ 
+   ! INTEGER, PARAMETER :: max_no_of_grids = 1
+   INTEGER, PARAMETER :: max_no_of_vgrids = 10
+diff --git a/src/base/mo_jsb_grid_class.f90 b/src/base/mo_jsb_grid_class.f90
+index 356aed4..5b50b32 100644
+--- a/src/base/mo_jsb_grid_class.f90
++++ b/src/base/mo_jsb_grid_class.f90
+@@ -34,6 +34,8 @@ MODULE mo_jsb_grid_class
+   PUBLIC :: get_nblks, get_nproma, t_jsb_subset
+   PUBLIC :: get_blk_start, get_blk_end, get_col_start, get_col_end
+ 
++  PUBLIC :: ngrid_count
++
+   TYPE t_jsb_grid
+     INTEGER                      :: id = 0
+     CHARACTER(LEN=10)            :: name = ''
+diff --git a/src/base/mo_jsb_time.f90 b/src/base/mo_jsb_time.f90
+index de42bff..eb54058 100644
+--- a/src/base/mo_jsb_time.f90
++++ b/src/base/mo_jsb_time.f90
+@@ -32,6 +32,7 @@ MODULE mo_jsb_time
+   PUBLIC :: get_time_interpolation_weights
+   PUBLIC :: get_asselin_coef
+   PUBLIC :: timeStep_in_days, time_steps_per_day
++  PUBLIC :: time_initialized, number_timesteps, timestep_length
+ 
+   INTEGER                :: number_timesteps
+   REAL(wp)               :: timestep_length
+diff --git a/src/base/mo_jsb_version.f90 b/src/base/mo_jsb_version.f90
+index 992acaa..ad89746 100644
+--- a/src/base/mo_jsb_version.f90
++++ b/src/base/mo_jsb_version.f90
+@@ -28,6 +28,7 @@ MODULE mo_jsb_version
+   PRIVATE 
+ 
+   PUBLIC :: jsbach_version, jsbach_init_version, jsbach_label_run
++  PUBLIC :: version_printed, executable, label
+ 
+   CHARACTER(len=  4), PARAMETER :: jsbach_version = '4.10p4' !< JSBACH version number
+ 
+diff --git a/src/interfaces/mo_jsb_interface.f90 b/src/interfaces/mo_jsb_interface.f90
+index 010cf55..6c16921 100644
+--- a/src/interfaces/mo_jsb_interface.f90
++++ b/src/interfaces/mo_jsb_interface.f90
+@@ -195,7 +195,7 @@ CONTAINS
+         & t_acoef, t_bcoef, q_acoef, q_bcoef, pch, cos_zenith_angle)
+     END IF
+ 
+-    IF (l_timer) CALL timer_start(timer_jsbach)
++    !IF (l_timer) CALL timer_start(timer_jsbach)
+ 
+     nc = ice - ics + 1
+ 
+@@ -301,7 +301,7 @@ CONTAINS
+     IF (debug_on('basic') .AND. iblk == 1) &
+       & CALL message(TRIM(routine), 'Updating of '//TRIM(model%name)//' completed.')
+ 
+-    IF (l_timer) CALL timer_stop(timer_jsbach)
++    !IF (l_timer) CALL timer_stop(timer_jsbach)
+ 
+   END SUBROUTINE interface_full
+ 

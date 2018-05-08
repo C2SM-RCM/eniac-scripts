@@ -1,0 +1,1529 @@
+diff --git a/src/atm_phy_echam/mo_surface.f90 b/src/atm_phy_echam/mo_surface.f90
+index fcd3bc8b9..a52cb12ad 100644
+--- a/src/atm_phy_echam/mo_surface.f90
++++ b/src/atm_phy_echam/mo_surface.f90
+@@ -34,11 +34,52 @@ MODULE mo_surface
+ #ifndef __NO_ICON_OCEAN__
+   USE mo_sea_ice,           ONLY: ice_fast
+   USE mo_ml_ocean,          ONLY: ml_ocean
++#endif
++#ifdef FORCE_FTG_SERIALIZATION
++   !================= START FORCE SERIALIZATION OF MISSED DATA =====================!
++    USE mo_master_control,    ONLY: master_namelist_filename
++    USE mo_jsb_time_iface,    ONLY: get_time_nsteps, get_time_dt
++    USE mo_model_domain,      ONLY: p_patch
++    USE mo_jsb_domain_iface,  ONLY:                                                 &
++                                     get_grid_filename_domain => get_grid_filename, &
++                                     get_ntotal_domain        => get_ntotal,        &
++                                     get_ntotal_g_domain      => get_ntotal_g,      &
++                                     get_dims_g_domain        => get_dims_g,        &
++                                     get_nlat_g_domain        => get_nlat_g,        &
++                                     get_nproma_domain        => get_nproma,        &
++                                     get_nblks_domain         => get_nblks,         &
++                                     get_lon_domain           => get_lon,           &
++                                     get_lat_domain           => get_lat,           &
++                                     get_area_domain          => get_area
++    USE mo_read_netcdf_distributed, ONLY: basic_data
++    USE mo_sea_ice_nml, ONLY: i_ice_therm, i_ice_albedo, use_no_flux_gradients
++    USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
++   !================= STOP FORCE SERIALIZATION OF MISSED DATA =====================!
+ #endif
+   IMPLICIT NONE
+   PRIVATE
+   PUBLIC :: update_surface
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  LOGICAL :: ftg_update_surface_capture_input_enabled = .TRUE.
++  LOGICAL :: ftg_update_surface_capture_output_enabled = .TRUE.
++  INTEGER :: ftg_update_surface_capture_round = 1
++  INTEGER :: ftg_update_surface_round = 0
++  CHARACTER(len=1024) :: ftg_update_surface_input_dir = &
++    '++FTGDATADIR++/data/input'
++  CHARACTER(len=1024) :: ftg_update_surface_output_dir = &
++    '++FTGDATADIR++/data/output'
++  
++  PUBLIC :: ftg_update_surface_capture_input_enabled, ftg_update_surface_capture_output_enabled, ftg_update_surface_capture_round, &
++  &  ftg_update_surface_input_dir, ftg_update_surface_output_dir
++  
++  
++  
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++
+ CONTAINS
+   !>
+   !!
+@@ -248,6 +289,68 @@ CONTAINS
+ 
+    CHARACTER(len=*), PARAMETER :: method_name='mo_surface:update_surface'
+ 
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  ftg_update_surface_round = ftg_update_surface_round + 1
++  CALL ftg_update_surface_capture_input(jg, kproma, kbdim, kice, klev, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, pfrc, &
++  &  pcfh_tile, pcfm_tile, pfac_sfc, pocu, pocv, aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile, ptsfc_tile, pu_stress_gbm, &
++  &  pv_stress_gbm, plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, &
++  &  nblock, lsm, alake, pu, pv, ptemp, pq, prsfl, prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus, rvds_dir, rpds_dir, rnds_dir, &
++  &  rvds_dif, rpds_dif, rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, &
++  &  albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, ptsfc, ptsfc_rad, &
++  &  rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, albvisdif_ice, albnirdir_ice, &
++  &  albnirdif_ice)
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++
++
++#ifdef FORCE_FTG_SERIALIZATION
++   !================= START FORCE SERIALIZATION OF MISSED DATA =====================!
++    PRINT *, p_patch(jg)%id
++    PRINT *, get_grid_filename_domain(patch = p_patch(jg))
++    PRINT *, get_ntotal_domain       (patch = p_patch(jg))
++    PRINT *, get_ntotal_g_domain     (patch = p_patch(jg))
++    PRINT *, get_dims_g_domain       (patch = p_patch(jg))
++    PRINT *, get_nlat_g_domain       (patch = p_patch(jg))
++    PRINT *, get_nblks_domain        (patch = p_patch(jg))
++    PRINT *, get_nproma_domain       (patch = p_patch(jg))
++    PRINT *, get_lon_domain          (patch = p_patch(jg))
++    PRINT *, get_lat_domain          (patch = p_patch(jg))
++    PRINT *, get_area_domain         (patch = p_patch(jg))
++    PRINT *, get_time_nsteps()
++    PRINT *, get_time_dt()
++    PRINT *, master_namelist_filename
++    PRINT *, i_ice_therm
++    PRINT *, i_ice_albedo
++    PRINT *, use_no_flux_gradients
++    PRINT *, mo_dynamics_config__iequations
++    PRINT *, p_patch(jg)%cells%dist_io_data%basic_data_index
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%n_recv
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%n_pnts 
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%n_send 
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%np_recv
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%np_send
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_limits
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_src
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_dst_blk
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_dst_idx
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_limits
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_src_blk
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_src_idx
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%pelist_send
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%pelist_recv
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_startidx
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_count
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_startidx
++    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_count
++    PRINT *, basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%n_g
++    PRINT *, &
++    basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%io_chunk%first
++    PRINT *, &
++    basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%io_chunk%size
++   !================= STOP FORCE SERIALIZATION OF MISSED DATA =====================!
++#endif
++
+     !$ACC DATA PRESENT( mpi_phy_config )
+ 
+     !$ACC DATA PRESENT( pfrc, pcfh_tile, pcfm_tile, pfac_sfc, pocu, pocv, aa,  &
+@@ -1276,7 +1379,1402 @@ CONTAINS
+     !$ACC END DATA
+     !$ACC END DATA
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  CALL ftg_update_surface_capture_output(aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile, ptsfc_tile, pu_stress_gbm, pv_stress_gbm, &
++  &  plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, rlus, pcsat, pcair, &
++  &  q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, &
++  &  albnirdif_tile, albedo, albedo_tile, ptsfc, ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, &
++  &  albvisdir_ice, albvisdif_ice, albnirdir_ice, albnirdif_ice)
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++
+     END SUBROUTINE update_surface
++
++! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++
++SUBROUTINE ftg_update_surface_init_for_capture(stage, dir)
++  
++  USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
++  USE mo_mpi,            ONLY: get_my_mpi_all_id
++  USE m_ser_ftg,         ONLY: ftg_set_serializer, ftg_add_serializer_metainfo, ignore_bullshit_max_dim_size, &
++  &  ignore_bullshit_allow_negative_indices
++  
++  CHARACTER(*), INTENT(IN) :: stage, dir
++  
++  CHARACTER(len=MAX_CHAR_LENGTH) :: basename, mkdirerr
++  
++  WRITE (basename,'(a,a,a,i0)') 'ftg_update_surface_', TRIM(stage), '_', get_my_mpi_all_id()
++  
++  WRITE (0,*) 'FTG INIT update_surface '//TRIM(basename), get_my_mpi_all_id()
++  
++  mkdirerr = ''
++!  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
++!  IF (TRIM(mkdirerr) /= '') THEN
++!    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
++!  END IF
++  
++  ignore_bullshit_max_dim_size = 100000
++  ignore_bullshit_allow_negative_indices = .TRUE.
++  
++  CALL ftg_set_serializer(TRIM(dir), TRIM(basename), 'w')
++  CALL ftg_add_serializer_metainfo('subroutine', 'update_surface')
++  CALL ftg_add_serializer_metainfo('stage', stage)
++  CALL ftg_add_serializer_metainfo('mpi_all_id', get_my_mpi_all_id())
++  
++END SUBROUTINE ftg_update_surface_init_for_capture
++
++LOGICAL FUNCTION ftg_update_surface_capture_input_active()
++
++ftg_update_surface_capture_input_active =       &
++ftg_update_surface_capture_input_enabled .AND.  &
++ftg_update_surface_round .EQ. ftg_update_surface_capture_round
++
++END FUNCTION ftg_update_surface_capture_input_active
++
++SUBROUTINE ftg_update_surface_capture_input(jg, kproma, kbdim, kice, klev, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, pfrc, &
++&  pcfh_tile, pcfm_tile, pfac_sfc, pocu, pocv, aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile, ptsfc_tile, pu_stress_gbm, &
++&  pv_stress_gbm, plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, nblock, &
++&  lsm, alake, pu, pv, ptemp, pq, prsfl, prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus, rvds_dir, rpds_dir, rnds_dir, rvds_dif, &
++&  rpds_dif, rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, albvisdif, &
++&  albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, ptsfc, ptsfc_rad, rsns_tile, &
++&  rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, albvisdif_ice, albnirdir_ice, albnirdif_ice)
++  
++  USE mtime,     ONLY: calendarType
++  USE mo_mpi,    ONLY: get_my_mpi_all_id
++  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  
++  USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
++  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
++  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
++  USE mo_mpi_phy_config, ONLY: mo_mpi_phy_config__mpi_phy_config => mpi_phy_config, t_mpi_phy_config
++  USE mo_echam_sfc_indices, ONLY: mo_echam_sfc_indices__nsfc_type => nsfc_type
++  USE mo_vdiff_config, ONLY: mo_vdiff_config__vdiff_config => vdiff_config, t_vdiff_config
++  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__imh => imh, mo_vdiff_solver__imuv => imuv, mo_vdiff_solver__nmatrix => nmatrix, &
++  &  mo_vdiff_solver__imqv => imqv, mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ih => &
++  &  ih, mo_vdiff_solver__iv => iv, mo_vdiff_solver__iu => iu
++  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
++  USE mo_master_control, ONLY: mo_master_control__master_namelist_filename => master_namelist_filename
++  USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
++  USE mo_parallel_config, ONLY: mo_parallel_config__nproma => nproma
++  USE mo_timer, ONLY: mo_timer__timer_ice_fast => timer_ice_fast
++  USE mo_read_netcdf_distributed, ONLY: mo_read_netcdf_distributed__basic_data => basic_data, t_basic_distrib_read_data
++  USE mo_jsb_control, ONLY: mo_jsb_control__debug => debug, mo_jsb_control__is_standalone => is_standalone
++  USE mo_jsb_test, ONLY: mo_jsb_test__write_interface_vars => write_interface_vars
++  USE mo_radiation_config, ONLY: mo_radiation_config__mmr_co2 => mmr_co2
++  
++  INTEGER, INTENT(in) :: jg
++  INTEGER, INTENT(in) :: kproma
++  INTEGER, INTENT(in) :: kbdim
++  INTEGER, INTENT(in) :: kice
++  INTEGER, INTENT(in) :: klev
++  INTEGER, INTENT(in) :: ksfc_type
++  INTEGER, INTENT(in) :: idx_wtr
++  INTEGER, INTENT(in) :: idx_ice
++  INTEGER, INTENT(in) :: idx_lnd
++  REAL(wp), INTENT(in) :: pdtime
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pfrc
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pcfh_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pcfm_tile
++  REAL(wp), DIMENSION(:), INTENT(in) :: pfac_sfc
++  REAL(wp), DIMENSION(:), INTENT(in) :: pocu
++  REAL(wp), DIMENSION(:), INTENT(in) :: pocv
++  REAL(wp), DIMENSION(:,:,:,:), INTENT(in) :: aa
++  REAL(wp), DIMENSION(:,:,:,:), INTENT(in) :: aa_btm
++  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: bb
++  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: bb_btm
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pcpt_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pqsat_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: ptsfc_tile
++  REAL(wp), DIMENSION(:), INTENT(in) :: pu_stress_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: pv_stress_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: plhflx_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: pshflx_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: pevap_gbm
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pu_stress_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pv_stress_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: plhflx_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pshflx_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pevap_tile
++  INTEGER, INTENT(in), OPTIONAL :: nblock
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: lsm
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: alake
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pu
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pv
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: ptemp
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pq
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: prsfl
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: prsfc
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pssfl
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pssfc
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: rlds
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: rlus
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: rsds
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: rsus
++  REAL(wp), DIMENSION(:), INTENT(in) :: rvds_dir
++  REAL(wp), DIMENSION(:), INTENT(in) :: rpds_dir
++  REAL(wp), DIMENSION(:), INTENT(in) :: rnds_dir
++  REAL(wp), DIMENSION(:), INTENT(in) :: rvds_dif
++  REAL(wp), DIMENSION(:), INTENT(in) :: rpds_dif
++  REAL(wp), DIMENSION(:), INTENT(in) :: rnds_dif
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: ps
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pcosmu0
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: pch_tile
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pcsat
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pcair
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: q_snocpymlt
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: z0m_tile
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: z0h_lnd
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: albvisdir
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: albnirdir
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: albvisdif
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: albnirdif
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albvisdir_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albnirdir_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albvisdif_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albnirdif_tile
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: albedo
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albedo_tile
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: ptsfc
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: ptsfc_rad
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: rsns_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: rlns_tile
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: lake_ice_frc
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: Tsurf
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: T1
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: T2
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: hi
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: hs
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: Qtop
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: Qbot
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: conc
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albvisdir_ice
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albvisdif_ice
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albnirdir_ice
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albnirdif_ice
++  
++  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
++  CHARACTER(len=256) :: ftg_c
++  
++  IF (ftg_update_surface_capture_input_active()) THEN
++    
++    CALL ftg_update_surface_init_for_capture('input', ftg_update_surface_input_dir)
++    CALL ftg_set_savepoint('input')
++    
++    WRITE (0,*) 'FTG ROUND update_surface ', ftg_update_surface_round, get_my_mpi_all_id()
++    WRITE (0,*) 'FTG WRITE INPUT DATA update_surface', get_my_mpi_all_id()
++    
++    ! MTIME CALENDAR TYPE --> Remove this line if mtime is not used
++    CALL ftg_write("ftg_mtime_calendar", calendarType())
++    
++    ! BASIC ARGUMENTS
++    CALL ftg_write("jg", jg)
++    CALL ftg_write("kproma", kproma)
++    CALL ftg_write("kbdim", kbdim)
++    CALL ftg_write("kice", kice)
++    CALL ftg_write("klev", klev)
++    CALL ftg_write("ksfc_type", ksfc_type)
++    CALL ftg_write("idx_wtr", idx_wtr)
++    CALL ftg_write("idx_ice", idx_ice)
++    CALL ftg_write("idx_lnd", idx_lnd)
++    CALL ftg_write("pdtime", pdtime)
++    CALL ftg_write("pfrc", pfrc, LBOUND(pfrc), UBOUND(pfrc))
++    CALL ftg_write("pcfh_tile", pcfh_tile, LBOUND(pcfh_tile), UBOUND(pcfh_tile))
++    CALL ftg_write("pcfm_tile", pcfm_tile, LBOUND(pcfm_tile), UBOUND(pcfm_tile))
++    CALL ftg_write("pfac_sfc", pfac_sfc, LBOUND(pfac_sfc), UBOUND(pfac_sfc))
++    CALL ftg_write("pocu", pocu, LBOUND(pocu), UBOUND(pocu))
++    CALL ftg_write("pocv", pocv, LBOUND(pocv), UBOUND(pocv))
++    CALL ftg_write("aa", aa, LBOUND(aa), UBOUND(aa))
++    CALL ftg_write("aa_btm", aa_btm, LBOUND(aa_btm), UBOUND(aa_btm))
++    CALL ftg_write("bb", bb, LBOUND(bb), UBOUND(bb))
++    CALL ftg_write("bb_btm", bb_btm, LBOUND(bb_btm), UBOUND(bb_btm))
++    CALL ftg_write("pcpt_tile", pcpt_tile, LBOUND(pcpt_tile), UBOUND(pcpt_tile))
++    CALL ftg_write("pqsat_tile", pqsat_tile, LBOUND(pqsat_tile), UBOUND(pqsat_tile))
++    CALL ftg_write("ptsfc_tile", ptsfc_tile, LBOUND(ptsfc_tile), UBOUND(ptsfc_tile))
++    CALL ftg_write("pu_stress_gbm", pu_stress_gbm, LBOUND(pu_stress_gbm), UBOUND(pu_stress_gbm))
++    CALL ftg_write("pv_stress_gbm", pv_stress_gbm, LBOUND(pv_stress_gbm), UBOUND(pv_stress_gbm))
++    CALL ftg_write("plhflx_gbm", plhflx_gbm, LBOUND(plhflx_gbm), UBOUND(plhflx_gbm))
++    CALL ftg_write("pshflx_gbm", pshflx_gbm, LBOUND(pshflx_gbm), UBOUND(pshflx_gbm))
++    CALL ftg_write("pevap_gbm", pevap_gbm, LBOUND(pevap_gbm), UBOUND(pevap_gbm))
++    CALL ftg_write("pu_stress_tile", pu_stress_tile, LBOUND(pu_stress_tile), UBOUND(pu_stress_tile))
++    CALL ftg_write("pv_stress_tile", pv_stress_tile, LBOUND(pv_stress_tile), UBOUND(pv_stress_tile))
++    CALL ftg_write("plhflx_tile", plhflx_tile, LBOUND(plhflx_tile), UBOUND(plhflx_tile))
++    CALL ftg_write("pshflx_tile", pshflx_tile, LBOUND(pshflx_tile), UBOUND(pshflx_tile))
++    CALL ftg_write("pevap_tile", pevap_tile, LBOUND(pevap_tile), UBOUND(pevap_tile))
++    CALL ftg_write("rvds_dir", rvds_dir, LBOUND(rvds_dir), UBOUND(rvds_dir))
++    CALL ftg_write("rpds_dir", rpds_dir, LBOUND(rpds_dir), UBOUND(rpds_dir))
++    CALL ftg_write("rnds_dir", rnds_dir, LBOUND(rnds_dir), UBOUND(rnds_dir))
++    CALL ftg_write("rvds_dif", rvds_dif, LBOUND(rvds_dif), UBOUND(rvds_dif))
++    CALL ftg_write("rpds_dif", rpds_dif, LBOUND(rpds_dif), UBOUND(rpds_dif))
++    CALL ftg_write("rnds_dif", rnds_dif, LBOUND(rnds_dif), UBOUND(rnds_dif))
++    
++    
++    ! OPTIONAL ARGUMENTS
++    IF (PRESENT(nblock)) THEN
++      CALL ftg_write("nblock", nblock)
++    END IF
++    IF (PRESENT(lsm)) THEN
++      CALL ftg_write("lsm", lsm, LBOUND(lsm), UBOUND(lsm))
++    END IF
++    IF (PRESENT(alake)) THEN
++      CALL ftg_write("alake", alake, LBOUND(alake), UBOUND(alake))
++    END IF
++    IF (PRESENT(pu)) THEN
++      CALL ftg_write("pu", pu, LBOUND(pu), UBOUND(pu))
++    END IF
++    IF (PRESENT(pv)) THEN
++      CALL ftg_write("pv", pv, LBOUND(pv), UBOUND(pv))
++    END IF
++    IF (PRESENT(ptemp)) THEN
++      CALL ftg_write("ptemp", ptemp, LBOUND(ptemp), UBOUND(ptemp))
++    END IF
++    IF (PRESENT(pq)) THEN
++      CALL ftg_write("pq", pq, LBOUND(pq), UBOUND(pq))
++    END IF
++    IF (PRESENT(prsfl)) THEN
++      CALL ftg_write("prsfl", prsfl, LBOUND(prsfl), UBOUND(prsfl))
++    END IF
++    IF (PRESENT(prsfc)) THEN
++      CALL ftg_write("prsfc", prsfc, LBOUND(prsfc), UBOUND(prsfc))
++    END IF
++    IF (PRESENT(pssfl)) THEN
++      CALL ftg_write("pssfl", pssfl, LBOUND(pssfl), UBOUND(pssfl))
++    END IF
++    IF (PRESENT(pssfc)) THEN
++      CALL ftg_write("pssfc", pssfc, LBOUND(pssfc), UBOUND(pssfc))
++    END IF
++    IF (PRESENT(rlds)) THEN
++      CALL ftg_write("rlds", rlds, LBOUND(rlds), UBOUND(rlds))
++    END IF
++    IF (PRESENT(rlus)) THEN
++      CALL ftg_write("rlus", rlus, LBOUND(rlus), UBOUND(rlus))
++    END IF
++    IF (PRESENT(rsds)) THEN
++      CALL ftg_write("rsds", rsds, LBOUND(rsds), UBOUND(rsds))
++    END IF
++    IF (PRESENT(rsus)) THEN
++      CALL ftg_write("rsus", rsus, LBOUND(rsus), UBOUND(rsus))
++    END IF
++    IF (PRESENT(ps)) THEN
++      CALL ftg_write("ps", ps, LBOUND(ps), UBOUND(ps))
++    END IF
++    IF (PRESENT(pcosmu0)) THEN
++      CALL ftg_write("pcosmu0", pcosmu0, LBOUND(pcosmu0), UBOUND(pcosmu0))
++    END IF
++    IF (PRESENT(pch_tile)) THEN
++      CALL ftg_write("pch_tile", pch_tile, LBOUND(pch_tile), UBOUND(pch_tile))
++    END IF
++    IF (PRESENT(pcsat)) THEN
++      CALL ftg_write("pcsat", pcsat, LBOUND(pcsat), UBOUND(pcsat))
++    END IF
++    IF (PRESENT(pcair)) THEN
++      CALL ftg_write("pcair", pcair, LBOUND(pcair), UBOUND(pcair))
++    END IF
++    IF (PRESENT(q_snocpymlt)) THEN
++      CALL ftg_write("q_snocpymlt", q_snocpymlt, LBOUND(q_snocpymlt), UBOUND(q_snocpymlt))
++    END IF
++    IF (PRESENT(z0m_tile)) THEN
++      CALL ftg_write("z0m_tile", z0m_tile, LBOUND(z0m_tile), UBOUND(z0m_tile))
++    END IF
++    IF (PRESENT(z0h_lnd)) THEN
++      CALL ftg_write("z0h_lnd", z0h_lnd, LBOUND(z0h_lnd), UBOUND(z0h_lnd))
++    END IF
++    IF (PRESENT(albvisdir)) THEN
++      CALL ftg_write("albvisdir", albvisdir, LBOUND(albvisdir), UBOUND(albvisdir))
++    END IF
++    IF (PRESENT(albnirdir)) THEN
++      CALL ftg_write("albnirdir", albnirdir, LBOUND(albnirdir), UBOUND(albnirdir))
++    END IF
++    IF (PRESENT(albvisdif)) THEN
++      CALL ftg_write("albvisdif", albvisdif, LBOUND(albvisdif), UBOUND(albvisdif))
++    END IF
++    IF (PRESENT(albnirdif)) THEN
++      CALL ftg_write("albnirdif", albnirdif, LBOUND(albnirdif), UBOUND(albnirdif))
++    END IF
++    IF (PRESENT(albvisdir_tile)) THEN
++      CALL ftg_write("albvisdir_tile", albvisdir_tile, LBOUND(albvisdir_tile), UBOUND(albvisdir_tile))
++    END IF
++    IF (PRESENT(albnirdir_tile)) THEN
++      CALL ftg_write("albnirdir_tile", albnirdir_tile, LBOUND(albnirdir_tile), UBOUND(albnirdir_tile))
++    END IF
++    IF (PRESENT(albvisdif_tile)) THEN
++      CALL ftg_write("albvisdif_tile", albvisdif_tile, LBOUND(albvisdif_tile), UBOUND(albvisdif_tile))
++    END IF
++    IF (PRESENT(albnirdif_tile)) THEN
++      CALL ftg_write("albnirdif_tile", albnirdif_tile, LBOUND(albnirdif_tile), UBOUND(albnirdif_tile))
++    END IF
++    IF (PRESENT(albedo)) THEN
++      CALL ftg_write("albedo", albedo, LBOUND(albedo), UBOUND(albedo))
++    END IF
++    IF (PRESENT(albedo_tile)) THEN
++      CALL ftg_write("albedo_tile", albedo_tile, LBOUND(albedo_tile), UBOUND(albedo_tile))
++    END IF
++    IF (PRESENT(ptsfc)) THEN
++      CALL ftg_write("ptsfc", ptsfc, LBOUND(ptsfc), UBOUND(ptsfc))
++    END IF
++    IF (PRESENT(ptsfc_rad)) THEN
++      CALL ftg_write("ptsfc_rad", ptsfc_rad, LBOUND(ptsfc_rad), UBOUND(ptsfc_rad))
++    END IF
++    IF (PRESENT(rsns_tile)) THEN
++      CALL ftg_write("rsns_tile", rsns_tile, LBOUND(rsns_tile), UBOUND(rsns_tile))
++    END IF
++    IF (PRESENT(rlns_tile)) THEN
++      CALL ftg_write("rlns_tile", rlns_tile, LBOUND(rlns_tile), UBOUND(rlns_tile))
++    END IF
++    IF (PRESENT(lake_ice_frc)) THEN
++      CALL ftg_write("lake_ice_frc", lake_ice_frc, LBOUND(lake_ice_frc), UBOUND(lake_ice_frc))
++    END IF
++    IF (PRESENT(Tsurf)) THEN
++      CALL ftg_write("Tsurf", Tsurf, LBOUND(Tsurf), UBOUND(Tsurf))
++    END IF
++    IF (PRESENT(T1)) THEN
++      CALL ftg_write("T1", T1, LBOUND(T1), UBOUND(T1))
++    END IF
++    IF (PRESENT(T2)) THEN
++      CALL ftg_write("T2", T2, LBOUND(T2), UBOUND(T2))
++    END IF
++    IF (PRESENT(hi)) THEN
++      CALL ftg_write("hi", hi, LBOUND(hi), UBOUND(hi))
++    END IF
++    IF (PRESENT(hs)) THEN
++      CALL ftg_write("hs", hs, LBOUND(hs), UBOUND(hs))
++    END IF
++    IF (PRESENT(Qtop)) THEN
++      CALL ftg_write("Qtop", Qtop, LBOUND(Qtop), UBOUND(Qtop))
++    END IF
++    IF (PRESENT(Qbot)) THEN
++      CALL ftg_write("Qbot", Qbot, LBOUND(Qbot), UBOUND(Qbot))
++    END IF
++    IF (PRESENT(conc)) THEN
++      CALL ftg_write("conc", conc, LBOUND(conc), UBOUND(conc))
++    END IF
++    IF (PRESENT(albvisdir_ice)) THEN
++      CALL ftg_write("albvisdir_ice", albvisdir_ice, LBOUND(albvisdir_ice), UBOUND(albvisdir_ice))
++    END IF
++    IF (PRESENT(albvisdif_ice)) THEN
++      CALL ftg_write("albvisdif_ice", albvisdif_ice, LBOUND(albvisdif_ice), UBOUND(albvisdif_ice))
++    END IF
++    IF (PRESENT(albnirdir_ice)) THEN
++      CALL ftg_write("albnirdir_ice", albnirdir_ice, LBOUND(albnirdir_ice), UBOUND(albnirdir_ice))
++    END IF
++    IF (PRESENT(albnirdif_ice)) THEN
++      CALL ftg_write("albnirdif_ice", albnirdif_ice, LBOUND(albnirdif_ice), UBOUND(albnirdif_ice))
++    END IF
++    
++    ! TYPE MEMBERS
++    
++    
++    ! GLOBALS
++    CALL ftg_write("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
++    CALL ftg_write("mo_jsb_control__debug", mo_jsb_control__debug)
++    CALL ftg_write("mo_sea_ice_nml__hci_layer", mo_sea_ice_nml__hci_layer)
++    CALL ftg_write("mo_sea_ice_nml__i_ice_albedo", mo_sea_ice_nml__i_ice_albedo)
++    CALL ftg_write("mo_sea_ice_nml__i_ice_therm", mo_sea_ice_nml__i_ice_therm)
++    CALL ftg_write("mo_dynamics_config__iequations", mo_dynamics_config__iequations)
++    CALL ftg_write("mo_vdiff_solver__ih", mo_vdiff_solver__ih)
++    CALL ftg_write("mo_vdiff_solver__imh", mo_vdiff_solver__imh)
++    CALL ftg_write("mo_vdiff_solver__imqv", mo_vdiff_solver__imqv)
++    CALL ftg_write("mo_vdiff_solver__imuv", mo_vdiff_solver__imuv)
++    CALL ftg_write("mo_vdiff_solver__iqv", mo_vdiff_solver__iqv)
++    CALL ftg_write("mo_jsb_control__is_standalone", mo_jsb_control__is_standalone)
++    CALL ftg_write("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
++    CALL ftg_write("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
++    ! *** WARNING: Type not supported by serialbox ***
++    !     mo_master_control__master_namelist_filename
++    !     CHARACTER(len=filename_max) | dimension: 0
++    CALL ftg_write("mo_radiation_config__mmr_co2", mo_radiation_config__mmr_co2)
++    CALL ftg_write("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
++    CALL ftg_write("mo_parallel_config__nproma", mo_parallel_config__nproma)
++    CALL ftg_write("mo_echam_sfc_indices__nsfc_type", mo_echam_sfc_indices__nsfc_type)
++    CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
++    CALL ftg_write("mo_timer__timer_ice_fast", mo_timer__timer_ice_fast)
++    CALL ftg_write("mo_sea_ice_nml__use_no_flux_gradients", mo_sea_ice_nml__use_no_flux_gradients)
++    CALL ftg_write("mo_jsb_test__write_interface_vars", mo_jsb_test__write_interface_vars)
++    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
++      CALL ftg_register_only("mo_read_netcdf_distributed__basic_data", "TYPE(t_basic_distrib_read_data)", LBOUND( &
++      &  mo_read_netcdf_distributed__basic_data), UBOUND(mo_read_netcdf_distributed__basic_data))
++    END IF
++    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
++      CALL ftg_write("mo_read_netcdf_distributed__basic_data%n_g", mo_read_netcdf_distributed__basic_data%n_g, LBOUND( &
++      &  mo_read_netcdf_distributed__basic_data%n_g), UBOUND(mo_read_netcdf_distributed__basic_data%n_g))
++    END IF
++    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
++      CALL ftg_register_only("mo_mpi_phy_config__mpi_phy_config", "TYPE(t_mpi_phy_config)", LBOUND( &
++      &  mo_mpi_phy_config__mpi_phy_config), UBOUND(mo_mpi_phy_config__mpi_phy_config))
++    END IF
++    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
++      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%lamip", mo_mpi_phy_config__mpi_phy_config%lamip, LBOUND( &
++      &  mo_mpi_phy_config__mpi_phy_config%lamip), UBOUND(mo_mpi_phy_config__mpi_phy_config%lamip))
++    END IF
++    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
++      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%lice", mo_mpi_phy_config__mpi_phy_config%lice, LBOUND( &
++      &  mo_mpi_phy_config__mpi_phy_config%lice), UBOUND(mo_mpi_phy_config__mpi_phy_config%lice))
++    END IF
++    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
++      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%ljsb", mo_mpi_phy_config__mpi_phy_config%ljsb, LBOUND( &
++      &  mo_mpi_phy_config__mpi_phy_config%ljsb), UBOUND(mo_mpi_phy_config__mpi_phy_config%ljsb))
++    END IF
++    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
++      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%llake", mo_mpi_phy_config__mpi_phy_config%llake, LBOUND( &
++      &  mo_mpi_phy_config__mpi_phy_config%llake), UBOUND(mo_mpi_phy_config__mpi_phy_config%llake))
++    END IF
++    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
++      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%lmlo", mo_mpi_phy_config__mpi_phy_config%lmlo, LBOUND( &
++      &  mo_mpi_phy_config__mpi_phy_config%lmlo), UBOUND(mo_mpi_phy_config__mpi_phy_config%lmlo))
++    END IF
++    ! *** WARNING: Type not supported by serialbox ***
++    !     mo_model_domain__p_patch%grid_filename
++    !     CHARACTER(LEN=filename_max) | dimension: 0
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_register_only("mo_model_domain__p_patch", "TYPE(t_patch)", LBOUND(mo_model_domain__p_patch), UBOUND( &
++      &  mo_model_domain__p_patch))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_write("mo_model_domain__p_patch%id", mo_model_domain__p_patch%id, LBOUND(mo_model_domain__p_patch%id), UBOUND( &
++      &  mo_model_domain__p_patch%id))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_write("mo_model_domain__p_patch%n_patch_cells", mo_model_domain__p_patch%n_patch_cells, LBOUND( &
++      &  mo_model_domain__p_patch%n_patch_cells), UBOUND(mo_model_domain__p_patch%n_patch_cells))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_write("mo_model_domain__p_patch%n_patch_cells_g", mo_model_domain__p_patch%n_patch_cells_g, LBOUND( &
++      &  mo_model_domain__p_patch%n_patch_cells_g), UBOUND(mo_model_domain__p_patch%n_patch_cells_g))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_write("mo_model_domain__p_patch%nblks_c", mo_model_domain__p_patch%nblks_c, LBOUND(mo_model_domain__p_patch% &
++      &  nblks_c), UBOUND(mo_model_domain__p_patch%nblks_c))
++    END IF
++    CALL ftg_register_only("mo_vdiff_config__vdiff_config", "TYPE(t_vdiff_config)")
++    CALL ftg_write("mo_vdiff_config__vdiff_config%lsfc_heat_flux", mo_vdiff_config__vdiff_config%lsfc_heat_flux)
++    CALL ftg_write("mo_vdiff_config__vdiff_config%lsfc_mom_flux", mo_vdiff_config__vdiff_config%lsfc_mom_flux)
++    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
++      CALL ftg_register_only("mo_read_netcdf_distributed__basic_data%io_chunk", "TYPE(extent)", LBOUND( &
++      &  mo_read_netcdf_distributed__basic_data%io_chunk), UBOUND(mo_read_netcdf_distributed__basic_data%io_chunk))
++    END IF
++    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
++      CALL ftg_write("mo_read_netcdf_distributed__basic_data%io_chunk%first", mo_read_netcdf_distributed__basic_data%io_chunk% &
++      &  first, LBOUND(mo_read_netcdf_distributed__basic_data%io_chunk%first), UBOUND(mo_read_netcdf_distributed__basic_data% &
++      &  io_chunk%first))
++    END IF
++    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
++      CALL ftg_write("mo_read_netcdf_distributed__basic_data%io_chunk%size", mo_read_netcdf_distributed__basic_data%io_chunk%size, &
++      &  LBOUND(mo_read_netcdf_distributed__basic_data%io_chunk%size), UBOUND(mo_read_netcdf_distributed__basic_data%io_chunk%size))
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_cells)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%area'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%area, LBOUND(mo_model_domain__p_patch(ftg_d1)%cells%area), &
++          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%area))
++        END IF
++      END DO
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_register_only("mo_model_domain__p_patch%geometry_info", "TYPE(t_grid_geometry_info)", LBOUND( &
++      &  mo_model_domain__p_patch%geometry_info), UBOUND(mo_model_domain__p_patch%geometry_info))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_write("mo_model_domain__p_patch%geometry_info%mean_characteristic_length", mo_model_domain__p_patch%geometry_info% &
++      &  mean_characteristic_length, LBOUND(mo_model_domain__p_patch%geometry_info%mean_characteristic_length), UBOUND( &
++      &  mo_model_domain__p_patch%geometry_info%mean_characteristic_length))
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%center'
++          CALL ftg_register_only(ftg_c, "TYPE(t_geographical_coordinates)", LBOUND(mo_model_domain__p_patch(ftg_d1)%cells%center), &
++          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%center))
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%center%lat'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%center%lat, LBOUND(mo_model_domain__p_patch(ftg_d1)%cells% &
++          &  center%lat), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%center%lat))
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%center%lon'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%center%lon, LBOUND(mo_model_domain__p_patch(ftg_d1)%cells% &
++          &  center%lon), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%center%lon))
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data'
++            CALL ftg_register_only(ftg_c, "TYPE(t_distrib_read_data)")
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%basic_data_index'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%basic_data_index)
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern'
++            CALL ftg_register_only(ftg_c, "TYPE(t_comm_pattern)")
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%n_pnts'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%n_pnts)
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%n_recv'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%n_recv)
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%n_send'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%n_send)
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%np_recv'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%np_recv)
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%np_send'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%np_send)
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%pelist_recv'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%pelist_recv, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%pelist_recv), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%pelist_recv))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%pelist_send'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%pelist_send, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%pelist_send), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%pelist_send))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_count'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_count, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_count), UBOUND(mo_model_domain__p_patch( &
++            &  ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_count))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_dst_blk'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_dst_blk, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_dst_blk), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_dst_blk))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_dst_idx'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_dst_idx, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_dst_idx), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_dst_idx))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_limits'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_limits, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_limits), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_limits))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_src'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_src, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_src), UBOUND(mo_model_domain__p_patch( &
++            &  ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_src))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_startidx'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_startidx, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_startidx), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_startidx))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_count'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_count, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_count), UBOUND(mo_model_domain__p_patch( &
++            &  ftg_d1)%cells%dist_io_data%redistrib_pattern%send_count))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_limits'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_limits, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_limits), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_limits))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_src_blk'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_src_blk, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_src_blk), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_src_blk))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_src_idx'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_src_idx, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_src_idx), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_src_idx))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_startidx'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_startidx, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_startidx), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_startidx))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    
++    CALL ftg_write("ftg_update_surface_round", ftg_update_surface_round)
++    
++    CALL ftg_destroy_savepoint()
++    WRITE (0,*) 'FTG FINALIZE INPUT DATA update_surface', get_my_mpi_all_id()
++    CALL ftg_destroy_serializer()
++    
++  END IF
++  
++END SUBROUTINE ftg_update_surface_capture_input
++
++LOGICAL FUNCTION ftg_update_surface_capture_output_active()
++
++ftg_update_surface_capture_output_active =       &
++ftg_update_surface_capture_output_enabled .AND.  &
++ftg_update_surface_round .EQ. ftg_update_surface_capture_round
++
++END FUNCTION ftg_update_surface_capture_output_active
++
++SUBROUTINE ftg_update_surface_capture_output(aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile, ptsfc_tile, pu_stress_gbm, &
++&  pv_stress_gbm, plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, rlus, &
++&  pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, &
++&  albvisdif_tile, albnirdif_tile, albedo, albedo_tile, ptsfc, ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, &
++&  hs, Qtop, Qbot, albvisdir_ice, albvisdif_ice, albnirdir_ice, albnirdif_ice)
++  
++  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
++  USE mo_exception, ONLY: finish
++  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  
++  USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
++  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
++  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
++  USE mo_mpi_phy_config, ONLY: mo_mpi_phy_config__mpi_phy_config => mpi_phy_config, t_mpi_phy_config
++  USE mo_echam_sfc_indices, ONLY: mo_echam_sfc_indices__nsfc_type => nsfc_type
++  USE mo_vdiff_config, ONLY: mo_vdiff_config__vdiff_config => vdiff_config, t_vdiff_config
++  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__imh => imh, mo_vdiff_solver__imuv => imuv, mo_vdiff_solver__nmatrix => nmatrix, &
++  &  mo_vdiff_solver__imqv => imqv, mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ih => &
++  &  ih, mo_vdiff_solver__iv => iv, mo_vdiff_solver__iu => iu
++  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
++  USE mo_master_control, ONLY: mo_master_control__master_namelist_filename => master_namelist_filename
++  USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
++  USE mo_parallel_config, ONLY: mo_parallel_config__nproma => nproma
++  USE mo_timer, ONLY: mo_timer__timer_ice_fast => timer_ice_fast
++  USE mo_read_netcdf_distributed, ONLY: mo_read_netcdf_distributed__basic_data => basic_data, t_basic_distrib_read_data
++  USE mo_jsb_control, ONLY: mo_jsb_control__debug => debug, mo_jsb_control__is_standalone => is_standalone
++  USE mo_jsb_test, ONLY: mo_jsb_test__write_interface_vars => write_interface_vars
++  USE mo_radiation_config, ONLY: mo_radiation_config__mmr_co2 => mmr_co2
++  
++  REAL(wp), DIMENSION(:,:,:,:), INTENT(in) :: aa
++  REAL(wp), DIMENSION(:,:,:,:), INTENT(in) :: aa_btm
++  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: bb
++  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: bb_btm
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pcpt_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pqsat_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: ptsfc_tile
++  REAL(wp), DIMENSION(:), INTENT(in) :: pu_stress_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: pv_stress_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: plhflx_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: pshflx_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: pevap_gbm
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pu_stress_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pv_stress_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: plhflx_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pshflx_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pevap_tile
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: rlus
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pcsat
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pcair
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: q_snocpymlt
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: z0m_tile
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: z0h_lnd
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: albvisdir
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: albnirdir
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: albvisdif
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: albnirdif
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albvisdir_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albnirdir_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albvisdif_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albnirdif_tile
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: albedo
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albedo_tile
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: ptsfc
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: ptsfc_rad
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: rsns_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: rlns_tile
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: lake_ice_frc
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: Tsurf
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: T1
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: T2
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: hi
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: hs
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: Qtop
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: Qbot
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albvisdir_ice
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albvisdif_ice
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albnirdir_ice
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albnirdif_ice
++  
++  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
++  CHARACTER(len=256) :: ftg_c
++  
++  IF (ftg_update_surface_capture_output_active()) THEN
++    
++    CALL ftg_update_surface_init_for_capture('output', ftg_update_surface_output_dir)
++    CALL ftg_set_savepoint('output')
++    
++    WRITE (0,*) 'FTG ROUND update_surface ', ftg_update_surface_round, get_my_mpi_all_id()
++    WRITE (0,*) 'FTG WRITE output DATA update_surface', get_my_mpi_all_id()
++    
++    
++    ! BASIC ARGUMENTS
++    CALL ftg_write("aa", aa, LBOUND(aa), UBOUND(aa))
++    CALL ftg_write("aa_btm", aa_btm, LBOUND(aa_btm), UBOUND(aa_btm))
++    CALL ftg_write("bb", bb, LBOUND(bb), UBOUND(bb))
++    CALL ftg_write("bb_btm", bb_btm, LBOUND(bb_btm), UBOUND(bb_btm))
++    CALL ftg_write("pcpt_tile", pcpt_tile, LBOUND(pcpt_tile), UBOUND(pcpt_tile))
++    CALL ftg_write("pqsat_tile", pqsat_tile, LBOUND(pqsat_tile), UBOUND(pqsat_tile))
++    CALL ftg_write("ptsfc_tile", ptsfc_tile, LBOUND(ptsfc_tile), UBOUND(ptsfc_tile))
++    CALL ftg_write("pu_stress_gbm", pu_stress_gbm, LBOUND(pu_stress_gbm), UBOUND(pu_stress_gbm))
++    CALL ftg_write("pv_stress_gbm", pv_stress_gbm, LBOUND(pv_stress_gbm), UBOUND(pv_stress_gbm))
++    CALL ftg_write("plhflx_gbm", plhflx_gbm, LBOUND(plhflx_gbm), UBOUND(plhflx_gbm))
++    CALL ftg_write("pshflx_gbm", pshflx_gbm, LBOUND(pshflx_gbm), UBOUND(pshflx_gbm))
++    CALL ftg_write("pevap_gbm", pevap_gbm, LBOUND(pevap_gbm), UBOUND(pevap_gbm))
++    CALL ftg_write("pu_stress_tile", pu_stress_tile, LBOUND(pu_stress_tile), UBOUND(pu_stress_tile))
++    CALL ftg_write("pv_stress_tile", pv_stress_tile, LBOUND(pv_stress_tile), UBOUND(pv_stress_tile))
++    CALL ftg_write("plhflx_tile", plhflx_tile, LBOUND(plhflx_tile), UBOUND(plhflx_tile))
++    CALL ftg_write("pshflx_tile", pshflx_tile, LBOUND(pshflx_tile), UBOUND(pshflx_tile))
++    CALL ftg_write("pevap_tile", pevap_tile, LBOUND(pevap_tile), UBOUND(pevap_tile))
++    
++    
++    ! OPTIONAL ARGUMENTS
++    IF (PRESENT(rlus)) THEN
++      CALL ftg_write("rlus", rlus, LBOUND(rlus), UBOUND(rlus))
++    END IF
++    IF (PRESENT(pcsat)) THEN
++      CALL ftg_write("pcsat", pcsat, LBOUND(pcsat), UBOUND(pcsat))
++    END IF
++    IF (PRESENT(pcair)) THEN
++      CALL ftg_write("pcair", pcair, LBOUND(pcair), UBOUND(pcair))
++    END IF
++    IF (PRESENT(q_snocpymlt)) THEN
++      CALL ftg_write("q_snocpymlt", q_snocpymlt, LBOUND(q_snocpymlt), UBOUND(q_snocpymlt))
++    END IF
++    IF (PRESENT(z0m_tile)) THEN
++      CALL ftg_write("z0m_tile", z0m_tile, LBOUND(z0m_tile), UBOUND(z0m_tile))
++    END IF
++    IF (PRESENT(z0h_lnd)) THEN
++      CALL ftg_write("z0h_lnd", z0h_lnd, LBOUND(z0h_lnd), UBOUND(z0h_lnd))
++    END IF
++    IF (PRESENT(albvisdir)) THEN
++      CALL ftg_write("albvisdir", albvisdir, LBOUND(albvisdir), UBOUND(albvisdir))
++    END IF
++    IF (PRESENT(albnirdir)) THEN
++      CALL ftg_write("albnirdir", albnirdir, LBOUND(albnirdir), UBOUND(albnirdir))
++    END IF
++    IF (PRESENT(albvisdif)) THEN
++      CALL ftg_write("albvisdif", albvisdif, LBOUND(albvisdif), UBOUND(albvisdif))
++    END IF
++    IF (PRESENT(albnirdif)) THEN
++      CALL ftg_write("albnirdif", albnirdif, LBOUND(albnirdif), UBOUND(albnirdif))
++    END IF
++    IF (PRESENT(albvisdir_tile)) THEN
++      CALL ftg_write("albvisdir_tile", albvisdir_tile, LBOUND(albvisdir_tile), UBOUND(albvisdir_tile))
++    END IF
++    IF (PRESENT(albnirdir_tile)) THEN
++      CALL ftg_write("albnirdir_tile", albnirdir_tile, LBOUND(albnirdir_tile), UBOUND(albnirdir_tile))
++    END IF
++    IF (PRESENT(albvisdif_tile)) THEN
++      CALL ftg_write("albvisdif_tile", albvisdif_tile, LBOUND(albvisdif_tile), UBOUND(albvisdif_tile))
++    END IF
++    IF (PRESENT(albnirdif_tile)) THEN
++      CALL ftg_write("albnirdif_tile", albnirdif_tile, LBOUND(albnirdif_tile), UBOUND(albnirdif_tile))
++    END IF
++    IF (PRESENT(albedo)) THEN
++      CALL ftg_write("albedo", albedo, LBOUND(albedo), UBOUND(albedo))
++    END IF
++    IF (PRESENT(albedo_tile)) THEN
++      CALL ftg_write("albedo_tile", albedo_tile, LBOUND(albedo_tile), UBOUND(albedo_tile))
++    END IF
++    IF (PRESENT(ptsfc)) THEN
++      CALL ftg_write("ptsfc", ptsfc, LBOUND(ptsfc), UBOUND(ptsfc))
++    END IF
++    IF (PRESENT(ptsfc_rad)) THEN
++      CALL ftg_write("ptsfc_rad", ptsfc_rad, LBOUND(ptsfc_rad), UBOUND(ptsfc_rad))
++    END IF
++    IF (PRESENT(rsns_tile)) THEN
++      CALL ftg_write("rsns_tile", rsns_tile, LBOUND(rsns_tile), UBOUND(rsns_tile))
++    END IF
++    IF (PRESENT(rlns_tile)) THEN
++      CALL ftg_write("rlns_tile", rlns_tile, LBOUND(rlns_tile), UBOUND(rlns_tile))
++    END IF
++    IF (PRESENT(lake_ice_frc)) THEN
++      CALL ftg_write("lake_ice_frc", lake_ice_frc, LBOUND(lake_ice_frc), UBOUND(lake_ice_frc))
++    END IF
++    IF (PRESENT(Tsurf)) THEN
++      CALL ftg_write("Tsurf", Tsurf, LBOUND(Tsurf), UBOUND(Tsurf))
++    END IF
++    IF (PRESENT(T1)) THEN
++      CALL ftg_write("T1", T1, LBOUND(T1), UBOUND(T1))
++    END IF
++    IF (PRESENT(T2)) THEN
++      CALL ftg_write("T2", T2, LBOUND(T2), UBOUND(T2))
++    END IF
++    IF (PRESENT(hi)) THEN
++      CALL ftg_write("hi", hi, LBOUND(hi), UBOUND(hi))
++    END IF
++    IF (PRESENT(hs)) THEN
++      CALL ftg_write("hs", hs, LBOUND(hs), UBOUND(hs))
++    END IF
++    IF (PRESENT(Qtop)) THEN
++      CALL ftg_write("Qtop", Qtop, LBOUND(Qtop), UBOUND(Qtop))
++    END IF
++    IF (PRESENT(Qbot)) THEN
++      CALL ftg_write("Qbot", Qbot, LBOUND(Qbot), UBOUND(Qbot))
++    END IF
++    IF (PRESENT(albvisdir_ice)) THEN
++      CALL ftg_write("albvisdir_ice", albvisdir_ice, LBOUND(albvisdir_ice), UBOUND(albvisdir_ice))
++    END IF
++    IF (PRESENT(albvisdif_ice)) THEN
++      CALL ftg_write("albvisdif_ice", albvisdif_ice, LBOUND(albvisdif_ice), UBOUND(albvisdif_ice))
++    END IF
++    IF (PRESENT(albnirdir_ice)) THEN
++      CALL ftg_write("albnirdir_ice", albnirdir_ice, LBOUND(albnirdir_ice), UBOUND(albnirdir_ice))
++    END IF
++    IF (PRESENT(albnirdif_ice)) THEN
++      CALL ftg_write("albnirdif_ice", albnirdif_ice, LBOUND(albnirdif_ice), UBOUND(albnirdif_ice))
++    END IF
++    
++    ! TYPE MEMBERS
++    
++    
++    ! GLOBALS
++    CALL ftg_write("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
++    CALL ftg_write("mo_jsb_control__debug", mo_jsb_control__debug)
++    CALL ftg_write("mo_sea_ice_nml__hci_layer", mo_sea_ice_nml__hci_layer)
++    CALL ftg_write("mo_sea_ice_nml__i_ice_albedo", mo_sea_ice_nml__i_ice_albedo)
++    CALL ftg_write("mo_sea_ice_nml__i_ice_therm", mo_sea_ice_nml__i_ice_therm)
++    CALL ftg_write("mo_dynamics_config__iequations", mo_dynamics_config__iequations)
++    CALL ftg_write("mo_vdiff_solver__ih", mo_vdiff_solver__ih)
++    CALL ftg_write("mo_vdiff_solver__imh", mo_vdiff_solver__imh)
++    CALL ftg_write("mo_vdiff_solver__imqv", mo_vdiff_solver__imqv)
++    CALL ftg_write("mo_vdiff_solver__imuv", mo_vdiff_solver__imuv)
++    CALL ftg_write("mo_vdiff_solver__iqv", mo_vdiff_solver__iqv)
++    CALL ftg_write("mo_jsb_control__is_standalone", mo_jsb_control__is_standalone)
++    CALL ftg_write("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
++    CALL ftg_write("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
++    ! *** WARNING: Type not supported by serialbox ***
++    !     mo_master_control__master_namelist_filename
++    !     CHARACTER(len=filename_max) | dimension: 0
++    CALL ftg_write("mo_radiation_config__mmr_co2", mo_radiation_config__mmr_co2)
++    CALL ftg_write("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
++    CALL ftg_write("mo_parallel_config__nproma", mo_parallel_config__nproma)
++    CALL ftg_write("mo_echam_sfc_indices__nsfc_type", mo_echam_sfc_indices__nsfc_type)
++    CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
++    CALL ftg_write("mo_timer__timer_ice_fast", mo_timer__timer_ice_fast)
++    CALL ftg_write("mo_sea_ice_nml__use_no_flux_gradients", mo_sea_ice_nml__use_no_flux_gradients)
++    CALL ftg_write("mo_jsb_test__write_interface_vars", mo_jsb_test__write_interface_vars)
++    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
++      CALL ftg_register_only("mo_read_netcdf_distributed__basic_data", "TYPE(t_basic_distrib_read_data)", LBOUND( &
++      &  mo_read_netcdf_distributed__basic_data), UBOUND(mo_read_netcdf_distributed__basic_data))
++    END IF
++    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
++      CALL ftg_write("mo_read_netcdf_distributed__basic_data%n_g", mo_read_netcdf_distributed__basic_data%n_g, LBOUND( &
++      &  mo_read_netcdf_distributed__basic_data%n_g), UBOUND(mo_read_netcdf_distributed__basic_data%n_g))
++    END IF
++    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
++      CALL ftg_register_only("mo_mpi_phy_config__mpi_phy_config", "TYPE(t_mpi_phy_config)", LBOUND( &
++      &  mo_mpi_phy_config__mpi_phy_config), UBOUND(mo_mpi_phy_config__mpi_phy_config))
++    END IF
++    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
++      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%lamip", mo_mpi_phy_config__mpi_phy_config%lamip, LBOUND( &
++      &  mo_mpi_phy_config__mpi_phy_config%lamip), UBOUND(mo_mpi_phy_config__mpi_phy_config%lamip))
++    END IF
++    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
++      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%lice", mo_mpi_phy_config__mpi_phy_config%lice, LBOUND( &
++      &  mo_mpi_phy_config__mpi_phy_config%lice), UBOUND(mo_mpi_phy_config__mpi_phy_config%lice))
++    END IF
++    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
++      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%ljsb", mo_mpi_phy_config__mpi_phy_config%ljsb, LBOUND( &
++      &  mo_mpi_phy_config__mpi_phy_config%ljsb), UBOUND(mo_mpi_phy_config__mpi_phy_config%ljsb))
++    END IF
++    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
++      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%llake", mo_mpi_phy_config__mpi_phy_config%llake, LBOUND( &
++      &  mo_mpi_phy_config__mpi_phy_config%llake), UBOUND(mo_mpi_phy_config__mpi_phy_config%llake))
++    END IF
++    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
++      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%lmlo", mo_mpi_phy_config__mpi_phy_config%lmlo, LBOUND( &
++      &  mo_mpi_phy_config__mpi_phy_config%lmlo), UBOUND(mo_mpi_phy_config__mpi_phy_config%lmlo))
++    END IF
++    ! *** WARNING: Type not supported by serialbox ***
++    !     mo_model_domain__p_patch%grid_filename
++    !     CHARACTER(LEN=filename_max) | dimension: 0
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_register_only("mo_model_domain__p_patch", "TYPE(t_patch)", LBOUND(mo_model_domain__p_patch), UBOUND( &
++      &  mo_model_domain__p_patch))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_write("mo_model_domain__p_patch%id", mo_model_domain__p_patch%id, LBOUND(mo_model_domain__p_patch%id), UBOUND( &
++      &  mo_model_domain__p_patch%id))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_write("mo_model_domain__p_patch%n_patch_cells", mo_model_domain__p_patch%n_patch_cells, LBOUND( &
++      &  mo_model_domain__p_patch%n_patch_cells), UBOUND(mo_model_domain__p_patch%n_patch_cells))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_write("mo_model_domain__p_patch%n_patch_cells_g", mo_model_domain__p_patch%n_patch_cells_g, LBOUND( &
++      &  mo_model_domain__p_patch%n_patch_cells_g), UBOUND(mo_model_domain__p_patch%n_patch_cells_g))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_write("mo_model_domain__p_patch%nblks_c", mo_model_domain__p_patch%nblks_c, LBOUND(mo_model_domain__p_patch% &
++      &  nblks_c), UBOUND(mo_model_domain__p_patch%nblks_c))
++    END IF
++    CALL ftg_register_only("mo_vdiff_config__vdiff_config", "TYPE(t_vdiff_config)")
++    CALL ftg_write("mo_vdiff_config__vdiff_config%lsfc_heat_flux", mo_vdiff_config__vdiff_config%lsfc_heat_flux)
++    CALL ftg_write("mo_vdiff_config__vdiff_config%lsfc_mom_flux", mo_vdiff_config__vdiff_config%lsfc_mom_flux)
++    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
++      CALL ftg_register_only("mo_read_netcdf_distributed__basic_data%io_chunk", "TYPE(extent)", LBOUND( &
++      &  mo_read_netcdf_distributed__basic_data%io_chunk), UBOUND(mo_read_netcdf_distributed__basic_data%io_chunk))
++    END IF
++    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
++      CALL ftg_write("mo_read_netcdf_distributed__basic_data%io_chunk%first", mo_read_netcdf_distributed__basic_data%io_chunk% &
++      &  first, LBOUND(mo_read_netcdf_distributed__basic_data%io_chunk%first), UBOUND(mo_read_netcdf_distributed__basic_data% &
++      &  io_chunk%first))
++    END IF
++    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
++      CALL ftg_write("mo_read_netcdf_distributed__basic_data%io_chunk%size", mo_read_netcdf_distributed__basic_data%io_chunk%size, &
++      &  LBOUND(mo_read_netcdf_distributed__basic_data%io_chunk%size), UBOUND(mo_read_netcdf_distributed__basic_data%io_chunk%size))
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_cells)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%area'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%area, LBOUND(mo_model_domain__p_patch(ftg_d1)%cells%area), &
++          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%area))
++        END IF
++      END DO
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_register_only("mo_model_domain__p_patch%geometry_info", "TYPE(t_grid_geometry_info)", LBOUND( &
++      &  mo_model_domain__p_patch%geometry_info), UBOUND(mo_model_domain__p_patch%geometry_info))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      CALL ftg_write("mo_model_domain__p_patch%geometry_info%mean_characteristic_length", mo_model_domain__p_patch%geometry_info% &
++      &  mean_characteristic_length, LBOUND(mo_model_domain__p_patch%geometry_info%mean_characteristic_length), UBOUND( &
++      &  mo_model_domain__p_patch%geometry_info%mean_characteristic_length))
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%center'
++          CALL ftg_register_only(ftg_c, "TYPE(t_geographical_coordinates)", LBOUND(mo_model_domain__p_patch(ftg_d1)%cells%center), &
++          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%center))
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%center%lat'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%center%lat, LBOUND(mo_model_domain__p_patch(ftg_d1)%cells% &
++          &  center%lat), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%center%lat))
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%center%lon'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%center%lon, LBOUND(mo_model_domain__p_patch(ftg_d1)%cells% &
++          &  center%lon), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%center%lon))
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data'
++            CALL ftg_register_only(ftg_c, "TYPE(t_distrib_read_data)")
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%basic_data_index'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%basic_data_index)
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern'
++            CALL ftg_register_only(ftg_c, "TYPE(t_comm_pattern)")
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%n_pnts'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%n_pnts)
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%n_recv'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%n_recv)
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%n_send'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%n_send)
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%np_recv'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%np_recv)
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%np_send'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%np_send)
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%pelist_recv'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%pelist_recv, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%pelist_recv), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%pelist_recv))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%pelist_send'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%pelist_send, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%pelist_send), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%pelist_send))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_count'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_count, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_count), UBOUND(mo_model_domain__p_patch( &
++            &  ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_count))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_dst_blk'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_dst_blk, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_dst_blk), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_dst_blk))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_dst_idx'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_dst_idx, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_dst_idx), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_dst_idx))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_limits'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_limits, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_limits), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_limits))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_src'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_src, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_src), UBOUND(mo_model_domain__p_patch( &
++            &  ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_src))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_startidx'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_startidx, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_startidx), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_startidx))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_count'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_count, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_count), UBOUND(mo_model_domain__p_patch( &
++            &  ftg_d1)%cells%dist_io_data%redistrib_pattern%send_count))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_limits'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_limits, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_limits), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_limits))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_src_blk'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_src_blk, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_src_blk), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_src_blk))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_src_idx'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_src_idx, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_src_idx), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_src_idx))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          IF (ASSOCIATED(mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data)) THEN
++            WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_startidx'
++            CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_startidx, LBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_startidx), UBOUND( &
++            &  mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%send_startidx))
++          END IF
++        END IF
++      END DO
++    END IF
++    
++    
++    CALL ftg_write("ftg_update_surface_round", ftg_update_surface_round)
++    
++    CALL ftg_destroy_savepoint()
++    WRITE (0,*) 'FTG FINALIZE output DATA update_surface', get_my_mpi_all_id()
++    CALL ftg_destroy_serializer()
++    
++    CALL work_mpi_barrier()
++!    CALL finish('FTG EXIT', 'Output captured: update_surface', 0)
++    
++  END IF
++  
++END SUBROUTINE ftg_update_surface_capture_output
++
++! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++
++
+   !-------------
+ 
+ END MODULE mo_surface

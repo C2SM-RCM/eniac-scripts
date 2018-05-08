@@ -1,0 +1,31 @@
+diff --git a/src/soil_snow_energy/mo_sse_interface.f90 b/src/soil_snow_energy/mo_sse_interface.f90
+index 3352e76..8a6076c 100644
+--- a/src/soil_snow_energy/mo_sse_interface.f90
++++ b/src/soil_snow_energy/mo_sse_interface.f90
+@@ -48,7 +48,7 @@ MODULE mo_sse_interface
+ 
+   !> Constructor interface for soil_temperature task
+   INTERFACE Create_task_soil_temperature
+-    PROCEDURE Create_task_soil_temperature
++    PROCEDURE Create_task_soil_temperature_default
+   END INTERFACE Create_task_soil_temperature
+ 
+   !> Type definition for soil_properties
+@@ -76,7 +76,7 @@ CONTAINS
+   !! @param[in]     model_id     Model id
+   !! @return        return_ptr   Instance of process task "soil_temperature"
+   !!
+-  FUNCTION Create_task_soil_temperature(model_id) RESULT(return_ptr)
++  FUNCTION Create_task_soil_temperature_default(model_id) RESULT(return_ptr)
+ 
+     INTEGER,                   INTENT(in) :: model_id
+     CLASS(t_jsb_process_task), POINTER    :: return_ptr
+@@ -87,7 +87,7 @@ CONTAINS
+     return_ptr%process_id = SSE_
+     return_ptr%owner_model_id = model_id
+ 
+-  END FUNCTION Create_task_soil_temperature
++  END FUNCTION Create_task_soil_temperature_default
+   
+   ! -------------------------------------------------------------------------------------------------------
+   !> Constructor for soil_properties task
