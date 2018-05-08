@@ -19,11 +19,15 @@ while read -r f;do
     break
   fi
 done <standalone_deps.txt
-# Manually add missed dependencies
-# ftgdeps+=" something.f90"
+# Manually add extra dependencies
+if [ -e "${scriptdir}/extra_dependencies.txt" ]; then
+  while read -r f; do
+    ftgdeps+=" $(basename $f .f90).o"
+  done <${scriptdir}/extra_dependencies.txt
+fi
 
 # Patch Makefile to only compile standalone executable
 run_command printf "${ftgdeps}\n\n" | cat - ${builddir}/src/Makefile > Makefile.tmp || exit 1
 run_command mv Makefile.tmp ${builddir}/src/Makefile || exit 1
 run_command sed -i -e "s|../bin/${testname}:|../bin/${testname}_test_icon:|" ${builddir}/src/Makefile || exit 1
-run_command sed -e "s|++TESTNAME++|${testname}|g"  ${commondir}/Makefile.standalone.template >> ${builddir}/src/Makefile || exit 1
+run_command sed -e "s|++TESTNAME++|${testname}|g" ${commondir}/Makefile.standalone.template >> ${builddir}/src/Makefile || exit 1

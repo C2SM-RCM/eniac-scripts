@@ -15,5 +15,8 @@ rm -f validation.result
 rm -f validation.failed
 rm -rf experiments/atm_amip_test
 
+# Remove reference submission script
+rm -f submit_reference.sh
+
 # Remove standalone test source
 rm src/tests/ftg_nsurf_diag_test.f90

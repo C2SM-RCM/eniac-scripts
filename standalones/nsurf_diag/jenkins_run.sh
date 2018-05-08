@@ -39,7 +39,7 @@ done <${commondir}/noacc_list.txt
 run_command echo "Configuring standalone ..." || exit 1
 run_command ./configure --with-fortran="${compiler_target}" >& standalone_configure.log || exit 1
 # Tune configuration for standalone
-${scriptdir}/tune_configuration.sh
+${commondir}/tune_configuration.sh
 
 # Build
 run_command echo "Building standalone ..." || exit 1
