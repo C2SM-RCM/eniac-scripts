@@ -1,0 +1,19 @@
+diff --git a/src/atm_phy_echam/mo_vdiff_solver.f90 b/src/atm_phy_echam/mo_vdiff_solver.f90
+index 2b50ac435..470b3908b 100644
+--- a/src/atm_phy_echam/mo_vdiff_solver.f90
++++ b/src/atm_phy_echam/mo_vdiff_solver.f90
+@@ -52,6 +52,14 @@ MODULE mo_vdiff_solver
+ 
+   CHARACTER(len=*), PARAMETER :: thismodule = 'mo_vdiff_solver'
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  PUBLIC :: ibtm_var, matrix_idx
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ CONTAINS
+   !>
+   !!
