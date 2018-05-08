@@ -41,7 +41,7 @@ run_command ./build_command >& standalone_build.log || exit 1
 # Make runscript
 run_command ${workdir}/make_runscripts || exit 1
 run_command sed -i -e "s/--ntasks-per-node=[0-9]*$/--ntasks-per-node=1/g" -e "s/mpi_procs_pernode=[0-9]*$/mpi_procs_pernode=1/g" run/exp.atm_amip_test.run || exit 1
-run_command cp ${scriptdir}/submit_reference.sh ${workdir}/ || exit 1
+run_command cp ${commondir}/submit_reference.sh ${workdir}/ || exit 1
 
 # Run serialization
 for nproma in 16 2729 20480; do
