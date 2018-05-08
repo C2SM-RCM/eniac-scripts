@@ -56,7 +56,7 @@ for nproma in 16 2729 20480; do
   run_command echo "Running standalone ..."
   if [ -e ${scriptdir}/tune_run.sh ]; then
     run_command ${scriptdir}/tun_run.sh || exit 1
-  if
+  fi
   run_command ./submit.sh || exit 1
 
   # Validate run
