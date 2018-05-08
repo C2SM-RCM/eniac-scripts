@@ -1,0 +1,5 @@
+
+standalone: ../bin/++TESTNAME++
+
+../bin/++TESTNAME++: ++TESTNAME++.o $(FTGOBJS) version.o
+	$(FC) $(LDFLAGS) -o $@ $< $(FTGOBJS) version.o $(LIBS)

@@ -1,0 +1,2 @@
+src/tests/ftg_nsurf_diag_test.f90 
+src/atm_phy_echam/mo_surface_diag.f90

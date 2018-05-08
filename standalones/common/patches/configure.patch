@@ -1,0 +1,51 @@
+diff --git a/configure b/configure
+index 58bd2531b..cb75ad8a4 100755
+--- a/configure
++++ b/configure
+@@ -6349,17 +6349,17 @@ if [ "x$LAPACKROOT" = xlocal ] ; then
+     LAPACKROOT=""
+ fi
+ 
+-my_srcdirs="externals/self/src externals/mtime/src externals/tixi/src ${my_srcdirs}"
+-
+-if [ "x$use_yac" = xyes ] ; then
+-    my_srcdirs="externals/yac/src ${my_srcdirs}"
+-    FFLAGS="${FFLAGS} ${DEFOPT}YAC_coupling"
+-    CFLAGS="${CFLAGS} -I`pwd`/${exec_prefix}/include"
+-    if test "x$with_mpi" != "xno" ; then
+-        FFLAGS="${FFLAGS} ${DEFOPT}USE_MPI"
+-        CFLAGS="${CFLAGS} ${DEFCOPT}USE_MPI"
+-    fi
+-fi
++my_srcdirs="externals/mtime/src ${my_srcdirs}"
++
++#if [ "x$use_yac" = xyes ] ; then
++#    my_srcdirs="externals/yac/src ${my_srcdirs}"
++#    FFLAGS="${FFLAGS} ${DEFOPT}YAC_coupling"
++#    CFLAGS="${CFLAGS} -I`pwd`/${exec_prefix}/include"
++#    if test "x$with_mpi" != "xno" ; then
++#        FFLAGS="${FFLAGS} ${DEFOPT}USE_MPI"
++#        CFLAGS="${CFLAGS} ${DEFCOPT}USE_MPI"
++#    fi
++#fi
+ 
+ if [ "x$use_messy" = xyes ] ; then
+     rm -f src/messy_interface
+@@ -6432,7 +6432,7 @@ else
+ fi
+ 
+ if [ "x$use_yac" = xyes ] ; then
+-   ac_libs="$ac_libs -lyac"
++   ac_libs="$ac_libs"
+ fi
+ 
+ #------------------------
+@@ -6724,7 +6724,7 @@ FlibFLAGS=$FlibFLAGS
+ F77FLAGS=$F77FLAGS
+ 
+ 
+-ac_libs="${ac_libs} -ltixi -lmtime -lself"
++ac_libs="${ac_libs} -lmtime"
+ 
+ LIB=$ac_libs
+ 
