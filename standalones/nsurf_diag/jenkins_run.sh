@@ -58,7 +58,6 @@ export nproma
 for nproma in 16 2729 20480; do
 
   # Sync serialization data for FTG
-  mkdir -p "${ftgdir}"
   run_command mkdir -p "${ftginputdir}" || exit 1
   run_command mkdir -p "${ftgoutputdir}/nproma_${nproma}" || exit 1
   run_command rsync -aqv "${dataftgdir}/nproma_${nproma}" "${ftginputdir}/" || exit 1
