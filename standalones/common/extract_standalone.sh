@@ -8,28 +8,28 @@ if [[ !("${compiler}" == "gcc" && "${target}" == "cpu") ]]; then
   exit 1
 fi
 
-## Apply patches for standalone extraction
-#run_command ${scriptdir}/apply_patches_extract.sh || exit 1
-#
-## Clone and configure FCG and FTG
-#run_command git clone https://github.com/fortesg/fortrancallgraph || exit 1
-#run_command sed -e "s|++ICONDIR++|${workdir}|g" ${commondir}/ftg/config_fortrancallgraph.py.tmpl > fortrancallgraph/config_fortrancallgraph.py || exit 1
-#run_command git clone https://github.com/fortesg/fortrantestgenerator || exit 1
-#run_command sed -e "s|++ICONDIR++|${workdir}|g" ${commondir}/ftg/config_fortrantestgenerator.py.tmpl > fortrantestgenerator/config_fortrantestgenerator.py || exit 1
-#run_command cp -r ${commondir}/ftg/icon_standalone_eniac fortrantestgenerator/templates || exit 1
-#
-## Configure build
-#run_command echo "Configuring standalone ..." || exit 1
-#run_command ./configure --with-fortran=gcc >& standalone_configure_c.log || exit 1
-#
-## Build
-#run_command echo "Building standalone ..." || exit 1
-#run_command ./build_command >& standalone_build_c.log || exit 1
-#
-## Generate capture code
-#run_command cd fortrantestgenerator/
-#run_command ./FortranTestGenerator.py -c ${testmodule} ${testroutine}
-#run_command cd ../
+# Apply patches for standalone extraction
+run_command ${scriptdir}/apply_patches_extract.sh || exit 1
+
+# Clone and configure FCG and FTG
+run_command git clone https://github.com/fortesg/fortrancallgraph || exit 1
+run_command sed -e "s|++ICONDIR++|${workdir}|g" ${commondir}/ftg/config_fortrancallgraph.py.tmpl > fortrancallgraph/config_fortrancallgraph.py || exit 1
+run_command git clone https://github.com/fortesg/fortrantestgenerator || exit 1
+run_command sed -e "s|++ICONDIR++|${workdir}|g" ${commondir}/ftg/config_fortrantestgenerator.py.tmpl > fortrantestgenerator/config_fortrantestgenerator.py || exit 1
+run_command cp -r ${commondir}/ftg/icon_standalone_eniac fortrantestgenerator/templates || exit 1
+
+# Configure build
+run_command echo "Configuring standalone ..." || exit 1
+run_command ./configure --with-fortran=gcc >& standalone_configure_c.log || exit 1
+
+# Build
+run_command echo "Building standalone ..." || exit 1
+run_command ./build_command >& standalone_build_c.log || exit 1
+
+# Generate capture code
+run_command cd fortrantestgenerator/
+run_command ./FortranTestGenerator.py -c ${testmodule} ${testroutine}
+run_command cd ../
 
 # Apply intermezzo patches
 if [ -f ${scriptdir}/apply_patches_extract_intermezzo.sh ]; then

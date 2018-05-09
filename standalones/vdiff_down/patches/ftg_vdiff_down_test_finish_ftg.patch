@@ -1,4 +1,4 @@
---- src/tests/ftg_vdiff_down_test.f90.orig	2018-05-09 14:53:34.986422000 +0200
+--- src/tests/ftg_vdiff_down_test.f90	2018-05-09 14:53:34.986422000 +0200
 +++ src/tests/ftg_vdiff_down_test.f90	2018-05-09 14:53:24.497275000 +0200
 @@ -20,8 +20,10 @@
    &  imqv, mo_vdiff_solver__matrix_idx => matrix_idx, mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, &

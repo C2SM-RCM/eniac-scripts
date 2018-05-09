@@ -1,4 +1,4 @@
---- src/atm_phy_echam/mo_vdiff_downward_sweep.f90.orig	2018-05-09 14:41:24.644049000 +0200
+--- src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-05-09 14:41:24.644049000 +0200
 +++ src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-05-09 14:44:56.576875232 +0200
 @@ -406,8 +406,10 @@
    &  imqv, mo_vdiff_solver__matrix_idx => matrix_idx, mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, &
