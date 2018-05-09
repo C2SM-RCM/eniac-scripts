@@ -78,10 +78,10 @@ index f3088575d..5abac892a 100644
 +  WRITE (0,*) 'FTG INIT vdiff_up '//TRIM(basename), get_my_mpi_all_id()
 +  
 +  mkdirerr = ''
-+  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
-+  IF (TRIM(mkdirerr) /= '') THEN
-+    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
-+  END IF
++!  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
++!  IF (TRIM(mkdirerr) /= '') THEN
++!    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
++!  END IF
 +  
 +  ignore_bullshit_max_dim_size = 100000
 +  ignore_bullshit_allow_negative_indices = .TRUE.

@@ -77,7 +77,7 @@ index d9b85f81c..730ef5e49 100644
 +
 +  WRITE (0,*) 'FTG INIT nsurf_diag '//TRIM(basename), get_my_mpi_all_id()
 +
-+!  mkdirerr = ''
++  mkdirerr = ''
 +!  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
 +!  IF (TRIM(mkdirerr) /= '') THEN
 +!    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
