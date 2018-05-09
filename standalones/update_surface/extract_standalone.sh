@@ -7,8 +7,8 @@ target="$3"
 datadir="$4"
 
 # Environment setup
-testroutine="nsurf_diag"
-testmodule="mo_surface_diag"
+testroutine="update_surface"
+testmodule="mo_surface"
 workdir="$(pwd)"
 commondir="${workdir}/eniac-scripts/standalones/common"
 
