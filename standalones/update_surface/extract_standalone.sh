@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
-if [[ $# -ne 2 ]]; then
-  echo "USAGE: script requires 2 arguments"
-  echo "       extract_standalone.sh slave /path/to/data/root"
+if [[ $# -ne 1 ]]; then
+  echo "USAGE: script requires 1 argument"
+  echo "       extract_standalone.sh slave"
   exit 1
 fi
 
@@ -10,7 +10,7 @@ fi
 slave="$1"
 compiler="gcc"
 target="cpu"
-datadir="$4"
+datadir="ERROR_DATA_SHOULD_NOT_BE_NEEDED"
 
 # Environment setup
 testroutine="update_surface"
