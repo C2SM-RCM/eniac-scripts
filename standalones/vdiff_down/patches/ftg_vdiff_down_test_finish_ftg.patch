@@ -1,36 +1,36 @@
---- src/tests/ftg_vdiff_down_test.f90	2018-05-09 14:53:34.986422000 +0200
-+++ src/tests/ftg_vdiff_down_test.f90	2018-05-09 14:53:24.497275000 +0200
-@@ -20,8 +20,10 @@
-   &  imqv, mo_vdiff_solver__matrix_idx => matrix_idx, mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, &
-   &  mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start &
-   &  => itrc_start, mo_vdiff_solver__iv => iv, mo_vdiff_solver__iu => iu, mo_vdiff_solver__itke => itke
+--- a/src/tests/ftg_vdiff_down_test.f90	2018-05-15 17:00:52.728727000 +0200
++++ b/src/tests/ftg_vdiff_down_test.f90	2018-05-15 17:02:45.705293879 +0200
+@@ -21,8 +21,10 @@
+   &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx &
+   &  => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
+   &  mo_vdiff_solver__iu => iu
 -  USE mo_convect_tables, ONLY: mo_convect_tables__za => za, mo_convect_tables__ua => ua, mo_convect_tables__tlucu => tlucu, &
 -  &  mo_convect_tables__lookupoverflow => lookupoverflow, mo_convect_tables__dua => dua
 +  USE mo_convect_tables, ONLY: mo_convect_tables__tlucu => tlucu, mo_convect_tables__lookupoverflow => lookupoverflow
 +#ifdef __SPLINE_TEST__
 +  USE mo_convect_tables, ONLY: mo_convect_tables__za => za, mo_convect_tables__ua => ua, mo_convect_tables__dua => dua
 +#endif
-   USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__tke_min => tke_min, mo_echam_vdiff_params__itop => itop, &
-   &  mo_echam_vdiff_params__da1 => da1
+   USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
    
-@@ -335,7 +337,9 @@
+   USE mo_echam_vdf_config, ONLY: t_echam_vdf_config
+@@ -339,7 +341,9 @@
+     
      
      ! GLOBALS
-     CALL ftg_read("mo_echam_vdiff_params__da1", mo_echam_vdiff_params__da1)
 +#ifdef __SPLINE_TEST__
      CALL ftg_read("mo_convect_tables__dua", mo_convect_tables__dua)
 +#endif
      CALL ftg_allocate_and_read_allocatable("mo_vdiff_solver__ibtm_mtrx", mo_vdiff_solver__ibtm_mtrx)
      CALL ftg_allocate_and_read_allocatable("mo_vdiff_solver__ibtm_var", mo_vdiff_solver__ibtm_var)
      CALL ftg_read("mo_vdiff_solver__ih", mo_vdiff_solver__ih)
-@@ -357,8 +361,10 @@
+@@ -360,8 +364,10 @@
+     CALL ftg_read("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
      CALL ftg_read("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
-     CALL ftg_read("mo_echam_vdiff_params__tke_min", mo_echam_vdiff_params__tke_min)
      CALL ftg_read("mo_convect_tables__tlucu", mo_convect_tables__tlucu)
 +#ifdef __SPLINE_TEST__
      CALL ftg_read("mo_convect_tables__ua", mo_convect_tables__ua)
      CALL ftg_read("mo_convect_tables__za", mo_convect_tables__za)
 +#endif
-     CALL ftg_read("mo_vdiff_config__vdiff_config%lsfc_heat_flux", mo_vdiff_config__vdiff_config%lsfc_heat_flux)
-     CALL ftg_read("mo_vdiff_config__vdiff_config%lsfc_mom_flux", mo_vdiff_config__vdiff_config%lsfc_mom_flux)
-     
+     CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%c_e", mo_echam_vdf_config__echam_vdf_config%c_e)
+     CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%c_f", mo_echam_vdf_config__echam_vdf_config%c_f)
+     CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%c_n", mo_echam_vdf_config__echam_vdf_config%c_n)
