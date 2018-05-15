@@ -1,15 +1,15 @@
 #!/bin/bash -e
 
-if [[ $# -ne 4 ]]; then
-  echo "USAGE: script requires 4 arguments"
-  echo "       extract_standalone.sh slave compiler target /path/to/data/root"
+if [[ $# -ne 2 ]]; then
+  echo "USAGE: script requires 2 arguments"
+  echo "       extract_standalone.sh slave /path/to/data/root"
   exit 1
 fi
 
 # Script arguments
 slave="$1"
-compiler="$2"
-target="$3"
+compiler="gcc"
+target="cpu"
 datadir="$4"
 
 # Environment setup
