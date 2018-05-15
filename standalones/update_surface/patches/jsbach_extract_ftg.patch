@@ -1,0 +1,16 @@
+diff --git a/src/base/mo_jsb_control.f90 b/src/base/mo_jsb_control.f90
+index 5666bd6..1c34dbb 100644
+--- a/src/base/mo_jsb_control.f90
++++ b/src/base/mo_jsb_control.f90
+@@ -26,6 +26,11 @@ MODULE mo_jsb_control
+   PUBLIC :: t_jsb_model_nml, jsb_models_nml, get_no_of_models
+   PUBLIC :: timer_aggregate, timer_integrate, timer_process_task, timer_process_msg, l_timer
+   PUBLIC :: max_no_of_models
++  !================= START FORCE FORTRAN TEST GENERATOR (FTG) =======================!
++
++  PUBLIC :: is_standalone, debug
++
++  !================= STOP FORCE FORTRAN TEST GENERATOR (FTG) =========================!
+ 
+   LOGICAL :: is_standalone
+   LOGICAL :: restart_jsbach
