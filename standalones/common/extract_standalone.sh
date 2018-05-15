@@ -106,7 +106,8 @@ run_command cp --parents ${ftgdeps} ${standalonedir} || exit 1
 run_command cp --parents src/tests/${testname}.f90 ${standalonedir} || exit 1
 
 # Manually add external dependencies
-run_command cp -r --parents src/include support/ config/ Makefile.in configure configure.ac ${standalonedir} || exit 1
+run_command cp -r ${commondir}/config ${standalonedir} || exit 1
+run_command cp -r --parents src/include support/ ${standalonedir} || exit 1
 if [ -e "${scriptdir}/external_dependencies.txt" ]; then
   while read -r f; do
     run_command cp -r --parents $f ${standalonedir} || exit 1
