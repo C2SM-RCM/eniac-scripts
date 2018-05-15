@@ -9,6 +9,10 @@ src/
 ----
 Additional source files to inject into source tree. (i.e. src/tests/ftg_update_surface_test.f90)
 
+scripts/
+--------
+Additional scripts called by main scripts
+
 Scripts
 =======
 
@@ -19,22 +23,6 @@ Master script to run standalone validation scripts.
 create_reference.sh
 --------------
 Master script to generate standalone reference data.
-
-apply_patches.sh
-----------------
-Apply patches required for standalone.
-
-apply_patches_reference.sh
-----------------
-Apply patches required for generating reference data.
-
-tune_configuration.sh
----------------------
-Tune configuraton to produce standalone executable.
-
-tune_run.sh
----------------------
-Tune run setup before submission.
 
 reset_repo.sh
 -------------

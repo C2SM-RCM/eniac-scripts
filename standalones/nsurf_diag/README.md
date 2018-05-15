@@ -3,7 +3,7 @@ Directories
 
 patches/
 --------
-Patches to apply on top of repository checkout to produce standalone.
+Patches to apply on top of repository checkout.
 
 src/
 ----
@@ -19,14 +19,6 @@ Master script to run standalone validation scripts.
 create_reference.sh
 --------------
 Master script to generate standalone reference data.
-
-apply_patches.sh
-----------------
-Apply patches required for standalone.
-
-apply_patches_reference.sh
-----------------
-Apply patches required for generating reference data.
 
 tune_configuration.sh
 ---------------------

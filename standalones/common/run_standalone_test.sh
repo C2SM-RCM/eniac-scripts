@@ -9,7 +9,7 @@ if [ "${target}" = "gpu" ]; then
 fi
 
 # Apply patches for standalone
-run_command ${scriptdir}/apply_patches.sh || exit 1
+run_command ${scriptdir}/scripts/apply_patches.sh || exit 1
 
 # Copy standalone files and tune for current install
 run_command cp -r ${scriptdir}/src . || exit 1
@@ -54,8 +54,8 @@ for nproma in 16 2729 20480; do
 
   # Run executable
   run_command echo "Running standalone ..."
-  if [ -e ${scriptdir}/tune_run.sh ]; then
-    run_command ${scriptdir}/tune_run.sh || exit 1
+  if [ -e ${scriptdir}/scripts/tune_run.sh ]; then
+    run_command ${scriptdir}/scripts/tune_run.sh || exit 1
   fi
   run_command ./submit.sh || exit 1
 

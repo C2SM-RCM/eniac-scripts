@@ -9,7 +9,7 @@ if [[ !("${compiler}" == "gcc" && "${target}" == "cpu") ]]; then
 fi
 
 # Apply patches for standalone extraction
-run_command ${scriptdir}/apply_patches_extract.sh || exit 1
+run_command ${scriptdir}/scripts/apply_patches_extract.sh || exit 1
 
 # Clone and configure FCG and FTG
 run_command git clone https://github.com/fortesg/fortrancallgraph || exit 1
@@ -32,8 +32,8 @@ run_command ./FortranTestGenerator.py -c ${testmodule} ${testroutine}
 run_command cd ../
 
 # Apply intermezzo patches
-if [ -f ${scriptdir}/apply_patches_extract_intermezzo.sh ]; then
-  run_command ${scriptdir}/apply_patches_extract_intermezzo.sh || exit 1
+if [ -f ${scriptdir}/scripts/apply_patches_extract_intermezzo.sh ]; then
+  run_command ${scriptdir}/scripts/apply_patches_extract_intermezzo.sh || exit 1
 fi
 
 # Cleanup
@@ -53,8 +53,8 @@ run_command ./FortranTestGenerator.py -r ${testmodule} ${testroutine}
 run_command cd ../
 
 # Apply finish patches
-if [ -f ${scriptdir}/apply_patches_extract_finish.sh ]; then
-  run_command ${scriptdir}/apply_patches_extract_finish.sh || exit 1
+if [ -f ${scriptdir}/scripts/apply_patches_extract_finish.sh ]; then
+  run_command ${scriptdir}/scripts/apply_patches_extract_finish.sh || exit 1
 fi
 
 # Isolate standalone

@@ -1,5 +1,11 @@
 #!/bin/bash -e
 
+if [[ $# -ne 4 ]]; then
+  echo "USAGE: script requires 4 arguments"
+  echo "       run_standalone_test.sh slave compiler target /path/to/data/root"
+  exit 1
+fi
+
 # Script arguments
 slave="$1"
 compiler="$2"
