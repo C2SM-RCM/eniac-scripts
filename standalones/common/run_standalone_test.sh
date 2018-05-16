@@ -9,7 +9,7 @@ if [ "${target}" = "gpu" ]; then
 fi
 
 # Apply patches for standalone
-run_command ${scriptdir}/scripts/apply_patches.sh || exit 1
+run_command ${commondir}/apply_patches_run.sh || exit 1
 
 # Copy standalone files and tune for current install
 run_command cp -r ${scriptdir}/src . || exit 1
@@ -20,7 +20,7 @@ done <${scriptdir}/ftgdatadir_files.txt
 # Remove existing ACC statements unrelated to standalone
 if [ -f ${scriptdir}/noacc_list.txt ]; then
   while read -r f;do
-    run_command sed -i -e 's/!$ACC/!NOACC/g' -e 's/!$acc/!noacc/g' "$f" || exit 1
+    run_command sed -i -e 's/!$ACC/!NOENIAC/g' -e 's/!$acc/!noeniac/g' "$f" || exit 1
   done <${scriptdir}/noacc_list.txt
 fi
 

@@ -9,7 +9,7 @@ if [ "${target}" = "gpu" ]; then
 fi
 
 # Apply patches for standalone
-run_command ${scriptdir}/scripts/apply_patches_reference.sh || exit 1
+run_command ${commondir}/apply_patches_reference.sh || exit 1
 
 # Copy standalone files and tune for current install
 run_command cp -r ${scriptdir}/src . || exit 1
