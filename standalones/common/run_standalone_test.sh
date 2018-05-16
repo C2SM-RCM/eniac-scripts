@@ -18,9 +18,11 @@ while read -r f;do
 done <${scriptdir}/ftgdatadir_files.txt
 
 # Remove existing ACC statements unrelated to standalone
-while read -r f;do 
-  run_command sed -i -e 's/!$ACC/!NOACC/g' -e 's/!$acc/!noacc/g' "$f" || exit 1
-done <${commondir}/noacc_list.txt
+if [ -f ${scriptdir}/noacc_list.txt ]; then
+  while read -r f;do
+    run_command sed -i -e 's/!$ACC/!NOACC/g' -e 's/!$acc/!noacc/g' "$f" || exit 1
+  done <${scriptdir}/noacc_list.txt
+fi
 
 # Configure build
 run_command echo "Configuring standalone ..." || exit 1

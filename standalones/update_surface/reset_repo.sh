@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 # clean build
-make distclean
+make distclean >& /dev/null
 
 # reset ICON repository
 git reset --hard HEAD

@@ -64,11 +64,6 @@ run_command mkdir -p ${standalonedir} || exit 1
 # Cleanup
 run_command make distclean >& /dev/null || exit 1
 
-# Remove existing ACC statements unrelated to standalone
-while read -r f;do 
-  run_command sed -i -e 's/!$ACC/!NOACC/g' -e 's/!$acc/!noacc/g' "$f" || exit 1
-done <${commondir}/noacc_list.txt
-
 # Configure build
 run_command echo "Configuring standalone ..." || exit 1
 run_command ./configure --with-fortran=gcc >& standalone_configure.log || exit 1
@@ -120,3 +115,31 @@ run_command cd ../ || exit 1
 
 # Reset all changes
 run_command ${scriptdir}/reset_repo.sh || exit 1
+
+# Create patches
+run_command mkdir ${standalonedir}/patches || exit 1
+run_command mkdir a b || exit 1
+run_command ln -s ${workdir}/${standalonedir}/src b/src || exit 1
+run_command ln -s ${workdir}/src a/src || exit 1
+for f in `find -L b/src/ -type f`;do 
+  patchfile=${standalonedir}/patches/$(basename ${f/.f90/.patch})
+  diff -uBb ${f/b\//a\/} $f > ${patchfile} || true
+  if [ `wc -l <${patchfile}` -eq 0 ]; then
+    run_command rm ${patchfile} || exit 1
+  fi
+done
+
+# Cleanup
+run_command rm a/src b/src || exit 1
+run_command rmdir a b || exit 1
+
+# Remove existing ACC statements unrelated to standalone
+run_command cd ${standalonedir} || exit 1
+if [ -f ${scriptdir}/noacc_list.txt ]; then
+  while read -r f;do
+    if [ -f $f ]; then
+      run_command sed -i -e 's/!$ACC/!NOACC/g' -e 's/!$acc/!noacc/g' "$f" || exit 1
+    fi
+  done <${scriptdir}/noacc_list.txt
+fi
+run_command cd ${workdir} || exit 1
