@@ -54,7 +54,7 @@ run_command cd ../
 run_command ${commondir}/apply_patches_extract.sh finish || exit 1
 
 # Isolate standalone
-standalonedir="standalone/${testroutine}"
+export standalonedir="standalone/${testroutine}"
 run_command mkdir -p ${standalonedir} || exit 1
 
 # Cleanup
@@ -114,3 +114,14 @@ run_command ${scriptdir}/reset_repo.sh || exit 1
 
 # Create patches
 run_command ${commondir}/generate_patches.sh || exit 1
+
+# Remove existing ACC statements unrelated to standalone
+run_command cd ${standalonedir} || exit 1
+if [ -f ${scriptdir}/noacc_list.txt ]; then
+  while read -r f;do
+    if [ -f $f ]; then
+      run_command sed -i -e 's/!$ACC/!NOENIAC/g' -e 's/!$acc/!noeniac/g' "$f" || exit 1
+    fi
+  done <${scriptdir}/noacc_list.txt
+fi
+run_command cd ${workdir} || exit 1
