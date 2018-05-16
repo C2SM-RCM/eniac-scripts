@@ -1,0 +1,15 @@
+--- a/src/parallel_infrastructure/mo_communication.f90	2018-05-16 12:10:43.250950014 +0200
++++ b/src/parallel_infrastructure/mo_communication.f90	2018-05-16 12:22:38.264523017 +0200
+@@ -92,7 +92,11 @@
+ !
+ TYPE t_comm_pattern
+ 
+-  PRIVATE
++  !================= START FORCE FORTRAN TEST GENERATOR (FTG) =======================!
++
++  !PRIVATE
++
++  !================= STOP FORCE FORTRAN TEST GENERATOR (FTG) =========================!
+ 
+    ! Number of points we receive in communication,
+    ! this is the same as recv_limits

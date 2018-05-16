@@ -1,0 +1,17 @@
+--- a/src/configure_model/mo_echam_vdf_config.f90	2018-05-16 13:35:29.310268000 +0200
++++ b/src/configure_model/mo_echam_vdf_config.f90	2018-05-16 13:35:28.242898000 +0200
+@@ -79,6 +79,14 @@
+   !!
+   TYPE(t_echam_vdf_config), TARGET :: echam_vdf_config(max_dom)
+   
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  PUBLIC :: t_echam_vdf_config
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ CONTAINS
+ 
+   !----

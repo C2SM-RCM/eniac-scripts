@@ -1,118 +1,119 @@
-diff --git a/src/atm_phy_echam/mo_surface_diag.f90 b/src/atm_phy_echam/mo_surface_diag.f90
-index d9b85f81c..730ef5e49 100644
---- a/src/atm_phy_echam/mo_surface_diag.f90
-+++ b/src/atm_phy_echam/mo_surface_diag.f90
-@@ -26,6 +26,26 @@ MODULE mo_surface_diag
+--- a/src/atm_phy_echam/mo_surface_diag.f90	2018-05-16 13:56:48.670891476 +0200
++++ b/src/atm_phy_echam/mo_surface_diag.f90	2018-05-16 15:21:53.333429605 +0200
+@@ -26,6 +26,27 @@
    PRIVATE
    PUBLIC :: wind_stress, surface_fluxes, nsurf_diag
  
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
-+
++  
 +  LOGICAL :: ftg_nsurf_diag_capture_input_enabled = .TRUE.
 +  LOGICAL :: ftg_nsurf_diag_capture_output_enabled = .TRUE.
 +  INTEGER :: ftg_nsurf_diag_capture_round = 1
 +  INTEGER :: ftg_nsurf_diag_round = 0
 +  CHARACTER(len=1024) :: ftg_nsurf_diag_input_dir = &
-+    '++FTGDATADIR++/data/input'
++  '++FTGDATADIR++/data/input'
 +  CHARACTER(len=1024) :: ftg_nsurf_diag_output_dir = &
-+    '++FTGDATADIR++/data/output'
-+
++  '++FTGDATADIR++/data/output'
++  
 +  PUBLIC :: ftg_nsurf_diag_capture_input_enabled, ftg_nsurf_diag_capture_output_enabled, ftg_nsurf_diag_capture_round, &
 +  &  ftg_nsurf_diag_input_dir, ftg_nsurf_diag_output_dir
-+
-+
-+
-+
++  
++  
++  
++  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
 +
  CONTAINS
    !>
    !!
-@@ -395,6 +415,16 @@ CONTAINS
+@@ -423,6 +444,17 @@
      CONTIGUOUS :: pbtile
  #endif
  
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
-+
++  
 +  ftg_nsurf_diag_round = ftg_nsurf_diag_round + 1
 +  CALL ftg_nsurf_diag_capture_input(kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, pocu, &
 +  &  pocv, pzf, pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, pdew2_gbm, &
 +  &  puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
-+
++  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
 +
 +
      !$ACC DATA PCOPYIN( pfrc, pqm1, pzf, pzs, pcptgz, pcpt_tile, pbn_tile,     &
      !$ACC               pbhn_tile, pbh_tile, pbm_tile, pri_tile, ptm1, papm1,  &
      !$ACC               pxm1, pum1, pvm1, paphm1, pocu, pocv, ptasmax,         &
-@@ -593,7 +623,263 @@ CONTAINS
+@@ -621,7 +653,264 @@
  
    !$ACC END DATA
  
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
-+
++  
 +  CALL ftg_nsurf_diag_capture_output(psfcWind_gbm, ptas_gbm, pdew2_gbm, puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, &
 +  &  ptas_tile, pdew2_tile, puas_tile, pvas_tile)
-+
++  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
 +
    END SUBROUTINE nsurf_diag
 +
 +! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +
 +SUBROUTINE ftg_nsurf_diag_init_for_capture(stage, dir)
-+
++  
 +  USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
 +  USE mo_mpi,            ONLY: get_my_mpi_all_id
 +  USE m_ser_ftg,         ONLY: ftg_set_serializer, ftg_add_serializer_metainfo, ignore_bullshit_max_dim_size, &
 +  &  ignore_bullshit_allow_negative_indices, ignore_bullshit
-+
++  
 +  CHARACTER(*), INTENT(IN) :: stage, dir
-+
++  
 +  CHARACTER(len=MAX_CHAR_LENGTH) :: basename, mkdirerr
-+
++  
 +  WRITE (basename,'(a,a,a,i0)') 'ftg_nsurf_diag_', TRIM(stage), '_', get_my_mpi_all_id()
-+
++  
 +  WRITE (0,*) 'FTG INIT nsurf_diag '//TRIM(basename), get_my_mpi_all_id()
-+
++  
 +  mkdirerr = ''
-+!  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
-+!  IF (TRIM(mkdirerr) /= '') THEN
-+!    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
-+!  END IF
-+
-+  ignore_bullshit = .FALSE.
-+  ignore_bullshit_max_dim_size = 100000
-+  ignore_bullshit_allow_negative_indices = .TRUE.
-+
-+  CALL ftg_set_serializer(TRIM(dir), TRIM(basename), 'w')
-+  CALL ftg_add_serializer_metainfo('subroutine', 'nsurf_diag')
-+  CALL ftg_add_serializer_metainfo('stage', stage)
-+  CALL ftg_add_serializer_metainfo('mpi_all_id', get_my_mpi_all_id())
-+
-+END SUBROUTINE ftg_nsurf_diag_init_for_capture
-+
-+LOGICAL FUNCTION ftg_nsurf_diag_capture_input_active()
-+
-+ftg_nsurf_diag_capture_input_active =       &
-+ftg_nsurf_diag_capture_input_enabled .AND.  &
-+ftg_nsurf_diag_round .EQ. ftg_nsurf_diag_capture_round
-+
++  !  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
++  !  IF (TRIM(mkdirerr) /= '') THEN
++    !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
++    !  END IF
++    
++    ignore_bullshit = .FALSE.
++    ignore_bullshit_max_dim_size = 100000
++    ignore_bullshit_allow_negative_indices = .TRUE.
++    
++    CALL ftg_set_serializer(TRIM(dir), TRIM(basename), 'w')
++    CALL ftg_add_serializer_metainfo('subroutine', 'nsurf_diag')
++    CALL ftg_add_serializer_metainfo('stage', stage)
++    CALL ftg_add_serializer_metainfo('mpi_all_id', get_my_mpi_all_id())
++    
++  END SUBROUTINE ftg_nsurf_diag_init_for_capture
++  
++  LOGICAL FUNCTION ftg_nsurf_diag_capture_input_active()
++  
++  ftg_nsurf_diag_capture_input_active =       &
++  ftg_nsurf_diag_capture_input_enabled .AND.  &
++  ftg_nsurf_diag_round .EQ. ftg_nsurf_diag_capture_round
++  
 +END FUNCTION ftg_nsurf_diag_capture_input_active
 +
 +SUBROUTINE ftg_nsurf_diag_capture_input(kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, &
 +&  pocu, pocv, pzf, pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, pdew2_gbm, &
 +&  puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
-+
++  
 +  USE mtime,     ONLY: calendarType
 +  USE mo_mpi,    ONLY: get_my_mpi_all_id
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
-+
++  
 +  USE mo_echam_convect_tables, ONLY: mo_echam_convect_tables__tlucu => tlucu
 +  USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
-+
++  
 +  INTEGER, INTENT(in) :: kproma
 +  INTEGER, INTENT(in) :: kbdim
 +  INTEGER, INTENT(in) :: ksfc_type
@@ -148,21 +149,21 @@ index d9b85f81c..730ef5e49 100644
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pdew2_tile
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: puas_tile
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pvas_tile
-+
++  
 +  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
 +  CHARACTER(len=256) :: ftg_c
-+
++  
 +  IF (ftg_nsurf_diag_capture_input_active()) THEN
-+
++    
 +    CALL ftg_nsurf_diag_init_for_capture('input', ftg_nsurf_diag_input_dir)
 +    CALL ftg_set_savepoint('input')
-+
++    
 +    WRITE (0,*) 'FTG ROUND nsurf_diag ', ftg_nsurf_diag_round, get_my_mpi_all_id()
 +    WRITE (0,*) 'FTG WRITE INPUT DATA nsurf_diag', get_my_mpi_all_id()
-+
++    
 +    ! MTIME CALENDAR TYPE --> Remove this line if mtime is not used
 +    CALL ftg_write("ftg_mtime_calendar", calendarType())
-+
++    
 +    ! BASIC ARGUMENTS
 +    CALL ftg_write("kproma", kproma)
 +    CALL ftg_write("kbdim", kbdim)
@@ -199,27 +200,27 @@ index d9b85f81c..730ef5e49 100644
 +    CALL ftg_write("pdew2_tile", pdew2_tile, LBOUND(pdew2_tile), UBOUND(pdew2_tile))
 +    CALL ftg_write("puas_tile", puas_tile, LBOUND(puas_tile), UBOUND(puas_tile))
 +    CALL ftg_write("pvas_tile", pvas_tile, LBOUND(pvas_tile), UBOUND(pvas_tile))
-+
-+
++    
++    
 +    ! OPTIONAL ARGUMENTS
-+
++    
 +    ! TYPE MEMBERS
-+
-+
++    
++    
 +    ! GLOBALS
 +    CALL ftg_write("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
 +    CALL ftg_write("mo_echam_convect_tables__tlucu", mo_echam_convect_tables__tlucu, LBOUND(mo_echam_convect_tables__tlucu), &
 +    &  UBOUND(mo_echam_convect_tables__tlucu))
-+
-+
++    
++    
 +    CALL ftg_write("ftg_nsurf_diag_round", ftg_nsurf_diag_round)
-+
++    
 +    CALL ftg_destroy_savepoint()
 +    WRITE (0,*) 'FTG FINALIZE INPUT DATA nsurf_diag', get_my_mpi_all_id()
 +    CALL ftg_destroy_serializer()
-+
++    
 +  END IF
-+
++  
 +END SUBROUTINE ftg_nsurf_diag_capture_input
 +
 +LOGICAL FUNCTION ftg_nsurf_diag_capture_output_active()
@@ -232,14 +233,14 @@ index d9b85f81c..730ef5e49 100644
 +
 +SUBROUTINE ftg_nsurf_diag_capture_output(psfcWind_gbm, ptas_gbm, pdew2_gbm, puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, &
 +&  ptas_tile, pdew2_tile, puas_tile, pvas_tile)
-+
++  
 +  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
 +  USE mo_exception, ONLY: finish
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
-+
++  
 +  USE mo_echam_convect_tables, ONLY: mo_echam_convect_tables__tlucu => tlucu
 +  USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
-+
++  
 +  REAL(wp), DIMENSION(:), INTENT(in) :: psfcWind_gbm
 +  REAL(wp), DIMENSION(:), INTENT(in) :: ptas_gbm
 +  REAL(wp), DIMENSION(:), INTENT(in) :: pdew2_gbm
@@ -252,19 +253,19 @@ index d9b85f81c..730ef5e49 100644
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pdew2_tile
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: puas_tile
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pvas_tile
-+
++  
 +  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
 +  CHARACTER(len=256) :: ftg_c
-+
++  
 +  IF (ftg_nsurf_diag_capture_output_active()) THEN
-+
++    
 +    CALL ftg_nsurf_diag_init_for_capture('output', ftg_nsurf_diag_output_dir)
 +    CALL ftg_set_savepoint('output')
-+
++    
 +    WRITE (0,*) 'FTG ROUND nsurf_diag ', ftg_nsurf_diag_round, get_my_mpi_all_id()
 +    WRITE (0,*) 'FTG WRITE output DATA nsurf_diag', get_my_mpi_all_id()
-+
-+
++    
++    
 +    ! BASIC ARGUMENTS
 +    CALL ftg_write("psfcWind_gbm", psfcWind_gbm, LBOUND(psfcWind_gbm), UBOUND(psfcWind_gbm))
 +    CALL ftg_write("ptas_gbm", ptas_gbm, LBOUND(ptas_gbm), UBOUND(ptas_gbm))
@@ -278,30 +279,30 @@ index d9b85f81c..730ef5e49 100644
 +    CALL ftg_write("pdew2_tile", pdew2_tile, LBOUND(pdew2_tile), UBOUND(pdew2_tile))
 +    CALL ftg_write("puas_tile", puas_tile, LBOUND(puas_tile), UBOUND(puas_tile))
 +    CALL ftg_write("pvas_tile", pvas_tile, LBOUND(pvas_tile), UBOUND(pvas_tile))
-+
-+
++    
++    
 +    ! OPTIONAL ARGUMENTS
-+
++    
 +    ! TYPE MEMBERS
-+
-+
++    
++    
 +    ! GLOBALS
 +    CALL ftg_write("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
 +    CALL ftg_write("mo_echam_convect_tables__tlucu", mo_echam_convect_tables__tlucu, LBOUND(mo_echam_convect_tables__tlucu), &
 +    &  UBOUND(mo_echam_convect_tables__tlucu))
-+
-+
++    
++    
 +    CALL ftg_write("ftg_nsurf_diag_round", ftg_nsurf_diag_round)
-+
++    
 +    CALL ftg_destroy_savepoint()
 +    WRITE (0,*) 'FTG FINALIZE output DATA nsurf_diag', get_my_mpi_all_id()
 +    CALL ftg_destroy_serializer()
-+
++    
 +    CALL work_mpi_barrier()
-+!    CALL finish('FTG EXIT', 'Output captured: nsurf_diag', 0)
-+
++    !      CALL finish('FTG EXIT', 'Output captured: nsurf_diag', 0)
++    
 +  END IF
-+
++  
 +END SUBROUTINE ftg_nsurf_diag_capture_output
 +
 +! ================= END FORTRAN TEST GENERATOR (FTG) =========================

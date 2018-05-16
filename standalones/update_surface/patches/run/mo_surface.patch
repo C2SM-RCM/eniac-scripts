@@ -1,36 +1,36 @@
-diff --git a/src/atm_phy_echam/mo_surface.f90 b/src/atm_phy_echam/mo_surface.f90
-index fcd3bc8b9..a52cb12ad 100644
---- a/src/atm_phy_echam/mo_surface.f90
-+++ b/src/atm_phy_echam/mo_surface.f90
-@@ -34,11 +34,52 @@ MODULE mo_surface
- #ifndef __NO_ICON_OCEAN__
-   USE mo_sea_ice,           ONLY: ice_fast
+--- a/src/atm_phy_echam/mo_surface.f90	2018-05-16 12:10:43.248662820 +0200
++++ b/src/atm_phy_echam/mo_surface.f90	2018-05-16 12:10:41.977984000 +0200
+@@ -40,6 +40,27 @@
+   USE mo_ice_interface,     ONLY: ice_fast
    USE mo_ml_ocean,          ONLY: ml_ocean
-+#endif
+ #endif
 +#ifdef FORCE_FTG_SERIALIZATION
-+   !================= START FORCE SERIALIZATION OF MISSED DATA =====================!
-+    USE mo_master_control,    ONLY: master_namelist_filename
-+    USE mo_jsb_time_iface,    ONLY: get_time_nsteps, get_time_dt
-+    USE mo_model_domain,      ONLY: p_patch
-+    USE mo_jsb_domain_iface,  ONLY:                                                 &
-+                                     get_grid_filename_domain => get_grid_filename, &
-+                                     get_ntotal_domain        => get_ntotal,        &
-+                                     get_ntotal_g_domain      => get_ntotal_g,      &
-+                                     get_dims_g_domain        => get_dims_g,        &
-+                                     get_nlat_g_domain        => get_nlat_g,        &
-+                                     get_nproma_domain        => get_nproma,        &
-+                                     get_nblks_domain         => get_nblks,         &
-+                                     get_lon_domain           => get_lon,           &
-+                                     get_lat_domain           => get_lat,           &
-+                                     get_area_domain          => get_area
++  !================= START FORCE SERIALIZATION OF MISSED DATA =====================!
++  USE mo_master_control,    ONLY: master_namelist_filename
++  USE mo_jsb_time_iface,    ONLY: get_time_nsteps, get_time_dt
++  USE mo_model_domain,      ONLY: p_patch
++  USE mo_jsb_domain_iface,  ONLY:                                                  &
++                                  get_grid_filename_domain => get_grid_filename,   &
++                                  get_ntotal_domain        => get_ntotal,          &
++                                  get_ntotal_g_domain      => get_ntotal_g,        &
++                                  get_dims_g_domain        => get_dims_g,          &
++                                  get_nlat_g_domain        => get_nlat_g,          &
++                                  get_nproma_domain        => get_nproma,          &
++                                  get_nblks_domain         => get_nblks,           &
++                                  get_lon_domain           => get_lon,             &
++                                  get_lat_domain           => get_lat,             &
++                                  get_area_domain          => get_area
 +    USE mo_read_netcdf_distributed, ONLY: basic_data
 +    USE mo_sea_ice_nml, ONLY: i_ice_therm, i_ice_albedo, use_no_flux_gradients
 +    USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
 +   !================= STOP FORCE SERIALIZATION OF MISSED DATA =====================!
- #endif
++#endif
+ 
    IMPLICIT NONE
    PRIVATE
-   PUBLIC :: update_surface
+@@ -49,6 +70,27 @@
+   !
+   LOGICAL, POINTER :: lsfc_mom_flux, lsfc_heat_flux
  
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
@@ -40,22 +40,23 @@ index fcd3bc8b9..a52cb12ad 100644
 +  INTEGER :: ftg_update_surface_capture_round = 1
 +  INTEGER :: ftg_update_surface_round = 0
 +  CHARACTER(len=1024) :: ftg_update_surface_input_dir = &
-+    '++FTGDATADIR++/data/input'
++  '++FTGDATADIR++/data/input'
 +  CHARACTER(len=1024) :: ftg_update_surface_output_dir = &
-+    '++FTGDATADIR++/data/output'
++  '++FTGDATADIR++/data/output'
 +  
 +  PUBLIC :: ftg_update_surface_capture_input_enabled, ftg_update_surface_capture_output_enabled, ftg_update_surface_capture_round, &
 +  &  ftg_update_surface_input_dir, ftg_update_surface_output_dir
 +  
-+  
++  PUBLIC :: lsfc_heat_flux, lsfc_mom_flux
 +  
 +  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
 +
  CONTAINS
    !>
    !!
-@@ -248,6 +289,68 @@ CONTAINS
+@@ -264,6 +306,69 @@
  
     CHARACTER(len=*), PARAMETER :: method_name='mo_surface:update_surface'
  
@@ -65,79 +66,81 @@ index fcd3bc8b9..a52cb12ad 100644
 +  CALL ftg_update_surface_capture_input(jg, kproma, kbdim, kice, klev, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, pfrc, &
 +  &  pcfh_tile, pcfm_tile, pfac_sfc, pocu, pocv, aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile, ptsfc_tile, pu_stress_gbm, &
 +  &  pv_stress_gbm, plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, &
-+  &  nblock, lsm, alake, pu, pv, ptemp, pq, prsfl, prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus, rvds_dir, rpds_dir, rnds_dir, &
-+  &  rvds_dif, rpds_dif, rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, &
-+  &  albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, ptsfc, ptsfc_rad, &
-+  &  rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, albvisdif_ice, albnirdir_ice, &
-+  &  albnirdif_ice)
++  &  pco2nat, nblock, lsm, alake, pu, pv, ptemp, pq, pco2, prsfl, prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus, rvds_dir, rpds_dir, &
++  &  rnds_dir, rvds_dif, rpds_dif, rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, &
++  &  albnirdir, albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, &
++  &  pco2_flux_tile, ptsfc, ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, &
++  &  albvisdif_ice, albnirdir_ice, albnirdif_ice)
 +  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
 +
 +
 +#ifdef FORCE_FTG_SERIALIZATION
-+   !================= START FORCE SERIALIZATION OF MISSED DATA =====================!
-+    PRINT *, p_patch(jg)%id
-+    PRINT *, get_grid_filename_domain(patch = p_patch(jg))
-+    PRINT *, get_ntotal_domain       (patch = p_patch(jg))
-+    PRINT *, get_ntotal_g_domain     (patch = p_patch(jg))
-+    PRINT *, get_dims_g_domain       (patch = p_patch(jg))
-+    PRINT *, get_nlat_g_domain       (patch = p_patch(jg))
-+    PRINT *, get_nblks_domain        (patch = p_patch(jg))
-+    PRINT *, get_nproma_domain       (patch = p_patch(jg))
-+    PRINT *, get_lon_domain          (patch = p_patch(jg))
-+    PRINT *, get_lat_domain          (patch = p_patch(jg))
-+    PRINT *, get_area_domain         (patch = p_patch(jg))
-+    PRINT *, get_time_nsteps()
-+    PRINT *, get_time_dt()
-+    PRINT *, master_namelist_filename
-+    PRINT *, i_ice_therm
-+    PRINT *, i_ice_albedo
-+    PRINT *, use_no_flux_gradients
-+    PRINT *, mo_dynamics_config__iequations
-+    PRINT *, p_patch(jg)%cells%dist_io_data%basic_data_index
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%n_recv
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%n_pnts 
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%n_send 
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%np_recv
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%np_send
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_limits
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_src
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_dst_blk
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_dst_idx
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_limits
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_src_blk
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_src_idx
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%pelist_send
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%pelist_recv
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_startidx
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_count
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_startidx
-+    PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_count
-+    PRINT *, basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%n_g
-+    PRINT *, &
-+    basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%io_chunk%first
-+    PRINT *, &
-+    basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%io_chunk%size
-+   !================= STOP FORCE SERIALIZATION OF MISSED DATA =====================!
++!================= START FORCE SERIALIZATION OF MISSED DATA =====================!
++  PRINT *, p_patch(jg)%id
++  PRINT *, get_grid_filename_domain(patch = p_patch(jg))
++  PRINT *, get_ntotal_domain       (patch = p_patch(jg))
++  PRINT *, get_ntotal_g_domain     (patch = p_patch(jg))
++  PRINT *, get_dims_g_domain       (patch = p_patch(jg))
++  PRINT *, get_nlat_g_domain       (patch = p_patch(jg))
++  PRINT *, get_nblks_domain        (patch = p_patch(jg))
++  PRINT *, get_nproma_domain       (patch = p_patch(jg))
++  PRINT *, get_lon_domain          (patch = p_patch(jg))
++  PRINT *, get_lat_domain          (patch = p_patch(jg))
++  PRINT *, get_area_domain         (patch = p_patch(jg))
++  PRINT *, get_time_nsteps()
++  PRINT *, get_time_dt()
++  PRINT *, master_namelist_filename
++  PRINT *, i_ice_therm
++  PRINT *, i_ice_albedo
++  PRINT *, use_no_flux_gradients
++  PRINT *, mo_dynamics_config__iequations
++  PRINT *, p_patch(jg)%cells%dist_io_data%basic_data_index
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%n_recv
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%n_pnts 
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%n_send 
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%np_recv
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%np_send
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_limits
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_src
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_dst_blk
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_dst_idx
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_limits
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_src_blk
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_src_idx
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%pelist_send
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%pelist_recv
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_startidx
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_count
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_startidx
++  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_count
++  PRINT *, basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%n_g
++  PRINT *, &
++  basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%io_chunk%first
++  PRINT *, &
++  basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%io_chunk%size
++!================= STOP FORCE SERIALIZATION OF MISSED DATA =====================!
 +#endif
 +
-     !$ACC DATA PRESENT( mpi_phy_config )
- 
-     !$ACC DATA PRESENT( pfrc, pcfh_tile, pcfm_tile, pfac_sfc, pocu, pocv, aa,  &
-@@ -1276,7 +1379,1402 @@ CONTAINS
-     !$ACC END DATA
-     !$ACC END DATA
+    ! Shortcuts to components of echam_vdf_config
+    !
+    lsfc_mom_flux  => echam_vdf_config(jg)% lsfc_mom_flux
+@@ -924,7 +1029,1424 @@
+   !
+   !---------------------------------------------------------------------------
  
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  
 +  CALL ftg_update_surface_capture_output(aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile, ptsfc_tile, pu_stress_gbm, pv_stress_gbm, &
-+  &  plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, rlus, pcsat, pcair, &
-+  &  q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, &
-+  &  albnirdif_tile, albedo, albedo_tile, ptsfc, ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, &
-+  &  albvisdir_ice, albvisdif_ice, albnirdir_ice, albnirdif_ice)
++  &  plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, pco2nat, rlus, &
++  &  pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, &
++  &  albvisdif_tile, albnirdif_tile, albedo, albedo_tile, pco2_flux_tile, ptsfc, ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, &
++  &  Tsurf, T1, T2, hi, hs, Qtop, Qbot, albvisdir_ice, albvisdif_ice, albnirdir_ice, albnirdif_ice)
 +  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
 +
      END SUBROUTINE update_surface
 +
@@ -159,59 +162,61 @@ index fcd3bc8b9..a52cb12ad 100644
 +  WRITE (0,*) 'FTG INIT update_surface '//TRIM(basename), get_my_mpi_all_id()
 +  
 +  mkdirerr = ''
-+!  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
-+!  IF (TRIM(mkdirerr) /= '') THEN
-+!    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
-+!  END IF
++  !  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
++  !  IF (TRIM(mkdirerr) /= '') THEN
++    !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
++    !  END IF
++    
++    ignore_bullshit_max_dim_size = 100000
++    ignore_bullshit_allow_negative_indices = .TRUE.
++    
++    CALL ftg_set_serializer(TRIM(dir), TRIM(basename), 'w')
++    CALL ftg_add_serializer_metainfo('subroutine', 'update_surface')
++    CALL ftg_add_serializer_metainfo('stage', stage)
++    CALL ftg_add_serializer_metainfo('mpi_all_id', get_my_mpi_all_id())
++    
++  END SUBROUTINE ftg_update_surface_init_for_capture
 +  
-+  ignore_bullshit_max_dim_size = 100000
-+  ignore_bullshit_allow_negative_indices = .TRUE.
++  LOGICAL FUNCTION ftg_update_surface_capture_input_active()
 +  
-+  CALL ftg_set_serializer(TRIM(dir), TRIM(basename), 'w')
-+  CALL ftg_add_serializer_metainfo('subroutine', 'update_surface')
-+  CALL ftg_add_serializer_metainfo('stage', stage)
-+  CALL ftg_add_serializer_metainfo('mpi_all_id', get_my_mpi_all_id())
++  ftg_update_surface_capture_input_active =       &
++  ftg_update_surface_capture_input_enabled .AND.  &
++  ftg_update_surface_round .EQ. ftg_update_surface_capture_round
 +  
-+END SUBROUTINE ftg_update_surface_init_for_capture
-+
-+LOGICAL FUNCTION ftg_update_surface_capture_input_active()
-+
-+ftg_update_surface_capture_input_active =       &
-+ftg_update_surface_capture_input_enabled .AND.  &
-+ftg_update_surface_round .EQ. ftg_update_surface_capture_round
-+
 +END FUNCTION ftg_update_surface_capture_input_active
 +
 +SUBROUTINE ftg_update_surface_capture_input(jg, kproma, kbdim, kice, klev, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, pfrc, &
 +&  pcfh_tile, pcfm_tile, pfac_sfc, pocu, pocv, aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile, ptsfc_tile, pu_stress_gbm, &
-+&  pv_stress_gbm, plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, nblock, &
-+&  lsm, alake, pu, pv, ptemp, pq, prsfl, prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus, rvds_dir, rpds_dir, rnds_dir, rvds_dif, &
-+&  rpds_dif, rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, albvisdif, &
-+&  albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, ptsfc, ptsfc_rad, rsns_tile, &
-+&  rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, albvisdif_ice, albnirdir_ice, albnirdif_ice)
++&  pv_stress_gbm, plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, &
++&  pco2nat, nblock, lsm, alake, pu, pv, ptemp, pq, pco2, prsfl, prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus, rvds_dir, rpds_dir, &
++&  rnds_dir, rvds_dif, rpds_dif, rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, &
++&  albnirdir, albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, &
++&  pco2_flux_tile, ptsfc, ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, &
++&  albvisdif_ice, albnirdir_ice, albnirdif_ice)
 +  
 +  USE mtime,     ONLY: calendarType
 +  USE mo_mpi,    ONLY: get_my_mpi_all_id
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
 +  
 +  USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
-+  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
-+  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
-+  USE mo_mpi_phy_config, ONLY: mo_mpi_phy_config__mpi_phy_config => mpi_phy_config, t_mpi_phy_config
++  USE mo_run_config, ONLY: mo_run_config__ltimer => ltimer
 +  USE mo_echam_sfc_indices, ONLY: mo_echam_sfc_indices__nsfc_type => nsfc_type
-+  USE mo_vdiff_config, ONLY: mo_vdiff_config__vdiff_config => vdiff_config, t_vdiff_config
++  USE mo_echam_vdf_config, ONLY: mo_echam_vdf_config__echam_vdf_config => echam_vdf_config, t_echam_vdf_config
 +  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__imh => imh, mo_vdiff_solver__imuv => imuv, mo_vdiff_solver__nmatrix => nmatrix, &
 +  &  mo_vdiff_solver__imqv => imqv, mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ih => &
 +  &  ih, mo_vdiff_solver__iv => iv, mo_vdiff_solver__iu => iu
++  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
++  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
 +  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
++  USE mo_echam_phy_config, ONLY: mo_echam_phy_config__echam_phy_config => echam_phy_config, t_echam_phy_config
 +  USE mo_master_control, ONLY: mo_master_control__master_namelist_filename => master_namelist_filename
 +  USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
 +  USE mo_parallel_config, ONLY: mo_parallel_config__nproma => nproma
-+  USE mo_timer, ONLY: mo_timer__timer_ice_fast => timer_ice_fast
++  USE mo_timer, ONLY: mo_timer__timer_ice_fast => timer_ice_fast, mo_timer__timer_jsbach => timer_jsbach
 +  USE mo_read_netcdf_distributed, ONLY: mo_read_netcdf_distributed__basic_data => basic_data, t_basic_distrib_read_data
-+  USE mo_jsb_control, ONLY: mo_jsb_control__debug => debug, mo_jsb_control__is_standalone => is_standalone
++  USE mo_jsb_control, ONLY: mo_jsb_control__l_timer => l_timer, mo_jsb_control__debug => debug, mo_jsb_control__is_standalone => &
++  &  is_standalone
 +  USE mo_jsb_test, ONLY: mo_jsb_test__write_interface_vars => write_interface_vars
-+  USE mo_radiation_config, ONLY: mo_radiation_config__mmr_co2 => mmr_co2
 +  
 +  INTEGER, INTENT(in) :: jg
 +  INTEGER, INTENT(in) :: kproma
@@ -246,6 +251,7 @@ index fcd3bc8b9..a52cb12ad 100644
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: plhflx_tile
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pshflx_tile
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pevap_tile
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pco2nat
 +  INTEGER, INTENT(in), OPTIONAL :: nblock
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: lsm
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: alake
@@ -253,6 +259,7 @@ index fcd3bc8b9..a52cb12ad 100644
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pv
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: ptemp
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pq
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pco2
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: prsfl
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: prsfc
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pssfl
@@ -285,6 +292,7 @@ index fcd3bc8b9..a52cb12ad 100644
 +  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albnirdif_tile
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: albedo
 +  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albedo_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: pco2_flux_tile
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: ptsfc
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: ptsfc_rad
 +  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: rsns_tile
@@ -360,6 +368,9 @@ index fcd3bc8b9..a52cb12ad 100644
 +    
 +    
 +    ! OPTIONAL ARGUMENTS
++    IF (PRESENT(pco2nat)) THEN
++      CALL ftg_write("pco2nat", pco2nat, LBOUND(pco2nat), UBOUND(pco2nat))
++    END IF
 +    IF (PRESENT(nblock)) THEN
 +      CALL ftg_write("nblock", nblock)
 +    END IF
@@ -380,6 +391,9 @@ index fcd3bc8b9..a52cb12ad 100644
 +    END IF
 +    IF (PRESENT(pq)) THEN
 +      CALL ftg_write("pq", pq, LBOUND(pq), UBOUND(pq))
++    END IF
++    IF (PRESENT(pco2)) THEN
++      CALL ftg_write("pco2", pco2, LBOUND(pco2), UBOUND(pco2))
 +    END IF
 +    IF (PRESENT(prsfl)) THEN
 +      CALL ftg_write("prsfl", prsfl, LBOUND(prsfl), UBOUND(prsfl))
@@ -459,6 +473,9 @@ index fcd3bc8b9..a52cb12ad 100644
 +    IF (PRESENT(albedo_tile)) THEN
 +      CALL ftg_write("albedo_tile", albedo_tile, LBOUND(albedo_tile), UBOUND(albedo_tile))
 +    END IF
++    IF (PRESENT(pco2_flux_tile)) THEN
++      CALL ftg_write("pco2_flux_tile", pco2_flux_tile, LBOUND(pco2_flux_tile), UBOUND(pco2_flux_tile))
++    END IF
 +    IF (PRESENT(ptsfc)) THEN
 +      CALL ftg_write("ptsfc", ptsfc, LBOUND(ptsfc), UBOUND(ptsfc))
 +    END IF
@@ -529,15 +546,23 @@ index fcd3bc8b9..a52cb12ad 100644
 +    CALL ftg_write("mo_jsb_control__is_standalone", mo_jsb_control__is_standalone)
 +    CALL ftg_write("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
 +    CALL ftg_write("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
++    CALL ftg_write("mo_jsb_control__l_timer", mo_jsb_control__l_timer)
++    IF (ASSOCIATED(lsfc_heat_flux)) THEN
++      CALL ftg_write("lsfc_heat_flux", lsfc_heat_flux)
++    END IF
++    IF (ASSOCIATED(lsfc_mom_flux)) THEN
++      CALL ftg_write("lsfc_mom_flux", lsfc_mom_flux)
++    END IF
++    CALL ftg_write("mo_run_config__ltimer", mo_run_config__ltimer)
 +    ! *** WARNING: Type not supported by serialbox ***
 +    !     mo_master_control__master_namelist_filename
 +    !     CHARACTER(len=filename_max) | dimension: 0
-+    CALL ftg_write("mo_radiation_config__mmr_co2", mo_radiation_config__mmr_co2)
 +    CALL ftg_write("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
 +    CALL ftg_write("mo_parallel_config__nproma", mo_parallel_config__nproma)
 +    CALL ftg_write("mo_echam_sfc_indices__nsfc_type", mo_echam_sfc_indices__nsfc_type)
 +    CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
 +    CALL ftg_write("mo_timer__timer_ice_fast", mo_timer__timer_ice_fast)
++    CALL ftg_write("mo_timer__timer_jsbach", mo_timer__timer_jsbach)
 +    CALL ftg_write("mo_sea_ice_nml__use_no_flux_gradients", mo_sea_ice_nml__use_no_flux_gradients)
 +    CALL ftg_write("mo_jsb_test__write_interface_vars", mo_jsb_test__write_interface_vars)
 +    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
@@ -548,30 +573,24 @@ index fcd3bc8b9..a52cb12ad 100644
 +      CALL ftg_write("mo_read_netcdf_distributed__basic_data%n_g", mo_read_netcdf_distributed__basic_data%n_g, LBOUND( &
 +      &  mo_read_netcdf_distributed__basic_data%n_g), UBOUND(mo_read_netcdf_distributed__basic_data%n_g))
 +    END IF
-+    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
-+      CALL ftg_register_only("mo_mpi_phy_config__mpi_phy_config", "TYPE(t_mpi_phy_config)", LBOUND( &
-+      &  mo_mpi_phy_config__mpi_phy_config), UBOUND(mo_mpi_phy_config__mpi_phy_config))
-+    END IF
-+    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
-+      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%lamip", mo_mpi_phy_config__mpi_phy_config%lamip, LBOUND( &
-+      &  mo_mpi_phy_config__mpi_phy_config%lamip), UBOUND(mo_mpi_phy_config__mpi_phy_config%lamip))
-+    END IF
-+    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
-+      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%lice", mo_mpi_phy_config__mpi_phy_config%lice, LBOUND( &
-+      &  mo_mpi_phy_config__mpi_phy_config%lice), UBOUND(mo_mpi_phy_config__mpi_phy_config%lice))
-+    END IF
-+    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
-+      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%ljsb", mo_mpi_phy_config__mpi_phy_config%ljsb, LBOUND( &
-+      &  mo_mpi_phy_config__mpi_phy_config%ljsb), UBOUND(mo_mpi_phy_config__mpi_phy_config%ljsb))
-+    END IF
-+    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
-+      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%llake", mo_mpi_phy_config__mpi_phy_config%llake, LBOUND( &
-+      &  mo_mpi_phy_config__mpi_phy_config%llake), UBOUND(mo_mpi_phy_config__mpi_phy_config%llake))
-+    END IF
-+    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
-+      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%lmlo", mo_mpi_phy_config__mpi_phy_config%lmlo, LBOUND( &
-+      &  mo_mpi_phy_config__mpi_phy_config%lmlo), UBOUND(mo_mpi_phy_config__mpi_phy_config%lmlo))
-+    END IF
++    CALL ftg_register_only("mo_echam_phy_config__echam_phy_config", "TYPE(t_echam_phy_config)", LBOUND( &
++    &  mo_echam_phy_config__echam_phy_config), UBOUND(mo_echam_phy_config__echam_phy_config))
++    CALL ftg_write("mo_echam_phy_config__echam_phy_config%lamip", mo_echam_phy_config__echam_phy_config%lamip, LBOUND( &
++    &  mo_echam_phy_config__echam_phy_config%lamip), UBOUND(mo_echam_phy_config__echam_phy_config%lamip))
++    CALL ftg_write("mo_echam_phy_config__echam_phy_config%lice", mo_echam_phy_config__echam_phy_config%lice, LBOUND( &
++    &  mo_echam_phy_config__echam_phy_config%lice), UBOUND(mo_echam_phy_config__echam_phy_config%lice))
++    CALL ftg_write("mo_echam_phy_config__echam_phy_config%ljsb", mo_echam_phy_config__echam_phy_config%ljsb, LBOUND( &
++    &  mo_echam_phy_config__echam_phy_config%ljsb), UBOUND(mo_echam_phy_config__echam_phy_config%ljsb))
++    CALL ftg_write("mo_echam_phy_config__echam_phy_config%llake", mo_echam_phy_config__echam_phy_config%llake, LBOUND( &
++    &  mo_echam_phy_config__echam_phy_config%llake), UBOUND(mo_echam_phy_config__echam_phy_config%llake))
++    CALL ftg_write("mo_echam_phy_config__echam_phy_config%lmlo", mo_echam_phy_config__echam_phy_config%lmlo, LBOUND( &
++    &  mo_echam_phy_config__echam_phy_config%lmlo), UBOUND(mo_echam_phy_config__echam_phy_config%lmlo))
++    CALL ftg_register_only("mo_echam_vdf_config__echam_vdf_config", "TYPE(t_echam_vdf_config)", LBOUND( &
++    &  mo_echam_vdf_config__echam_vdf_config), UBOUND(mo_echam_vdf_config__echam_vdf_config))
++    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux, &
++    &  LBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux), UBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux))
++    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux, &
++    &  LBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux), UBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux))
 +    ! *** WARNING: Type not supported by serialbox ***
 +    !     mo_model_domain__p_patch%grid_filename
 +    !     CHARACTER(LEN=filename_max) | dimension: 0
@@ -595,9 +614,6 @@ index fcd3bc8b9..a52cb12ad 100644
 +      CALL ftg_write("mo_model_domain__p_patch%nblks_c", mo_model_domain__p_patch%nblks_c, LBOUND(mo_model_domain__p_patch% &
 +      &  nblks_c), UBOUND(mo_model_domain__p_patch%nblks_c))
 +    END IF
-+    CALL ftg_register_only("mo_vdiff_config__vdiff_config", "TYPE(t_vdiff_config)")
-+    CALL ftg_write("mo_vdiff_config__vdiff_config%lsfc_heat_flux", mo_vdiff_config__vdiff_config%lsfc_heat_flux)
-+    CALL ftg_write("mo_vdiff_config__vdiff_config%lsfc_mom_flux", mo_vdiff_config__vdiff_config%lsfc_mom_flux)
 +    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
 +      CALL ftg_register_only("mo_read_netcdf_distributed__basic_data%io_chunk", "TYPE(extent)", LBOUND( &
 +      &  mo_read_netcdf_distributed__basic_data%io_chunk), UBOUND(mo_read_netcdf_distributed__basic_data%io_chunk))
@@ -915,33 +931,34 @@ index fcd3bc8b9..a52cb12ad 100644
 +END FUNCTION ftg_update_surface_capture_output_active
 +
 +SUBROUTINE ftg_update_surface_capture_output(aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile, ptsfc_tile, pu_stress_gbm, &
-+&  pv_stress_gbm, plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, rlus, &
-+&  pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, &
-+&  albvisdif_tile, albnirdif_tile, albedo, albedo_tile, ptsfc, ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, &
-+&  hs, Qtop, Qbot, albvisdir_ice, albvisdif_ice, albnirdir_ice, albnirdif_ice)
++&  pv_stress_gbm, plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, &
++&  pco2nat, rlus, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, albvisdif, albnirdif, albvisdir_tile, &
++&  albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, pco2_flux_tile, ptsfc, ptsfc_rad, rsns_tile, rlns_tile, &
++&  lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, albvisdir_ice, albvisdif_ice, albnirdir_ice, albnirdif_ice)
 +  
 +  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
 +  USE mo_exception, ONLY: finish
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
 +  
 +  USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
-+  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
-+  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
-+  USE mo_mpi_phy_config, ONLY: mo_mpi_phy_config__mpi_phy_config => mpi_phy_config, t_mpi_phy_config
++  USE mo_run_config, ONLY: mo_run_config__ltimer => ltimer
 +  USE mo_echam_sfc_indices, ONLY: mo_echam_sfc_indices__nsfc_type => nsfc_type
-+  USE mo_vdiff_config, ONLY: mo_vdiff_config__vdiff_config => vdiff_config, t_vdiff_config
++  USE mo_echam_vdf_config, ONLY: mo_echam_vdf_config__echam_vdf_config => echam_vdf_config, t_echam_vdf_config
 +  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__imh => imh, mo_vdiff_solver__imuv => imuv, mo_vdiff_solver__nmatrix => nmatrix, &
 +  &  mo_vdiff_solver__imqv => imqv, mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ih => &
 +  &  ih, mo_vdiff_solver__iv => iv, mo_vdiff_solver__iu => iu
++  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
++  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
 +  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
++  USE mo_echam_phy_config, ONLY: mo_echam_phy_config__echam_phy_config => echam_phy_config, t_echam_phy_config
 +  USE mo_master_control, ONLY: mo_master_control__master_namelist_filename => master_namelist_filename
 +  USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
 +  USE mo_parallel_config, ONLY: mo_parallel_config__nproma => nproma
-+  USE mo_timer, ONLY: mo_timer__timer_ice_fast => timer_ice_fast
++  USE mo_timer, ONLY: mo_timer__timer_ice_fast => timer_ice_fast, mo_timer__timer_jsbach => timer_jsbach
 +  USE mo_read_netcdf_distributed, ONLY: mo_read_netcdf_distributed__basic_data => basic_data, t_basic_distrib_read_data
-+  USE mo_jsb_control, ONLY: mo_jsb_control__debug => debug, mo_jsb_control__is_standalone => is_standalone
++  USE mo_jsb_control, ONLY: mo_jsb_control__l_timer => l_timer, mo_jsb_control__debug => debug, mo_jsb_control__is_standalone => &
++  &  is_standalone
 +  USE mo_jsb_test, ONLY: mo_jsb_test__write_interface_vars => write_interface_vars
-+  USE mo_radiation_config, ONLY: mo_radiation_config__mmr_co2 => mmr_co2
 +  
 +  REAL(wp), DIMENSION(:,:,:,:), INTENT(in) :: aa
 +  REAL(wp), DIMENSION(:,:,:,:), INTENT(in) :: aa_btm
@@ -960,6 +977,7 @@ index fcd3bc8b9..a52cb12ad 100644
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: plhflx_tile
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pshflx_tile
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pevap_tile
++  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pco2nat
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: rlus
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pcsat
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: pcair
@@ -976,6 +994,7 @@ index fcd3bc8b9..a52cb12ad 100644
 +  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albnirdif_tile
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: albedo
 +  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: albedo_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: pco2_flux_tile
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: ptsfc
 +  REAL(wp), DIMENSION(:), INTENT(in), OPTIONAL :: ptsfc_rad
 +  REAL(wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: rsns_tile
@@ -1026,6 +1045,9 @@ index fcd3bc8b9..a52cb12ad 100644
 +    
 +    
 +    ! OPTIONAL ARGUMENTS
++    IF (PRESENT(pco2nat)) THEN
++      CALL ftg_write("pco2nat", pco2nat, LBOUND(pco2nat), UBOUND(pco2nat))
++    END IF
 +    IF (PRESENT(rlus)) THEN
 +      CALL ftg_write("rlus", rlus, LBOUND(rlus), UBOUND(rlus))
 +    END IF
@@ -1073,6 +1095,9 @@ index fcd3bc8b9..a52cb12ad 100644
 +    END IF
 +    IF (PRESENT(albedo_tile)) THEN
 +      CALL ftg_write("albedo_tile", albedo_tile, LBOUND(albedo_tile), UBOUND(albedo_tile))
++    END IF
++    IF (PRESENT(pco2_flux_tile)) THEN
++      CALL ftg_write("pco2_flux_tile", pco2_flux_tile, LBOUND(pco2_flux_tile), UBOUND(pco2_flux_tile))
 +    END IF
 +    IF (PRESENT(ptsfc)) THEN
 +      CALL ftg_write("ptsfc", ptsfc, LBOUND(ptsfc), UBOUND(ptsfc))
@@ -1141,15 +1166,23 @@ index fcd3bc8b9..a52cb12ad 100644
 +    CALL ftg_write("mo_jsb_control__is_standalone", mo_jsb_control__is_standalone)
 +    CALL ftg_write("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
 +    CALL ftg_write("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
++    CALL ftg_write("mo_jsb_control__l_timer", mo_jsb_control__l_timer)
++    IF (ASSOCIATED(lsfc_heat_flux)) THEN
++      CALL ftg_write("lsfc_heat_flux", lsfc_heat_flux)
++    END IF
++    IF (ASSOCIATED(lsfc_mom_flux)) THEN
++      CALL ftg_write("lsfc_mom_flux", lsfc_mom_flux)
++    END IF
++    CALL ftg_write("mo_run_config__ltimer", mo_run_config__ltimer)
 +    ! *** WARNING: Type not supported by serialbox ***
 +    !     mo_master_control__master_namelist_filename
 +    !     CHARACTER(len=filename_max) | dimension: 0
-+    CALL ftg_write("mo_radiation_config__mmr_co2", mo_radiation_config__mmr_co2)
 +    CALL ftg_write("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
 +    CALL ftg_write("mo_parallel_config__nproma", mo_parallel_config__nproma)
 +    CALL ftg_write("mo_echam_sfc_indices__nsfc_type", mo_echam_sfc_indices__nsfc_type)
 +    CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
 +    CALL ftg_write("mo_timer__timer_ice_fast", mo_timer__timer_ice_fast)
++    CALL ftg_write("mo_timer__timer_jsbach", mo_timer__timer_jsbach)
 +    CALL ftg_write("mo_sea_ice_nml__use_no_flux_gradients", mo_sea_ice_nml__use_no_flux_gradients)
 +    CALL ftg_write("mo_jsb_test__write_interface_vars", mo_jsb_test__write_interface_vars)
 +    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
@@ -1160,30 +1193,24 @@ index fcd3bc8b9..a52cb12ad 100644
 +      CALL ftg_write("mo_read_netcdf_distributed__basic_data%n_g", mo_read_netcdf_distributed__basic_data%n_g, LBOUND( &
 +      &  mo_read_netcdf_distributed__basic_data%n_g), UBOUND(mo_read_netcdf_distributed__basic_data%n_g))
 +    END IF
-+    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
-+      CALL ftg_register_only("mo_mpi_phy_config__mpi_phy_config", "TYPE(t_mpi_phy_config)", LBOUND( &
-+      &  mo_mpi_phy_config__mpi_phy_config), UBOUND(mo_mpi_phy_config__mpi_phy_config))
-+    END IF
-+    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
-+      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%lamip", mo_mpi_phy_config__mpi_phy_config%lamip, LBOUND( &
-+      &  mo_mpi_phy_config__mpi_phy_config%lamip), UBOUND(mo_mpi_phy_config__mpi_phy_config%lamip))
-+    END IF
-+    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
-+      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%lice", mo_mpi_phy_config__mpi_phy_config%lice, LBOUND( &
-+      &  mo_mpi_phy_config__mpi_phy_config%lice), UBOUND(mo_mpi_phy_config__mpi_phy_config%lice))
-+    END IF
-+    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
-+      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%ljsb", mo_mpi_phy_config__mpi_phy_config%ljsb, LBOUND( &
-+      &  mo_mpi_phy_config__mpi_phy_config%ljsb), UBOUND(mo_mpi_phy_config__mpi_phy_config%ljsb))
-+    END IF
-+    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
-+      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%llake", mo_mpi_phy_config__mpi_phy_config%llake, LBOUND( &
-+      &  mo_mpi_phy_config__mpi_phy_config%llake), UBOUND(mo_mpi_phy_config__mpi_phy_config%llake))
-+    END IF
-+    IF (ALLOCATED(mo_mpi_phy_config__mpi_phy_config)) THEN
-+      CALL ftg_write("mo_mpi_phy_config__mpi_phy_config%lmlo", mo_mpi_phy_config__mpi_phy_config%lmlo, LBOUND( &
-+      &  mo_mpi_phy_config__mpi_phy_config%lmlo), UBOUND(mo_mpi_phy_config__mpi_phy_config%lmlo))
-+    END IF
++    CALL ftg_register_only("mo_echam_phy_config__echam_phy_config", "TYPE(t_echam_phy_config)", LBOUND( &
++    &  mo_echam_phy_config__echam_phy_config), UBOUND(mo_echam_phy_config__echam_phy_config))
++    CALL ftg_write("mo_echam_phy_config__echam_phy_config%lamip", mo_echam_phy_config__echam_phy_config%lamip, LBOUND( &
++    &  mo_echam_phy_config__echam_phy_config%lamip), UBOUND(mo_echam_phy_config__echam_phy_config%lamip))
++    CALL ftg_write("mo_echam_phy_config__echam_phy_config%lice", mo_echam_phy_config__echam_phy_config%lice, LBOUND( &
++    &  mo_echam_phy_config__echam_phy_config%lice), UBOUND(mo_echam_phy_config__echam_phy_config%lice))
++    CALL ftg_write("mo_echam_phy_config__echam_phy_config%ljsb", mo_echam_phy_config__echam_phy_config%ljsb, LBOUND( &
++    &  mo_echam_phy_config__echam_phy_config%ljsb), UBOUND(mo_echam_phy_config__echam_phy_config%ljsb))
++    CALL ftg_write("mo_echam_phy_config__echam_phy_config%llake", mo_echam_phy_config__echam_phy_config%llake, LBOUND( &
++    &  mo_echam_phy_config__echam_phy_config%llake), UBOUND(mo_echam_phy_config__echam_phy_config%llake))
++    CALL ftg_write("mo_echam_phy_config__echam_phy_config%lmlo", mo_echam_phy_config__echam_phy_config%lmlo, LBOUND( &
++    &  mo_echam_phy_config__echam_phy_config%lmlo), UBOUND(mo_echam_phy_config__echam_phy_config%lmlo))
++    CALL ftg_register_only("mo_echam_vdf_config__echam_vdf_config", "TYPE(t_echam_vdf_config)", LBOUND( &
++    &  mo_echam_vdf_config__echam_vdf_config), UBOUND(mo_echam_vdf_config__echam_vdf_config))
++    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux, &
++    &  LBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux), UBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux))
++    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux, &
++    &  LBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux), UBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux))
 +    ! *** WARNING: Type not supported by serialbox ***
 +    !     mo_model_domain__p_patch%grid_filename
 +    !     CHARACTER(LEN=filename_max) | dimension: 0
@@ -1207,9 +1234,6 @@ index fcd3bc8b9..a52cb12ad 100644
 +      CALL ftg_write("mo_model_domain__p_patch%nblks_c", mo_model_domain__p_patch%nblks_c, LBOUND(mo_model_domain__p_patch% &
 +      &  nblks_c), UBOUND(mo_model_domain__p_patch%nblks_c))
 +    END IF
-+    CALL ftg_register_only("mo_vdiff_config__vdiff_config", "TYPE(t_vdiff_config)")
-+    CALL ftg_write("mo_vdiff_config__vdiff_config%lsfc_heat_flux", mo_vdiff_config__vdiff_config%lsfc_heat_flux)
-+    CALL ftg_write("mo_vdiff_config__vdiff_config%lsfc_mom_flux", mo_vdiff_config__vdiff_config%lsfc_mom_flux)
 +    IF (ALLOCATED(mo_read_netcdf_distributed__basic_data)) THEN
 +      CALL ftg_register_only("mo_read_netcdf_distributed__basic_data%io_chunk", "TYPE(extent)", LBOUND( &
 +      &  mo_read_netcdf_distributed__basic_data%io_chunk), UBOUND(mo_read_netcdf_distributed__basic_data%io_chunk))
@@ -1515,7 +1539,7 @@ index fcd3bc8b9..a52cb12ad 100644
 +    CALL ftg_destroy_serializer()
 +    
 +    CALL work_mpi_barrier()
-+!    CALL finish('FTG EXIT', 'Output captured: update_surface', 0)
++    !      CALL finish('FTG EXIT', 'Output captured: update_surface', 0)
 +    
 +  END IF
 +  

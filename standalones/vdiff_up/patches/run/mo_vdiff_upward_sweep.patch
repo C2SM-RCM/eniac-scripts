@@ -1,8 +1,6 @@
-diff --git a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90 b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90
-index f3088575d..5abac892a 100644
---- a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90
-+++ b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90
-@@ -28,6 +28,26 @@ MODULE mo_vdiff_upward_sweep
+--- a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-05-16 12:33:10.721482000 +0200
++++ b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-05-16 12:33:09.164401000 +0200
+@@ -28,6 +28,27 @@
    PRIVATE
    PUBLIC :: vdiff_up
  
@@ -14,9 +12,9 @@ index f3088575d..5abac892a 100644
 +  INTEGER :: ftg_vdiff_up_capture_round = 1
 +  INTEGER :: ftg_vdiff_up_round = 0
 +  CHARACTER(len=1024) :: ftg_vdiff_up_input_dir = &
-+    '++FTGDATADIR++/data/input'
++  '++FTGDATADIR++/data/input'
 +  CHARACTER(len=1024) :: ftg_vdiff_up_output_dir = &
-+    '++FTGDATADIR++/data/output'
++  '++FTGDATADIR++/data/output'
 +  
 +  PUBLIC :: ftg_vdiff_up_capture_input_enabled, ftg_vdiff_up_capture_output_enabled, ftg_vdiff_up_capture_round, &
 +  &  ftg_vdiff_up_input_dir, ftg_vdiff_up_output_dir
@@ -25,11 +23,12 @@ index f3088575d..5abac892a 100644
 +  
 +  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
 +
  CONTAINS
    !>
    !!
-@@ -116,6 +136,16 @@ CONTAINS
+@@ -116,6 +137,17 @@
      REAL(wp),INTENT(OUT) :: psh_vdiff (kbdim)      ! sens. heat flux
      REAL(wp),INTENT(OUT) :: pqv_vdiff (kbdim)      ! qv flux
  
@@ -37,16 +36,17 @@ index f3088575d..5abac892a 100644
 +  
 +  ftg_vdiff_up_round = ftg_vdiff_up_round + 1
 +  CALL ftg_vdiff_up_capture_input(kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, pcptgz, &
-+  &  pum1, pvm1, ptm1, pmair, pmdry, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztkevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, &
-+  &  pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptke, psh_vdiff, pqv_vdiff)
++  &  pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, &
++  &  pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
 +  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
 +
 +
  
      !-----------------------------------------------------------------------
      ! 6. Obtain solution of the tri-diagonal system by back-substitution.
-@@ -142,7 +172,298 @@ CONTAINS
+@@ -142,7 +174,299 @@
      ! Note: computation of additional diagnostics, e.g., surface sensible heat flux,
      !       wind stress, 10m wind, 2m temperature etc., has not been implemented yet.
  
@@ -54,9 +54,10 @@ index f3088575d..5abac892a 100644
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  
 +  CALL ftg_vdiff_up_capture_output(bb, pxvar, pz0m_tile, pkedisp, pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, &
-+  &  pxtte_vdf, pz0m, pthvvar, ptke, psh_vdiff, pqv_vdiff)
++  &  pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
 +  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
 +
    END SUBROUTINE vdiff_up
 +
@@ -78,32 +79,32 @@ index f3088575d..5abac892a 100644
 +  WRITE (0,*) 'FTG INIT vdiff_up '//TRIM(basename), get_my_mpi_all_id()
 +  
 +  mkdirerr = ''
-+!  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
-+!  IF (TRIM(mkdirerr) /= '') THEN
-+!    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
-+!  END IF
++  !  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
++  !  IF (TRIM(mkdirerr) /= '') THEN
++    !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
++    !  END IF
++    
++    ignore_bullshit_max_dim_size = 100000
++    ignore_bullshit_allow_negative_indices = .TRUE.
++    
++    CALL ftg_set_serializer(TRIM(dir), TRIM(basename), 'w')
++    CALL ftg_add_serializer_metainfo('subroutine', 'vdiff_up')
++    CALL ftg_add_serializer_metainfo('stage', stage)
++    CALL ftg_add_serializer_metainfo('mpi_all_id', get_my_mpi_all_id())
++    
++  END SUBROUTINE ftg_vdiff_up_init_for_capture
 +  
-+  ignore_bullshit_max_dim_size = 100000
-+  ignore_bullshit_allow_negative_indices = .TRUE.
++  LOGICAL FUNCTION ftg_vdiff_up_capture_input_active()
 +  
-+  CALL ftg_set_serializer(TRIM(dir), TRIM(basename), 'w')
-+  CALL ftg_add_serializer_metainfo('subroutine', 'vdiff_up')
-+  CALL ftg_add_serializer_metainfo('stage', stage)
-+  CALL ftg_add_serializer_metainfo('mpi_all_id', get_my_mpi_all_id())
++  ftg_vdiff_up_capture_input_active =       &
++  ftg_vdiff_up_capture_input_enabled .AND.  &
++  ftg_vdiff_up_round .EQ. ftg_vdiff_up_capture_round
 +  
-+END SUBROUTINE ftg_vdiff_up_init_for_capture
-+
-+LOGICAL FUNCTION ftg_vdiff_up_capture_input_active()
-+
-+ftg_vdiff_up_capture_input_active =       &
-+ftg_vdiff_up_capture_input_enabled .AND.  &
-+ftg_vdiff_up_round .EQ. ftg_vdiff_up_capture_round
-+
 +END FUNCTION ftg_vdiff_up_capture_input_active
 +
 +SUBROUTINE ftg_vdiff_up_capture_input(kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, pcptgz, &
-+&  pum1, pvm1, ptm1, pmair, pmdry, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztkevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, pute_vdf, &
-+&  pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptke, psh_vdiff, pqv_vdiff)
++&  pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, &
++&  pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
 +  
 +  USE mtime,     ONLY: calendarType
 +  USE mo_mpi,    ONLY: get_my_mpi_all_id
@@ -129,13 +130,13 @@ index f3088575d..5abac892a 100644
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pvm1
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: ptm1
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pmair
-+  REAL(wp), DIMENSION(:,:), INTENT(in) :: pmdry
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pmref
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pqm1
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pxlm1
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pxim1
 +  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: pxtm1
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pgeom1
-+  REAL(wp), DIMENSION(:,:), INTENT(in) :: pztkevn
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pztottevn
 +  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: bb
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pzthvvar
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pxvar
@@ -150,7 +151,7 @@ index f3088575d..5abac892a 100644
 +  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: pxtte_vdf
 +  REAL(wp), DIMENSION(:), INTENT(in) :: pz0m
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pthvvar
-+  REAL(wp), DIMENSION(:,:), INTENT(in) :: ptke
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: ptotte
 +  REAL(wp), DIMENSION(:), INTENT(in) :: psh_vdiff
 +  REAL(wp), DIMENSION(:), INTENT(in) :: pqv_vdiff
 +  
@@ -185,13 +186,13 @@ index f3088575d..5abac892a 100644
 +    CALL ftg_write("pvm1", pvm1, LBOUND(pvm1), UBOUND(pvm1))
 +    CALL ftg_write("ptm1", ptm1, LBOUND(ptm1), UBOUND(ptm1))
 +    CALL ftg_write("pmair", pmair, LBOUND(pmair), UBOUND(pmair))
-+    CALL ftg_write("pmdry", pmdry, LBOUND(pmdry), UBOUND(pmdry))
++    CALL ftg_write("pmref", pmref, LBOUND(pmref), UBOUND(pmref))
 +    CALL ftg_write("pqm1", pqm1, LBOUND(pqm1), UBOUND(pqm1))
 +    CALL ftg_write("pxlm1", pxlm1, LBOUND(pxlm1), UBOUND(pxlm1))
 +    CALL ftg_write("pxim1", pxim1, LBOUND(pxim1), UBOUND(pxim1))
 +    CALL ftg_write("pxtm1", pxtm1, LBOUND(pxtm1), UBOUND(pxtm1))
 +    CALL ftg_write("pgeom1", pgeom1, LBOUND(pgeom1), UBOUND(pgeom1))
-+    CALL ftg_write("pztkevn", pztkevn, LBOUND(pztkevn), UBOUND(pztkevn))
++    CALL ftg_write("pztottevn", pztottevn, LBOUND(pztottevn), UBOUND(pztottevn))
 +    CALL ftg_write("bb", bb, LBOUND(bb), UBOUND(bb))
 +    CALL ftg_write("pzthvvar", pzthvvar, LBOUND(pzthvvar), UBOUND(pzthvvar))
 +    CALL ftg_write("pxvar", pxvar, LBOUND(pxvar), UBOUND(pxvar))
@@ -206,7 +207,7 @@ index f3088575d..5abac892a 100644
 +    CALL ftg_write("pxtte_vdf", pxtte_vdf, LBOUND(pxtte_vdf), UBOUND(pxtte_vdf))
 +    CALL ftg_write("pz0m", pz0m, LBOUND(pz0m), UBOUND(pz0m))
 +    CALL ftg_write("pthvvar", pthvvar, LBOUND(pthvvar), UBOUND(pthvvar))
-+    CALL ftg_write("ptke", ptke, LBOUND(ptke), UBOUND(ptke))
++    CALL ftg_write("ptotte", ptotte, LBOUND(ptotte), UBOUND(ptotte))
 +    CALL ftg_write("psh_vdiff", psh_vdiff, LBOUND(psh_vdiff), UBOUND(psh_vdiff))
 +    CALL ftg_write("pqv_vdiff", pqv_vdiff, LBOUND(pqv_vdiff), UBOUND(pqv_vdiff))
 +    
@@ -249,7 +250,7 @@ index f3088575d..5abac892a 100644
 +END FUNCTION ftg_vdiff_up_capture_output_active
 +
 +SUBROUTINE ftg_vdiff_up_capture_output(bb, pxvar, pz0m_tile, pkedisp, pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, &
-+&  pxtte_vdf, pz0m, pthvvar, ptke, psh_vdiff, pqv_vdiff)
++&  pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
 +  
 +  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
 +  USE mo_exception, ONLY: finish
@@ -272,7 +273,7 @@ index f3088575d..5abac892a 100644
 +  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: pxtte_vdf
 +  REAL(wp), DIMENSION(:), INTENT(in) :: pz0m
 +  REAL(wp), DIMENSION(:,:), INTENT(in) :: pthvvar
-+  REAL(wp), DIMENSION(:,:), INTENT(in) :: ptke
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: ptotte
 +  REAL(wp), DIMENSION(:), INTENT(in) :: psh_vdiff
 +  REAL(wp), DIMENSION(:), INTENT(in) :: pqv_vdiff
 +  
@@ -302,7 +303,7 @@ index f3088575d..5abac892a 100644
 +    CALL ftg_write("pxtte_vdf", pxtte_vdf, LBOUND(pxtte_vdf), UBOUND(pxtte_vdf))
 +    CALL ftg_write("pz0m", pz0m, LBOUND(pz0m), UBOUND(pz0m))
 +    CALL ftg_write("pthvvar", pthvvar, LBOUND(pthvvar), UBOUND(pthvvar))
-+    CALL ftg_write("ptke", ptke, LBOUND(ptke), UBOUND(ptke))
++    CALL ftg_write("ptotte", ptotte, LBOUND(ptotte), UBOUND(ptotte))
 +    CALL ftg_write("psh_vdiff", psh_vdiff, LBOUND(psh_vdiff), UBOUND(psh_vdiff))
 +    CALL ftg_write("pqv_vdiff", pqv_vdiff, LBOUND(pqv_vdiff), UBOUND(pqv_vdiff))
 +    
@@ -333,7 +334,7 @@ index f3088575d..5abac892a 100644
 +    CALL ftg_destroy_serializer()
 +    
 +    CALL work_mpi_barrier()
-+!    CALL finish('FTG EXIT', 'Output captured: vdiff_up', 0)
++    !      CALL finish('FTG EXIT', 'Output captured: vdiff_up', 0)
 +    
 +  END IF
 +  

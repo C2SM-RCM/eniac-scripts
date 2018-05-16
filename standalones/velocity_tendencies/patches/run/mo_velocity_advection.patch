@@ -1,0 +1,393 @@
+--- a/src/atm_dyn_iconam/mo_velocity_advection.f90	2018-05-16 13:44:18.766409304 +0200
++++ b/src/atm_dyn_iconam/mo_velocity_advection.f90	2018-05-16 13:44:18.559899000 +0200
+@@ -74,6 +74,27 @@
+ #endif
+ #endif
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  LOGICAL :: ftg_velocity_tendencies_capture_input_enabled = .TRUE.
++  LOGICAL :: ftg_velocity_tendencies_capture_output_enabled = .TRUE.
++  INTEGER :: ftg_velocity_tendencies_capture_round = 1
++  INTEGER :: ftg_velocity_tendencies_round = 0
++  CHARACTER(len=1024) :: ftg_velocity_tendencies_input_dir = &
++  '++FTGDATADIR++/data/input'
++  CHARACTER(len=1024) :: ftg_velocity_tendencies_output_dir = &
++  '++FTGDATADIR++/data/output'
++  
++  PUBLIC :: ftg_velocity_tendencies_capture_input_enabled, ftg_velocity_tendencies_capture_output_enabled, &
++  &  ftg_velocity_tendencies_capture_round, ftg_velocity_tendencies_input_dir, ftg_velocity_tendencies_output_dir
++  
++  
++  
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+   CONTAINS
+ 
+ 
+@@ -157,6 +178,16 @@
+     REAL(vp), DIMENSION(:,:,:),   POINTER  :: w_concorr_c_tmp
+     REAL(vp), DIMENSION(:,:,:,:), POINTER  :: ddt_vn_adv_tmp
+     REAL(vp), DIMENSION(:,:,:,:), POINTER  :: ddt_w_adv_tmp
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  ftg_velocity_tendencies_round = ftg_velocity_tendencies_round + 1
++  CALL ftg_velocity_tendencies_capture_input(p_prog, p_patch, p_int, p_metrics, p_diag, z_w_concorr_me, z_kin_hor_e, z_vt_ie, &
++  &  ntnd, istep, lvn_only, dtime)
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ #endif
+     !--------------------------------------------------------------------------
+ 
+@@ -734,6 +765,345 @@
+ 
+     IF (timers_level > 5) CALL timer_stop(timer_solve_nh_veltend)
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  CALL ftg_velocity_tendencies_capture_output(p_prog, p_metrics, p_diag, z_w_concorr_me, z_kin_hor_e, z_vt_ie)
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+   END SUBROUTINE velocity_tendencies
+ 
++! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++
++SUBROUTINE ftg_velocity_tendencies_init_for_capture(stage, dir)
++  
++  USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
++  USE mo_mpi,            ONLY: get_my_mpi_all_id
++  USE m_ser_ftg,         ONLY: ftg_set_serializer, ftg_add_serializer_metainfo, ignore_bullshit_max_dim_size, &
++  &  ignore_bullshit_allow_negative_indices
++  
++  CHARACTER(*), INTENT(IN) :: stage, dir
++  
++  CHARACTER(len=MAX_CHAR_LENGTH) :: basename, mkdirerr
++  
++  WRITE (basename,'(a,a,a,i0)') 'ftg_velocity_tendencies_', TRIM(stage), '_', get_my_mpi_all_id()
++  
++  WRITE (0,*) 'FTG INIT velocity_tendencies '//TRIM(basename), get_my_mpi_all_id()
++  
++  mkdirerr = ''
++  !  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
++  !  IF (TRIM(mkdirerr) /= '') THEN
++    !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
++    !  END IF
++    
++    ignore_bullshit_max_dim_size = 100000
++    ignore_bullshit_allow_negative_indices = .TRUE.
++    
++    CALL ftg_set_serializer(TRIM(dir), TRIM(basename), 'w')
++    CALL ftg_add_serializer_metainfo('subroutine', 'velocity_tendencies')
++    CALL ftg_add_serializer_metainfo('stage', stage)
++    CALL ftg_add_serializer_metainfo('mpi_all_id', get_my_mpi_all_id())
++    
++  END SUBROUTINE ftg_velocity_tendencies_init_for_capture
++  
++  LOGICAL FUNCTION ftg_velocity_tendencies_capture_input_active()
++  
++  ftg_velocity_tendencies_capture_input_active =       &
++  ftg_velocity_tendencies_capture_input_enabled .AND.  &
++  ftg_velocity_tendencies_round .EQ. ftg_velocity_tendencies_capture_round
++  
++END FUNCTION ftg_velocity_tendencies_capture_input_active
++
++SUBROUTINE ftg_velocity_tendencies_capture_input(p_prog, p_patch, p_int, p_metrics, p_diag, z_w_concorr_me, z_kin_hor_e, z_vt_ie, &
++&  ntnd, istep, lvn_only, dtime)
++  
++  USE mtime,     ONLY: calendarType
++  USE mo_mpi,    ONLY: get_my_mpi_all_id
++  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  
++  USE mo_run_config, ONLY: mo_run_config__timers_level => timers_level, mo_run_config__ltimer => ltimer, mo_run_config__lvert_nest &
++  &  => lvert_nest
++  USE mo_init_vgrid, ONLY: mo_init_vgrid__nflatlev => nflatlev
++  USE mo_nonhydrostatic_config, ONLY: mo_nonhydrostatic_config__lextra_diffu => lextra_diffu
++  USE mo_timer, ONLY: mo_timer__timer_solve_nh_veltend => timer_solve_nh_veltend, mo_timer__timer_intp => timer_intp
++  USE mo_vertical_grid, ONLY: mo_vertical_grid__nrdmax => nrdmax
++  USE mo_parallel_config, ONLY: mo_parallel_config__nproma => nproma
++  
++  TYPE(t_nh_prog), INTENT(in) :: p_prog
++  TYPE(t_patch), INTENT(in) :: p_patch
++  TYPE(t_int_state), INTENT(in) :: p_int
++  TYPE(t_nh_metrics), INTENT(in) :: p_metrics
++  TYPE(t_nh_diag), INTENT(in) :: p_diag
++  REAL(vp), DIMENSION(:,:,:), INTENT(in) :: z_w_concorr_me
++  REAL(vp), DIMENSION(:,:,:), INTENT(in) :: z_kin_hor_e
++  REAL(vp), DIMENSION(:,:,:), INTENT(in) :: z_vt_ie
++  INTEGER, INTENT(in) :: ntnd
++  INTEGER, INTENT(in) :: istep
++  LOGICAL, INTENT(in) :: lvn_only
++  REAL(wp), INTENT(in) :: dtime
++  
++  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
++  CHARACTER(len=256) :: ftg_c
++  
++  IF (ftg_velocity_tendencies_capture_input_active()) THEN
++    
++    CALL ftg_velocity_tendencies_init_for_capture('input', ftg_velocity_tendencies_input_dir)
++    CALL ftg_set_savepoint('input')
++    
++    WRITE (0,*) 'FTG ROUND velocity_tendencies ', ftg_velocity_tendencies_round, get_my_mpi_all_id()
++    WRITE (0,*) 'FTG WRITE INPUT DATA velocity_tendencies', get_my_mpi_all_id()
++    
++    ! MTIME CALENDAR TYPE --> Remove this line if mtime is not used
++    CALL ftg_write("ftg_mtime_calendar", calendarType())
++    
++    ! BASIC ARGUMENTS
++    CALL ftg_write("z_w_concorr_me", z_w_concorr_me, LBOUND(z_w_concorr_me), UBOUND(z_w_concorr_me))
++    CALL ftg_write("z_kin_hor_e", z_kin_hor_e, LBOUND(z_kin_hor_e), UBOUND(z_kin_hor_e))
++    CALL ftg_write("z_vt_ie", z_vt_ie, LBOUND(z_vt_ie), UBOUND(z_vt_ie))
++    CALL ftg_write("ntnd", ntnd)
++    CALL ftg_write("istep", istep)
++    CALL ftg_write("lvn_only", lvn_only)
++    CALL ftg_write("dtime", dtime)
++    
++    
++    ! OPTIONAL ARGUMENTS
++    
++    ! TYPE MEMBERS
++    CALL ftg_register_only("p_prog", "TYPE(t_nh_prog)")
++    CALL ftg_write("p_prog%vn", p_prog%vn, LBOUND(p_prog%vn), UBOUND(p_prog%vn))
++    CALL ftg_write("p_prog%w", p_prog%w, LBOUND(p_prog%w), UBOUND(p_prog%w))
++    CALL ftg_register_only("p_patch", "TYPE(t_patch)")
++    CALL ftg_write("p_patch%id", p_patch%id)
++    CALL ftg_write("p_patch%n_childdom", p_patch%n_childdom)
++    CALL ftg_write("p_patch%nblks_c", p_patch%nblks_c)
++    CALL ftg_write("p_patch%nblks_e", p_patch%nblks_e)
++    CALL ftg_write("p_patch%nblks_v", p_patch%nblks_v)
++    CALL ftg_write("p_patch%nlev", p_patch%nlev)
++    CALL ftg_write("p_patch%nlevp1", p_patch%nlevp1)
++    CALL ftg_write("p_patch%nshift", p_patch%nshift)
++    CALL ftg_register_only("p_patch%cells", "TYPE(t_grid_cells)")
++    CALL ftg_write("p_patch%cells%area", p_patch%cells%area, LBOUND(p_patch%cells%area), UBOUND(p_patch%cells%area))
++    CALL ftg_write("p_patch%cells%edge_blk", p_patch%cells%edge_blk, LBOUND(p_patch%cells%edge_blk), UBOUND(p_patch%cells%edge_blk))
++    CALL ftg_write("p_patch%cells%edge_idx", p_patch%cells%edge_idx, LBOUND(p_patch%cells%edge_idx), UBOUND(p_patch%cells%edge_idx))
++    CALL ftg_write("p_patch%cells%end_block", p_patch%cells%end_block, LBOUND(p_patch%cells%end_block), UBOUND(p_patch%cells% &
++    &  end_block))
++    CALL ftg_write("p_patch%cells%end_index", p_patch%cells%end_index, LBOUND(p_patch%cells%end_index), UBOUND(p_patch%cells% &
++    &  end_index))
++    CALL ftg_write("p_patch%cells%neighbor_blk", p_patch%cells%neighbor_blk, LBOUND(p_patch%cells%neighbor_blk), UBOUND(p_patch% &
++    &  cells%neighbor_blk))
++    CALL ftg_write("p_patch%cells%neighbor_idx", p_patch%cells%neighbor_idx, LBOUND(p_patch%cells%neighbor_idx), UBOUND(p_patch% &
++    &  cells%neighbor_idx))
++    CALL ftg_write("p_patch%cells%start_block", p_patch%cells%start_block, LBOUND(p_patch%cells%start_block), UBOUND(p_patch% &
++    &  cells%start_block))
++    CALL ftg_write("p_patch%cells%start_index", p_patch%cells%start_index, LBOUND(p_patch%cells%start_index), UBOUND(p_patch% &
++    &  cells%start_index))
++    CALL ftg_register_only("p_patch%edges", "TYPE(t_grid_edges)")
++    CALL ftg_write("p_patch%edges%area_edge", p_patch%edges%area_edge, LBOUND(p_patch%edges%area_edge), UBOUND(p_patch%edges% &
++    &  area_edge))
++    CALL ftg_write("p_patch%edges%cell_blk", p_patch%edges%cell_blk, LBOUND(p_patch%edges%cell_blk), UBOUND(p_patch%edges%cell_blk))
++    CALL ftg_write("p_patch%edges%cell_idx", p_patch%edges%cell_idx, LBOUND(p_patch%edges%cell_idx), UBOUND(p_patch%edges%cell_idx))
++    CALL ftg_write("p_patch%edges%end_block", p_patch%edges%end_block, LBOUND(p_patch%edges%end_block), UBOUND(p_patch%edges% &
++    &  end_block))
++    CALL ftg_write("p_patch%edges%end_index", p_patch%edges%end_index, LBOUND(p_patch%edges%end_index), UBOUND(p_patch%edges% &
++    &  end_index))
++    CALL ftg_write("p_patch%edges%f_e", p_patch%edges%f_e, LBOUND(p_patch%edges%f_e), UBOUND(p_patch%edges%f_e))
++    CALL ftg_write("p_patch%edges%inv_dual_edge_length", p_patch%edges%inv_dual_edge_length, LBOUND(p_patch%edges% &
++    &  inv_dual_edge_length), UBOUND(p_patch%edges%inv_dual_edge_length))
++    CALL ftg_write("p_patch%edges%inv_primal_edge_length", p_patch%edges%inv_primal_edge_length, LBOUND(p_patch%edges% &
++    &  inv_primal_edge_length), UBOUND(p_patch%edges%inv_primal_edge_length))
++    CALL ftg_write("p_patch%edges%quad_blk", p_patch%edges%quad_blk, LBOUND(p_patch%edges%quad_blk), UBOUND(p_patch%edges%quad_blk))
++    CALL ftg_write("p_patch%edges%quad_idx", p_patch%edges%quad_idx, LBOUND(p_patch%edges%quad_idx), UBOUND(p_patch%edges%quad_idx))
++    CALL ftg_write("p_patch%edges%start_block", p_patch%edges%start_block, LBOUND(p_patch%edges%start_block), UBOUND(p_patch% &
++    &  edges%start_block))
++    CALL ftg_write("p_patch%edges%start_index", p_patch%edges%start_index, LBOUND(p_patch%edges%start_index), UBOUND(p_patch% &
++    &  edges%start_index))
++    CALL ftg_write("p_patch%edges%tangent_orientation", p_patch%edges%tangent_orientation, LBOUND(p_patch%edges% &
++    &  tangent_orientation), UBOUND(p_patch%edges%tangent_orientation))
++    CALL ftg_write("p_patch%edges%vertex_blk", p_patch%edges%vertex_blk, LBOUND(p_patch%edges%vertex_blk), UBOUND(p_patch%edges% &
++    &  vertex_blk))
++    CALL ftg_write("p_patch%edges%vertex_idx", p_patch%edges%vertex_idx, LBOUND(p_patch%edges%vertex_idx), UBOUND(p_patch%edges% &
++    &  vertex_idx))
++    CALL ftg_register_only("p_patch%verts", "TYPE(t_grid_vertices)")
++    CALL ftg_write("p_patch%verts%cell_blk", p_patch%verts%cell_blk, LBOUND(p_patch%verts%cell_blk), UBOUND(p_patch%verts%cell_blk))
++    CALL ftg_write("p_patch%verts%cell_idx", p_patch%verts%cell_idx, LBOUND(p_patch%verts%cell_idx), UBOUND(p_patch%verts%cell_idx))
++    CALL ftg_write("p_patch%verts%edge_blk", p_patch%verts%edge_blk, LBOUND(p_patch%verts%edge_blk), UBOUND(p_patch%verts%edge_blk))
++    CALL ftg_write("p_patch%verts%edge_idx", p_patch%verts%edge_idx, LBOUND(p_patch%verts%edge_idx), UBOUND(p_patch%verts%edge_idx))
++    CALL ftg_write("p_patch%verts%end_blk", p_patch%verts%end_blk, LBOUND(p_patch%verts%end_blk), UBOUND(p_patch%verts%end_blk))
++    CALL ftg_write("p_patch%verts%end_block", p_patch%verts%end_block, LBOUND(p_patch%verts%end_block), UBOUND(p_patch%verts% &
++    &  end_block))
++    CALL ftg_write("p_patch%verts%end_index", p_patch%verts%end_index, LBOUND(p_patch%verts%end_index), UBOUND(p_patch%verts% &
++    &  end_index))
++    CALL ftg_write("p_patch%verts%start_blk", p_patch%verts%start_blk, LBOUND(p_patch%verts%start_blk), UBOUND(p_patch%verts% &
++    &  start_blk))
++    CALL ftg_write("p_patch%verts%start_block", p_patch%verts%start_block, LBOUND(p_patch%verts%start_block), UBOUND(p_patch% &
++    &  verts%start_block))
++    CALL ftg_write("p_patch%verts%start_index", p_patch%verts%start_index, LBOUND(p_patch%verts%start_index), UBOUND(p_patch% &
++    &  verts%start_index))
++    CALL ftg_register_only("p_patch%cells%decomp_info", "TYPE(t_grid_domain_decomp_info)")
++    CALL ftg_write("p_patch%cells%decomp_info%owner_mask", p_patch%cells%decomp_info%owner_mask, LBOUND(p_patch%cells%decomp_info% &
++    &  owner_mask), UBOUND(p_patch%cells%decomp_info%owner_mask))
++    CALL ftg_register_only("p_int", "TYPE(t_int_state)")
++    CALL ftg_write("p_int%c_lin_e", p_int%c_lin_e, LBOUND(p_int%c_lin_e), UBOUND(p_int%c_lin_e))
++    CALL ftg_write("p_int%cells_aw_verts", p_int%cells_aw_verts, LBOUND(p_int%cells_aw_verts), UBOUND(p_int%cells_aw_verts))
++    CALL ftg_write("p_int%e_bln_c_s", p_int%e_bln_c_s, LBOUND(p_int%e_bln_c_s), UBOUND(p_int%e_bln_c_s))
++    CALL ftg_write("p_int%geofac_grdiv", p_int%geofac_grdiv, LBOUND(p_int%geofac_grdiv), UBOUND(p_int%geofac_grdiv))
++    CALL ftg_write("p_int%geofac_n2s", p_int%geofac_n2s, LBOUND(p_int%geofac_n2s), UBOUND(p_int%geofac_n2s))
++    CALL ftg_write("p_int%geofac_rot", p_int%geofac_rot, LBOUND(p_int%geofac_rot), UBOUND(p_int%geofac_rot))
++    CALL ftg_write("p_int%rbf_vec_coeff_e", p_int%rbf_vec_coeff_e, LBOUND(p_int%rbf_vec_coeff_e), UBOUND(p_int%rbf_vec_coeff_e))
++    CALL ftg_register_only("p_metrics", "TYPE(t_nh_metrics)")
++    CALL ftg_write("p_metrics%coeff1_dwdz", p_metrics%coeff1_dwdz, LBOUND(p_metrics%coeff1_dwdz), UBOUND(p_metrics%coeff1_dwdz))
++    CALL ftg_write("p_metrics%coeff2_dwdz", p_metrics%coeff2_dwdz, LBOUND(p_metrics%coeff2_dwdz), UBOUND(p_metrics%coeff2_dwdz))
++    CALL ftg_write("p_metrics%coeff_gradekin", p_metrics%coeff_gradekin, LBOUND(p_metrics%coeff_gradekin), UBOUND(p_metrics% &
++    &  coeff_gradekin))
++    CALL ftg_write("p_metrics%ddqz_z_full_e", p_metrics%ddqz_z_full_e, LBOUND(p_metrics%ddqz_z_full_e), UBOUND(p_metrics% &
++    &  ddqz_z_full_e))
++    CALL ftg_write("p_metrics%ddqz_z_half", p_metrics%ddqz_z_half, LBOUND(p_metrics%ddqz_z_half), UBOUND(p_metrics%ddqz_z_half))
++    CALL ftg_write("p_metrics%ddxn_z_full", p_metrics%ddxn_z_full, LBOUND(p_metrics%ddxn_z_full), UBOUND(p_metrics%ddxn_z_full))
++    CALL ftg_write("p_metrics%ddxt_z_full", p_metrics%ddxt_z_full, LBOUND(p_metrics%ddxt_z_full), UBOUND(p_metrics%ddxt_z_full))
++    CALL ftg_write("p_metrics%wgtfac_c", p_metrics%wgtfac_c, LBOUND(p_metrics%wgtfac_c), UBOUND(p_metrics%wgtfac_c))
++    CALL ftg_write("p_metrics%wgtfac_e", p_metrics%wgtfac_e, LBOUND(p_metrics%wgtfac_e), UBOUND(p_metrics%wgtfac_e))
++    CALL ftg_write("p_metrics%wgtfacq_e", p_metrics%wgtfacq_e, LBOUND(p_metrics%wgtfacq_e), UBOUND(p_metrics%wgtfacq_e))
++    CALL ftg_register_only("p_diag", "TYPE(t_nh_diag)")
++    CALL ftg_write("p_diag%ddt_vn_adv", p_diag%ddt_vn_adv, LBOUND(p_diag%ddt_vn_adv), UBOUND(p_diag%ddt_vn_adv))
++    CALL ftg_write("p_diag%ddt_w_adv", p_diag%ddt_w_adv, LBOUND(p_diag%ddt_w_adv), UBOUND(p_diag%ddt_w_adv))
++    CALL ftg_write("p_diag%dvn_ie_ubc", p_diag%dvn_ie_ubc, LBOUND(p_diag%dvn_ie_ubc), UBOUND(p_diag%dvn_ie_ubc))
++    CALL ftg_write("p_diag%max_vcfl_dyn", p_diag%max_vcfl_dyn)
++    CALL ftg_write("p_diag%vn_ie", p_diag%vn_ie, LBOUND(p_diag%vn_ie), UBOUND(p_diag%vn_ie))
++    CALL ftg_write("p_diag%vt", p_diag%vt, LBOUND(p_diag%vt), UBOUND(p_diag%vt))
++    CALL ftg_write("p_diag%w_concorr_c", p_diag%w_concorr_c, LBOUND(p_diag%w_concorr_c), UBOUND(p_diag%w_concorr_c))
++    
++    
++    ! GLOBALS
++    CALL ftg_write("mo_nonhydrostatic_config__lextra_diffu", mo_nonhydrostatic_config__lextra_diffu)
++    CALL ftg_write("mo_run_config__ltimer", mo_run_config__ltimer)
++    CALL ftg_write("mo_run_config__lvert_nest", mo_run_config__lvert_nest)
++    CALL ftg_write("mo_init_vgrid__nflatlev", mo_init_vgrid__nflatlev, LBOUND(mo_init_vgrid__nflatlev), UBOUND( &
++    &  mo_init_vgrid__nflatlev))
++    CALL ftg_write("mo_parallel_config__nproma", mo_parallel_config__nproma)
++    CALL ftg_write("mo_vertical_grid__nrdmax", mo_vertical_grid__nrdmax, LBOUND(mo_vertical_grid__nrdmax), UBOUND( &
++    &  mo_vertical_grid__nrdmax))
++    CALL ftg_write("mo_timer__timer_intp", mo_timer__timer_intp)
++    CALL ftg_write("mo_timer__timer_solve_nh_veltend", mo_timer__timer_solve_nh_veltend)
++    CALL ftg_write("mo_run_config__timers_level", mo_run_config__timers_level)
++    
++    
++    CALL ftg_write("ftg_velocity_tendencies_round", ftg_velocity_tendencies_round)
++    
++    CALL ftg_destroy_savepoint()
++    WRITE (0,*) 'FTG FINALIZE INPUT DATA velocity_tendencies', get_my_mpi_all_id()
++    CALL ftg_destroy_serializer()
++    
++  END IF
++  
++END SUBROUTINE ftg_velocity_tendencies_capture_input
++
++LOGICAL FUNCTION ftg_velocity_tendencies_capture_output_active()
++
++ftg_velocity_tendencies_capture_output_active =       &
++ftg_velocity_tendencies_capture_output_enabled .AND.  &
++ftg_velocity_tendencies_round .EQ. ftg_velocity_tendencies_capture_round
++
++END FUNCTION ftg_velocity_tendencies_capture_output_active
++
++SUBROUTINE ftg_velocity_tendencies_capture_output(p_prog, p_metrics, p_diag, z_w_concorr_me, z_kin_hor_e, z_vt_ie)
++  
++  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
++  USE mo_exception, ONLY: finish
++  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  
++  USE mo_run_config, ONLY: mo_run_config__timers_level => timers_level, mo_run_config__ltimer => ltimer, mo_run_config__lvert_nest &
++  &  => lvert_nest
++  USE mo_init_vgrid, ONLY: mo_init_vgrid__nflatlev => nflatlev
++  USE mo_nonhydrostatic_config, ONLY: mo_nonhydrostatic_config__lextra_diffu => lextra_diffu
++  USE mo_timer, ONLY: mo_timer__timer_solve_nh_veltend => timer_solve_nh_veltend, mo_timer__timer_intp => timer_intp
++  USE mo_vertical_grid, ONLY: mo_vertical_grid__nrdmax => nrdmax
++  USE mo_parallel_config, ONLY: mo_parallel_config__nproma => nproma
++  
++  TYPE(t_nh_prog), INTENT(in) :: p_prog
++  TYPE(t_nh_metrics), INTENT(in) :: p_metrics
++  TYPE(t_nh_diag), INTENT(in) :: p_diag
++  REAL(vp), DIMENSION(:,:,:), INTENT(in) :: z_w_concorr_me
++  REAL(vp), DIMENSION(:,:,:), INTENT(in) :: z_kin_hor_e
++  REAL(vp), DIMENSION(:,:,:), INTENT(in) :: z_vt_ie
++  
++  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
++  CHARACTER(len=256) :: ftg_c
++  
++  IF (ftg_velocity_tendencies_capture_output_active()) THEN
++    
++    CALL ftg_velocity_tendencies_init_for_capture('output', ftg_velocity_tendencies_output_dir)
++    CALL ftg_set_savepoint('output')
++    
++    WRITE (0,*) 'FTG ROUND velocity_tendencies ', ftg_velocity_tendencies_round, get_my_mpi_all_id()
++    WRITE (0,*) 'FTG WRITE output DATA velocity_tendencies', get_my_mpi_all_id()
++    
++    
++    ! BASIC ARGUMENTS
++    CALL ftg_write("z_w_concorr_me", z_w_concorr_me, LBOUND(z_w_concorr_me), UBOUND(z_w_concorr_me))
++    CALL ftg_write("z_kin_hor_e", z_kin_hor_e, LBOUND(z_kin_hor_e), UBOUND(z_kin_hor_e))
++    CALL ftg_write("z_vt_ie", z_vt_ie, LBOUND(z_vt_ie), UBOUND(z_vt_ie))
++    
++    
++    ! OPTIONAL ARGUMENTS
++    
++    ! TYPE MEMBERS
++    CALL ftg_register_only("p_prog", "TYPE(t_nh_prog)")
++    CALL ftg_write("p_prog%vn", p_prog%vn, LBOUND(p_prog%vn), UBOUND(p_prog%vn))
++    CALL ftg_write("p_prog%w", p_prog%w, LBOUND(p_prog%w), UBOUND(p_prog%w))
++    CALL ftg_register_only("p_metrics", "TYPE(t_nh_metrics)")
++    CALL ftg_write("p_metrics%coeff1_dwdz", p_metrics%coeff1_dwdz, LBOUND(p_metrics%coeff1_dwdz), UBOUND(p_metrics%coeff1_dwdz))
++    CALL ftg_write("p_metrics%coeff2_dwdz", p_metrics%coeff2_dwdz, LBOUND(p_metrics%coeff2_dwdz), UBOUND(p_metrics%coeff2_dwdz))
++    CALL ftg_write("p_metrics%coeff_gradekin", p_metrics%coeff_gradekin, LBOUND(p_metrics%coeff_gradekin), UBOUND(p_metrics% &
++    &  coeff_gradekin))
++    CALL ftg_write("p_metrics%ddqz_z_full_e", p_metrics%ddqz_z_full_e, LBOUND(p_metrics%ddqz_z_full_e), UBOUND(p_metrics% &
++    &  ddqz_z_full_e))
++    CALL ftg_write("p_metrics%ddqz_z_half", p_metrics%ddqz_z_half, LBOUND(p_metrics%ddqz_z_half), UBOUND(p_metrics%ddqz_z_half))
++    CALL ftg_write("p_metrics%ddxn_z_full", p_metrics%ddxn_z_full, LBOUND(p_metrics%ddxn_z_full), UBOUND(p_metrics%ddxn_z_full))
++    CALL ftg_write("p_metrics%ddxt_z_full", p_metrics%ddxt_z_full, LBOUND(p_metrics%ddxt_z_full), UBOUND(p_metrics%ddxt_z_full))
++    CALL ftg_write("p_metrics%wgtfac_c", p_metrics%wgtfac_c, LBOUND(p_metrics%wgtfac_c), UBOUND(p_metrics%wgtfac_c))
++    CALL ftg_write("p_metrics%wgtfac_e", p_metrics%wgtfac_e, LBOUND(p_metrics%wgtfac_e), UBOUND(p_metrics%wgtfac_e))
++    CALL ftg_write("p_metrics%wgtfacq_e", p_metrics%wgtfacq_e, LBOUND(p_metrics%wgtfacq_e), UBOUND(p_metrics%wgtfacq_e))
++    CALL ftg_register_only("p_diag", "TYPE(t_nh_diag)")
++    CALL ftg_write("p_diag%ddt_vn_adv", p_diag%ddt_vn_adv, LBOUND(p_diag%ddt_vn_adv), UBOUND(p_diag%ddt_vn_adv))
++    CALL ftg_write("p_diag%ddt_w_adv", p_diag%ddt_w_adv, LBOUND(p_diag%ddt_w_adv), UBOUND(p_diag%ddt_w_adv))
++    CALL ftg_write("p_diag%dvn_ie_ubc", p_diag%dvn_ie_ubc, LBOUND(p_diag%dvn_ie_ubc), UBOUND(p_diag%dvn_ie_ubc))
++    CALL ftg_write("p_diag%max_vcfl_dyn", p_diag%max_vcfl_dyn)
++    CALL ftg_write("p_diag%vn_ie", p_diag%vn_ie, LBOUND(p_diag%vn_ie), UBOUND(p_diag%vn_ie))
++    CALL ftg_write("p_diag%vt", p_diag%vt, LBOUND(p_diag%vt), UBOUND(p_diag%vt))
++    CALL ftg_write("p_diag%w_concorr_c", p_diag%w_concorr_c, LBOUND(p_diag%w_concorr_c), UBOUND(p_diag%w_concorr_c))
++    
++    
++    ! GLOBALS
++    CALL ftg_write("mo_nonhydrostatic_config__lextra_diffu", mo_nonhydrostatic_config__lextra_diffu)
++    CALL ftg_write("mo_run_config__ltimer", mo_run_config__ltimer)
++    CALL ftg_write("mo_run_config__lvert_nest", mo_run_config__lvert_nest)
++    CALL ftg_write("mo_init_vgrid__nflatlev", mo_init_vgrid__nflatlev, LBOUND(mo_init_vgrid__nflatlev), UBOUND( &
++    &  mo_init_vgrid__nflatlev))
++    CALL ftg_write("mo_parallel_config__nproma", mo_parallel_config__nproma)
++    CALL ftg_write("mo_vertical_grid__nrdmax", mo_vertical_grid__nrdmax, LBOUND(mo_vertical_grid__nrdmax), UBOUND( &
++    &  mo_vertical_grid__nrdmax))
++    CALL ftg_write("mo_timer__timer_intp", mo_timer__timer_intp)
++    CALL ftg_write("mo_timer__timer_solve_nh_veltend", mo_timer__timer_solve_nh_veltend)
++    CALL ftg_write("mo_run_config__timers_level", mo_run_config__timers_level)
++    
++    
++    CALL ftg_write("ftg_velocity_tendencies_round", ftg_velocity_tendencies_round)
++    
++    CALL ftg_destroy_savepoint()
++    WRITE (0,*) 'FTG FINALIZE output DATA velocity_tendencies', get_my_mpi_all_id()
++    CALL ftg_destroy_serializer()
++    
++    CALL work_mpi_barrier()
++    !      CALL finish('FTG EXIT', 'Output captured: velocity_tendencies', 0)
++    
++  END IF
++  
++END SUBROUTINE ftg_velocity_tendencies_capture_output
++
++! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++
++
++
+ END MODULE mo_velocity_advection

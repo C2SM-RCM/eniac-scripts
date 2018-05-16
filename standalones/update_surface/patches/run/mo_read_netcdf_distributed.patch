@@ -1,0 +1,29 @@
+--- a/src/io/shared/mo_read_netcdf_distributed.f90	2018-05-16 12:10:43.249943259 +0200
++++ b/src/io/shared/mo_read_netcdf_distributed.f90	2018-05-16 12:10:41.961994000 +0200
+@@ -36,7 +36,11 @@
+ 
+   IMPLICIT NONE
+ 
+-  PRIVATE
++  !================= START FORCE FORTRAN TEST GENERATOR (FTG) =======================!
++
++  !PRIVATE
++
++  !================= STOP FORCE FORTRAN TEST GENERATOR (FTG) =========================!
+ 
+   PUBLIC :: distrib_read
+   PUBLIC :: distrib_nf_open
+@@ -51,6 +55,13 @@
+   PUBLIC :: distrib_inq_var_dims
+   PUBLIC :: idx_lvl_blk, idx_blk_time
+   PUBLIC :: nf
++  !================= START FORCE FORTRAN TEST GENERATOR (FTG) =======================!
++
++  PUBLIC :: get_empty_basic_distrib_read_data
++  PUBLIC :: t_basic_distrib_read_data
++  PUBLIC :: basic_data
++
++  !================= STOP FORCE FORTRAN TEST GENERATOR (FTG) =========================!
+ 
+   INCLUDE 'netcdf.inc'
+ 

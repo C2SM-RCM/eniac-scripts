@@ -1,0 +1,19 @@
+--- a/src/atm_phy_schemes/mo_convect_tables.f90	2018-05-16 13:35:29.309905627 +0200
++++ b/src/atm_phy_schemes/mo_convect_tables.f90	2018-05-16 13:35:28.242709000 +0200
+@@ -151,6 +151,16 @@
+ 
+   !------------------------------------------------------------------------------
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++#ifdef __SPLINE_TEST__
++  PUBLIC :: dua, ua, za
++#endif
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ CONTAINS
+ 
+   SUBROUTINE init_convect_tables
