@@ -5,6 +5,20 @@ source ${commondir}/run_command.sh
 # This only works with GCC on CPU
 if [[ !("${compiler}" == "gcc" && "${target}" == "cpu") ]]; then
   echo "Extraction of standalone only works with GCC on CPU"
+  run_command echo "###########################################" || exit 1
+  run_command echo "##          Extraction FAILED            ##" || exit 1
+  run_command echo "## Extraction only works with GCC on CP! ##" || exit 1
+  run_command echo "###########################################" || exit 1
+  exit 1
+fi
+
+export standalonedir="standalone/${testroutine}"
+# Fail if standalone already exits
+if [ -d ${standalonedir} ]; then
+  run_command echo "##########################################" || exit 1
+  run_command echo "##          Extraction FAILED           ##" || exit 1
+  run_command echo "## Standalone directory already exists! ##" || exit 1
+  run_command echo "##########################################" || exit 1
   exit 1
 fi
 
@@ -54,7 +68,6 @@ run_command cd ../
 run_command ${commondir}/apply_patches_extract.sh finish || exit 1
 
 # Isolate standalone
-export standalonedir="standalone/${testroutine}"
 run_command mkdir -p ${standalonedir} || exit 1
 
 # Cleanup
@@ -117,6 +130,7 @@ if [ -e "${scriptdir}/external_dependencies.txt" ]; then
     run_command cp -r --parents $f ${standalonedir} || exit 1
   done <${scriptdir}/external_dependencies.txt
 fi
+run_command chmod 755 ${standalonedir}/configure || exit 1
 
 # Revert FTG changes
 run_command cd fortrantestgenerator/ || exit 1
