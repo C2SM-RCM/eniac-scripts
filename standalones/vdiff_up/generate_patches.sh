@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
-if [[ $# -lt 1 ]]; then
-  echo "USAGE: script requires 1 argument and 1 optional"
-  echo "       extract_standalone.sh slave [revert_noacc]"
+if [[ $# -lt 2 ]]; then
+  echo "USAGE: script requires 2 argument and 1 optional"
+  echo "       extract_standalone.sh slave {standalone,extract} [revert_noacc]|{init,intermezzo,finish}"
   exit 1
 fi
 
@@ -24,4 +24,11 @@ source ${commondir}/run_command.sh
 export standalonedir
 
 # Run standalone tests
-run_command ${commondir}/generate_patches.sh $2 || exit 1
+if [ "$2" == "standalone" ];then
+  run_command ${commondir}/generate_patches_standalone.sh ${@:3} || exit 1
+elif [ "$2" == "extract" ];then
+  run_command ${commondir}/generate_patches_extract.sh ${@:3} || exit 1
+else
+  run_command echo "Unknown patch type" || exit 1
+  exit 1
+fi

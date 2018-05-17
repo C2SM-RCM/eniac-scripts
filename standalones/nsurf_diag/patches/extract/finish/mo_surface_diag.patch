@@ -1,5 +1,5 @@
---- a/src/atm_phy_echam/mo_surface_diag.f90	2018-05-15 12:36:21.970513000 +0200
-+++ b/src/atm_phy_echam/mo_surface_diag.f90	2018-05-15 12:36:42.466031725 +0200
+--- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-05-17 11:53:17.000000000 +0200
++++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-05-17 13:42:12.220100000 +0200
 @@ -442,6 +442,7 @@
      REAL(wp), POINTER :: pbtile(:,:)
  #ifdef HAVE_FC_ATTRIBUTE_CONTIGUOUS
@@ -13,6 +13,23 @@
    
  
 -#endif
- 
-     !$ACC DATA PCOPYIN( pfrc, pqm1, pzf, pzs, pcptgz, pcpt_tile, pbn_tile,     &
-     !$ACC               pbhn_tile, pbh_tile, pbm_tile, pri_tile, ptm1, papm1,  &
+     !CONSTANTS
+     zhuv          =  10._wp ! 10m
+     zhtq          =   2._wp !  2m
+@@ -611,7 +611,7 @@
+   USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
+   USE mo_mpi,            ONLY: get_my_mpi_all_id
+   USE m_ser_ftg,         ONLY: ftg_set_serializer, ftg_add_serializer_metainfo, ignore_bullshit_max_dim_size, &
+-  &  ignore_bullshit_allow_negative_indices
++  &  ignore_bullshit_allow_negative_indices, ignore_bullshit
+   
+   CHARACTER(*), INTENT(IN) :: stage, dir
+   
+@@ -627,6 +627,7 @@
+     !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
+     !  END IF
+     
++    ignore_bullshit = .FALSE.
+     ignore_bullshit_max_dim_size = 100000
+     ignore_bullshit_allow_negative_indices = .TRUE.
+     

@@ -1,5 +1,5 @@
---- a/src/atm_phy_echam/mo_surface_diag.f90	2018-05-16 13:56:48.670891476 +0200
-+++ b/src/atm_phy_echam/mo_surface_diag.f90	2018-05-16 15:21:53.333429605 +0200
+--- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-05-17 14:15:32.286316447 +0200
++++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-05-17 13:43:51.145877000 +0200
 @@ -26,6 +26,27 @@
    PRIVATE
    PUBLIC :: wind_stress, surface_fluxes, nsurf_diag
@@ -28,10 +28,11 @@
  CONTAINS
    !>
    !!
-@@ -423,6 +444,17 @@
+@@ -422,6 +443,17 @@
+ #ifdef HAVE_FC_ATTRIBUTE_CONTIGUOUS
      CONTIGUOUS :: pbtile
  #endif
- 
++
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  
 +  ftg_nsurf_diag_round = ftg_nsurf_diag_round + 1
@@ -42,14 +43,13 @@
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
 +  
 +
-+
-     !$ACC DATA PCOPYIN( pfrc, pqm1, pzf, pzs, pcptgz, pcpt_tile, pbn_tile,     &
-     !$ACC               pbhn_tile, pbh_tile, pbm_tile, pri_tile, ptm1, papm1,  &
-     !$ACC               pxm1, pum1, pvm1, paphm1, pocu, pocv, ptasmax,         &
-@@ -621,7 +653,264 @@
- 
-   !$ACC END DATA
- 
+     !CONSTANTS
+     zhuv          =  10._wp ! 10m
+     zhtq          =   2._wp !  2m
+@@ -561,7 +593,264 @@
+         ptasmin  (jl) = MIN(ptasmin(jl),ptas_gbm(jl))
+     ENDDO
+     
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  

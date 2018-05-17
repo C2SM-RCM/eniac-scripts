@@ -13,7 +13,7 @@ target="cpu"
 datadir="ERROR_DATA_SHOULD_NOT_BE_NEEDED"
 
 # Environment setup
-testroutine="vdiff_down"
+testroutine="++TESTROUTINE++"
 workdir="$(pwd)"
 commondir="${workdir}/eniac-scripts/standalones/common"
 standalonedir="standalone/${testroutine}"

@@ -27,12 +27,12 @@ diff_files ()
   adir=$1
   bdir=$2
   run_command mkdir ${patchdir} || exit 1
-  run_command mkdir a b || exit 1
-  run_command ln -s ${adir}/src a/src || exit 1
-  run_command ln -s ${bdir}/src b/src || exit 1
-  for f in `find -L b/src/ -type f`;do 
+  run_command mkdir eniac_a eniac_b || exit 1
+  run_command ln -sr ${adir}/src eniac_a/src || exit 1
+  run_command ln -sr ${bdir}/src eniac_b/src || exit 1
+  for f in `find -L eniac_b/src/ -type f`;do 
     patchfile=${patchdir}/$(basename ${f/.f90/.patch})
-    diff -uBb ${f/b\//a\/} $f > ${patchfile} || true
+    diff -uBb ${f/eniac_b\//eniac_a\/} $f > ${patchfile} || true
     if [ `wc -l <${patchfile}` -eq 0 ]; then
       run_command rm ${patchfile} || exit 1
     fi
@@ -40,18 +40,19 @@ diff_files ()
 
   # ... Cleanup
   run_command rmdir --ignore-fail-on-non-empty ${patchdir} 
-  run_command rm a/src b/src || exit 1
-  run_command rmdir a b || exit 1
+  run_command rm eniac_a/src eniac_b/src || exit 1
+  run_command rmdir eniac_a eniac_b || exit 1
 }
 
 # Create SRC patches
-patchdir=${standalonedir}/patches
-diff_files "${workdir}" "${workdir}/${standalonedir}"
+patchdir=${standalonedir}/eniac_patches
+diff_files "./" "${standalonedir}"
 
 # Create externals patches
+patchbasedir=${patchdir}
 for ext in ${standalonedir}/externals/*; do
-  patchdir=${standalonedir}/patches/$(basename ${ext})
-  diff_files "${workdir}/externals/$(basename ${ext})" "${workdir}/${ext}"
+  patchdir=${patchbasedir}/$(basename ${ext})
+  diff_files "externals/$(basename ${ext})" "${ext}"
 done
 
 # Remove existing ACC statements unrelated to standalone
