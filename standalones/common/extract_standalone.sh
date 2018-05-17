@@ -97,7 +97,21 @@ run_command cp --parents ${ftgdeps} ${standalonedir} || exit 1
 run_command cp --parents src/tests/${testname}.f90 ${standalonedir} || exit 1
 
 # Manually add external dependencies
-run_command cp -r --parents src/include support/ config/ Makefile.in configure configure.ac ${standalonedir} || exit 1
+run_command cp -r --parents src/include support/ config/ Makefile.in ${standalonedir} || exit 1
+new_ac_unique="ac_unique_file=\"src/tests/${testname}.f90\""
+run_command sed -e "s|ac_unique_file=.*$|${new_ac_unique}|" configure > ${standalonedir}/configure
+for lib in mtime self tixi yac; do
+  if [ "$(grep -c ${lib} ${scriptdir}/external_dependencies.txt)" == "0" ]; then
+    run_command sed -i -e "s|-l${lib}||g" ${standalonedir}/configure || exit 1
+    run_command sed -i -e "s|externals/${lib}/src||g" ${standalonedir}/configure || exit 1
+  fi
+done
+if [ "$(grep -c yac ${scriptdir}/external_dependencies.txt)" == "0" ]; then
+  run_command sed -i -e 's|use_yac="yes"|use_yac="no"|g' ${standalonedir}/configure || exit 1
+fi
+if [ "$(grep -c jsbach ${scriptdir}/external_dependencies.txt)" == "0" ]; then
+  run_command sed -i -e 's|enable_jsbach=yes|enable_jsbach=no|g' ${standalonedir}/configure || exit 1
+fi
 if [ -e "${scriptdir}/external_dependencies.txt" ]; then
   while read -r f; do
     run_command cp -r --parents $f ${standalonedir} || exit 1
