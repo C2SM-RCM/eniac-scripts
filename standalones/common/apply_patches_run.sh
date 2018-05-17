@@ -17,7 +17,7 @@ specific_patches ()
 
     # Compiler specific patches
     for c in ${compiler_list}; do
-      if [ "${compiler}" = "$c" ]; then
+      if [ "${compiler}" = "$c" ] && [ -d ${patchdir}/$c ]; then
         for f in ${patchdir}/$c/*.patch; do
           patch ${patchcmd} -p1 <$f
         done
@@ -36,4 +36,4 @@ specific_patches
 
 # JSBACH specific patches
 patchdir=${patchdir}/jsbach
-specifc_patches externals/jsbach
+specific_patches externals/jsbach

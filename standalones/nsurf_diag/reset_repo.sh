@@ -21,7 +21,8 @@ rm -rf experiments/atm_amip_test
 rm -rf fortrancallgraph/
 rm -rf fortrantestgenerator/
 
-# Remove reference submission script
+# Remove reference submission scripts
+rm -f run/dict.atm_amip_test
 rm -f submit_reference.sh
 
 # Remove standalone test source

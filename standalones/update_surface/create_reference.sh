@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
-if [[ $# -ne 4 ]]; then
+if [[ $# -ne 3 ]]; then
   echo "USAGE: script requires 4 arguments"
-  echo "       create_reference.sh slave compiler target /path/to/data/root"
+  echo "       create_reference.sh slave compiler target"
   exit 1
 fi
 
@@ -10,7 +10,7 @@ fi
 slave="$1"
 compiler="$2"
 target="$3"
-datadir="$4"
+datadir="ERROR_DATA_SHOULD_NOT_BE_NEEDED"
 
 # Environment setup
 testroutine="update_surface"
