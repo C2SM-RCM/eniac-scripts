@@ -15,35 +15,37 @@ PROGRAM ftg_update_surface_test
   &  ftg_allocate_and_read_allocatable
   
   USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
-  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
-  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
-  USE mo_mpi_phy_config, ONLY: mo_mpi_phy_config__mpi_phy_config => mpi_phy_config, t_mpi_phy_config
+  USE mo_run_config, ONLY: mo_run_config__ltimer => ltimer
   USE mo_echam_sfc_indices, ONLY: mo_echam_sfc_indices__nsfc_type => nsfc_type
-  USE mo_vdiff_config, ONLY: mo_vdiff_config__vdiff_config => vdiff_config, t_vdiff_config
+  USE mo_echam_vdf_config, ONLY: mo_echam_vdf_config__echam_vdf_config => echam_vdf_config, t_echam_vdf_config
+  USE mo_jsb_test, ONLY: mo_jsb_test__write_interface_vars => write_interface_vars
   USE mo_vdiff_solver, ONLY: mo_vdiff_solver__imh => imh, mo_vdiff_solver__imuv => imuv, mo_vdiff_solver__nmatrix => nmatrix, &
   &  mo_vdiff_solver__imqv => imqv, mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ih => &
   &  ih, mo_vdiff_solver__iv => iv, mo_vdiff_solver__iu => iu
+  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
+  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
   USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
+  USE mo_echam_phy_config, ONLY: mo_echam_phy_config__echam_phy_config => echam_phy_config, t_echam_phy_config
   USE mo_master_control, ONLY: mo_master_control__master_namelist_filename => master_namelist_filename
   USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
   USE mo_parallel_config, ONLY: mo_parallel_config__nproma => nproma
-  USE mo_timer, ONLY: mo_timer__timer_ice_fast => timer_ice_fast
+  USE mo_timer, ONLY: mo_timer__timer_ice_fast => timer_ice_fast, mo_timer__timer_jsbach => timer_jsbach
   USE mo_read_netcdf_distributed, ONLY: mo_read_netcdf_distributed__basic_data => basic_data, t_basic_distrib_read_data
-  USE mo_jsb_control, ONLY: mo_jsb_control__debug => debug, mo_jsb_control__is_standalone => is_standalone
-  USE mo_jsb_test, ONLY: mo_jsb_test__write_interface_vars => write_interface_vars
-  USE mo_radiation_config, ONLY: mo_radiation_config__mmr_co2 => mmr_co2
+  USE mo_jsb_control, ONLY: mo_jsb_control__l_timer => l_timer, mo_jsb_control__debug => debug, mo_jsb_control__is_standalone => &
+  &  is_standalone
+  USE mo_surface, ONLY: lsfc_heat_flux, lsfc_mom_flux
   
   USE mo_read_netcdf_distributed, ONLY: t_basic_distrib_read_data
-  USE mo_mpi_phy_config, ONLY: t_mpi_phy_config
-  USE mo_vdiff_config, ONLY: t_vdiff_config
+  USE mo_echam_vdf_config, ONLY: t_echam_vdf_config
   USE mo_model_domain, ONLY: t_patch
+  USE mo_echam_phy_config, ONLY: t_echam_phy_config
   
   IMPLICIT NONE
   
   CHARACTER(*), PARAMETER :: INPUT_DIR = &
-    '++FTGDATADIR++/data/input'
+  '++FTGDATADIR++/data/input'
   CHARACTER(*), PARAMETER :: OUTPUT_DIR = &
-    '++FTGDATADIR++/data/output_test'
+  '++FTGDATADIR++/data/output_test'
   LOGICAL, PARAMETER :: OUTPUT_ENABLED = .TRUE.
   LOGICAL, PARAMETER :: SERIALBOX_DEBUG = .FALSE.
   
@@ -90,6 +92,7 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: plhflx_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pshflx_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pevap_tile
+    REAL(wp), DIMENSION(:), ALLOCATABLE :: pco2nat
     INTEGER :: nblock
     REAL(wp), DIMENSION(:), ALLOCATABLE :: lsm
     REAL(wp), DIMENSION(:), ALLOCATABLE :: alake
@@ -97,6 +100,7 @@ CONTAINS
     REAL(wp), DIMENSION(:), ALLOCATABLE :: pv
     REAL(wp), DIMENSION(:), ALLOCATABLE :: ptemp
     REAL(wp), DIMENSION(:), ALLOCATABLE :: pq
+    REAL(wp), DIMENSION(:), ALLOCATABLE :: pco2
     REAL(wp), DIMENSION(:), ALLOCATABLE :: prsfl
     REAL(wp), DIMENSION(:), ALLOCATABLE :: prsfc
     REAL(wp), DIMENSION(:), ALLOCATABLE :: pssfl
@@ -129,6 +133,7 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: albnirdif_tile
     REAL(wp), DIMENSION(:), ALLOCATABLE :: albedo
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: albedo_tile
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pco2_flux_tile
     REAL(wp), DIMENSION(:), ALLOCATABLE :: ptsfc
     REAL(wp), DIMENSION(:), ALLOCATABLE :: ptsfc_rad
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: rsns_tile
@@ -158,56 +163,21 @@ CONTAINS
     CALL ftg_update_surface_replay_input(jg, kproma, kbdim, kice, klev, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, pfrc, &
     &  pcfh_tile, pcfm_tile, pfac_sfc, pocu, pocv, aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile, ptsfc_tile, pu_stress_gbm, &
     &  pv_stress_gbm, plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, &
-    &  nblock, lsm, alake, pu, pv, ptemp, pq, prsfl, prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus, rvds_dir, rpds_dir, rnds_dir, &
-    &  rvds_dif, rpds_dif, rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, &
-    &  albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, ptsfc, &
-    &  ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, albvisdif_ice, &
-    &  albnirdir_ice, albnirdif_ice)
+    &  pco2nat, nblock, lsm, alake, pu, pv, ptemp, pq, pco2, prsfl, prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus, rvds_dir, &
+    &  rpds_dir, rnds_dir, rvds_dif, rpds_dif, rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, &
+    &  albvisdir, albnirdir, albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, &
+    &  albedo_tile, pco2_flux_tile, ptsfc, ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, &
+    &  albvisdir_ice, albvisdif_ice, albnirdir_ice, albnirdif_ice)
     CALL ftg_destroy_serializer()
-
-    !$ACC ENTER DATA COPYIN( mo_mpi_phy_config__mpi_phy_config )
-    !$ACC ENTER DATA COPYIN(pfrc, pcfh_tile, pcfm_tile, pfac_sfc, pocu, pocv,  &
-    !$ACC                   aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile,     &
-    !$ACC                   ptsfc_tile, pu_stress_gbm, pv_stress_gbm,          &
-    !$ACC                   plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, &
-    !$ACC                   pv_stress_tile, plhflx_tile, pshflx_tile,          &
-    !$ACC                   pevap_tile, lsm, alake, pu, pv, ptemp, pq, prsfl,  &
-    !$ACC                   prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus,       &
-    !$ACC                   rvds_dir, rpds_dir, rnds_dir, rvds_dif, rpds_dif,  &
-    !$ACC                   rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair,     &
-    !$ACC                   q_snocpymlt, z0m_tile, z0h_lnd, albvisdir,         &
-    !$ACC                   albnirdir, albvisdif, albnirdif, albvisdir_tile,   &
-    !$ACC                   albnirdir_tile, albvisdif_tile, albnirdif_tile,    &
-    !$ACC                   albedo, albedo_tile, ptsfc, ptsfc_rad, rsns_tile,  &
-    !$ACC                   rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs,    &
-    !$ACC                   Qtop, Qbot, conc, albvisdir_ice, albvisdif_ice,    &
-    !$ACC                   albnirdir_ice, albnirdif_ice)
     
     CALL update_surface(jg, kproma, kbdim, kice, klev, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, pfrc, pcfh_tile, pcfm_tile, &
     &  pfac_sfc, pocu, pocv, aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile, ptsfc_tile, pu_stress_gbm, pv_stress_gbm, plhflx_gbm, &
-    &  pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, nblock, lsm, alake, pu, pv, &
-    &  ptemp, pq, prsfl, prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus, rvds_dir, rpds_dir, rnds_dir, rvds_dif, rpds_dif, rnds_dif, &
-    &  ps, pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, albvisdif, albnirdif, &
-    &  albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, ptsfc, ptsfc_rad, rsns_tile, &
-    &  rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, albvisdif_ice, albnirdir_ice, albnirdif_ice)
-
-    !$ACC EXIT DATA DELETE( pfrc, pcfh_tile, pcfm_tile, pfac_sfc, pocu, pocv,  &
-    !$ACC                   aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile,     &
-    !$ACC                   ptsfc_tile, pu_stress_gbm, pv_stress_gbm,          &
-    !$ACC                   plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, &
-    !$ACC                   pv_stress_tile, plhflx_tile, pshflx_tile,          &
-    !$ACC                   pevap_tile, lsm, alake, pu, pv, ptemp, pq, prsfl,  &
-    !$ACC                   prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus,       &
-    !$ACC                   rvds_dir, rpds_dir, rnds_dir, rvds_dif, rpds_dif,  &
-    !$ACC                   rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair,     &
-    !$ACC                   q_snocpymlt, z0m_tile, z0h_lnd, albvisdir,         &
-    !$ACC                   albnirdir, albvisdif, albnirdif, albvisdir_tile,   &
-    !$ACC                   albnirdir_tile, albvisdif_tile, albnirdif_tile,    &
-    !$ACC                   albedo, albedo_tile, ptsfc, ptsfc_rad, rsns_tile,  &
-    !$ACC                   rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs,    &
-    !$ACC                   Qtop, Qbot, conc, albvisdir_ice, albvisdif_ice,    &
-    !$ACC                   albnirdir_ice, albnirdif_ice )
-    !$ACC EXIT DATA DELETE( mo_mpi_phy_config__mpi_phy_config )
+    &  pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, pco2nat, nblock, lsm, alake, &
+    &  pu, pv, ptemp, pq, pco2, prsfl, prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus, rvds_dir, rpds_dir, rnds_dir, rvds_dif, &
+    &  rpds_dif, rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, albvisdif, &
+    &  albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, pco2_flux_tile, ptsfc, &
+    &  ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, albvisdif_ice, &
+    &  albnirdir_ice, albnirdif_ice)
     
   END SUBROUTINE ftg_test_update_surface
   
@@ -231,19 +201,20 @@ CONTAINS
   SUBROUTINE ftg_update_surface_replay_input(jg, kproma, kbdim, kice, klev, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, pfrc, &
   &  pcfh_tile, pcfm_tile, pfac_sfc, pocu, pocv, aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile, ptsfc_tile, pu_stress_gbm, &
   &  pv_stress_gbm, plhflx_gbm, pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, &
-  &  nblock, lsm, alake, pu, pv, ptemp, pq, prsfl, prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus, rvds_dir, rpds_dir, rnds_dir, &
-  &  rvds_dif, rpds_dif, rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, albnirdir, &
-  &  albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, ptsfc, ptsfc_rad, &
-  &  rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, albvisdif_ice, albnirdir_ice, &
-  &  albnirdif_ice)
-    !=============== START MANUALLY ADDED FOR FTG ===============
-    USE mo_time_config, ONLY: set_tc_startdate, set_tc_stopdate, &
-                              set_tc_dt_model, set_tc_current_date, &
-                              set_tc_exp_startdate, set_tc_exp_stopdate
-    USE mo_jsb_base,          ONLY: jsbach_init_base => init_base
-    USE mo_jsb_model_init,    ONLY: jsbach_init_model => init_model
-    USE mo_echam_convect_tables, ONLY: init_convect_tables
-    !=============== END MANUALLY ADDED FOR FTG ===============
+  &  pco2nat, nblock, lsm, alake, pu, pv, ptemp, pq, pco2, prsfl, prsfc, pssfl, pssfc, rlds, rlus, rsds, rsus, rvds_dir, rpds_dir, &
+  &  rnds_dir, rvds_dif, rpds_dif, rnds_dif, ps, pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt, z0m_tile, z0h_lnd, albvisdir, &
+  &  albnirdir, albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, &
+  &  pco2_flux_tile, ptsfc, ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, &
+  &  albvisdif_ice, albnirdir_ice, albnirdif_ice)
+  !=================== START MANUALLY ADDED FOR FTG =====================!
+  USE mo_time_config,    ONLY: set_tc_startdate, set_tc_stopdate, &
+                               set_tc_dt_model, set_tc_current_date, &
+                               set_tc_exp_startdate, set_tc_exp_stopdate
+  USE mo_jsb_base,       ONLY: jsbach_setup_models
+  USE mo_jsb_model_init, ONLY: jsbach_setup_grid
+  USE mo_echam_convect_tables, ONLY: init_convect_tables
+  !===================== END MANUALLY ADDED FOR FTG =====================!
+
     
     INTEGER, INTENT(inout) :: jg
     INTEGER, INTENT(inout) :: kproma
@@ -278,6 +249,7 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: plhflx_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pshflx_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pevap_tile
+    REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: pco2nat
     INTEGER, INTENT(inout), OPTIONAL :: nblock
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: lsm
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: alake
@@ -285,6 +257,7 @@ CONTAINS
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: pv
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: ptemp
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: pq
+    REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: pco2
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: prsfl
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: prsfc
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: pssfl
@@ -317,6 +290,7 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout), OPTIONAL :: albnirdif_tile
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: albedo
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout), OPTIONAL :: albedo_tile
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout), OPTIONAL :: pco2_flux_tile
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: ptsfc
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout), OPTIONAL :: ptsfc_rad
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout), OPTIONAL :: rsns_tile
@@ -390,6 +364,9 @@ CONTAINS
     CALL ftg_allocate_and_read_allocatable("rnds_dif", rnds_dif)
     
     ! OPTIONAL ARGUMENTS
+    IF (PRESENT(pco2nat)) THEN
+      CALL ftg_allocate_and_read_allocatable("pco2nat", pco2nat)
+    END IF
     IF (PRESENT(nblock)) THEN
       CALL ftg_read("nblock", nblock)
     END IF
@@ -410,6 +387,9 @@ CONTAINS
     END IF
     IF (PRESENT(pq)) THEN
       CALL ftg_allocate_and_read_allocatable("pq", pq)
+    END IF
+    IF (PRESENT(pco2)) THEN
+      CALL ftg_allocate_and_read_allocatable("pco2", pco2)
     END IF
     IF (PRESENT(prsfl)) THEN
       CALL ftg_allocate_and_read_allocatable("prsfl", prsfl)
@@ -489,6 +469,9 @@ CONTAINS
     IF (PRESENT(albedo_tile)) THEN
       CALL ftg_allocate_and_read_allocatable("albedo_tile", albedo_tile)
     END IF
+    IF (PRESENT(pco2_flux_tile)) THEN
+      CALL ftg_allocate_and_read_allocatable("pco2_flux_tile", pco2_flux_tile)
+    END IF
     IF (PRESENT(ptsfc)) THEN
       CALL ftg_allocate_and_read_allocatable("ptsfc", ptsfc)
     END IF
@@ -559,15 +542,19 @@ CONTAINS
     CALL ftg_read("mo_jsb_control__is_standalone", mo_jsb_control__is_standalone)
     CALL ftg_read("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
     CALL ftg_read("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
+    CALL ftg_read("mo_jsb_control__l_timer", mo_jsb_control__l_timer)
+    CALL ftg_allocate_and_read_pointer("lsfc_heat_flux", lsfc_heat_flux)
+    CALL ftg_allocate_and_read_pointer("lsfc_mom_flux", lsfc_mom_flux)
+    CALL ftg_read("mo_run_config__ltimer", mo_run_config__ltimer)
     ! *** WARNING: Type not supported by serialbox ***
     !     mo_master_control__master_namelist_filename
     !     CHARACTER(len=filename_max) | dimension: 0
-    CALL ftg_read("mo_radiation_config__mmr_co2", mo_radiation_config__mmr_co2)
     CALL ftg_read("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
     CALL ftg_read("mo_parallel_config__nproma", mo_parallel_config__nproma)
     CALL ftg_read("mo_echam_sfc_indices__nsfc_type", mo_echam_sfc_indices__nsfc_type)
     CALL ftg_read("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
     CALL ftg_read("mo_timer__timer_ice_fast", mo_timer__timer_ice_fast)
+    CALL ftg_read("mo_timer__timer_jsbach", mo_timer__timer_jsbach)
     CALL ftg_read("mo_sea_ice_nml__use_no_flux_gradients", mo_sea_ice_nml__use_no_flux_gradients)
     CALL ftg_read("mo_jsb_test__write_interface_vars", mo_jsb_test__write_interface_vars)
     IF (ftg_field_exists("mo_read_netcdf_distributed__basic_data")) THEN
@@ -577,17 +564,13 @@ CONTAINS
       ALLOCATE(mo_read_netcdf_distributed__basic_data(0))
     END IF
     CALL ftg_read("mo_read_netcdf_distributed__basic_data%n_g", mo_read_netcdf_distributed__basic_data%n_g)
-    IF (ftg_field_exists("mo_mpi_phy_config__mpi_phy_config")) THEN
-      ftg_bounds = ftg_get_bounds("mo_mpi_phy_config__mpi_phy_config")
-      ALLOCATE(mo_mpi_phy_config__mpi_phy_config(ftg_bounds(1):ftg_bounds(2)))
-    ELSE
-      ALLOCATE(mo_mpi_phy_config__mpi_phy_config(0))
-    END IF
-    CALL ftg_read("mo_mpi_phy_config__mpi_phy_config%lamip", mo_mpi_phy_config__mpi_phy_config%lamip)
-    CALL ftg_read("mo_mpi_phy_config__mpi_phy_config%lice", mo_mpi_phy_config__mpi_phy_config%lice)
-    CALL ftg_read("mo_mpi_phy_config__mpi_phy_config%ljsb", mo_mpi_phy_config__mpi_phy_config%ljsb)
-    CALL ftg_read("mo_mpi_phy_config__mpi_phy_config%llake", mo_mpi_phy_config__mpi_phy_config%llake)
-    CALL ftg_read("mo_mpi_phy_config__mpi_phy_config%lmlo", mo_mpi_phy_config__mpi_phy_config%lmlo)
+    CALL ftg_read("mo_echam_phy_config__echam_phy_config%lamip", mo_echam_phy_config__echam_phy_config%lamip)
+    CALL ftg_read("mo_echam_phy_config__echam_phy_config%lice", mo_echam_phy_config__echam_phy_config%lice)
+    CALL ftg_read("mo_echam_phy_config__echam_phy_config%ljsb", mo_echam_phy_config__echam_phy_config%ljsb)
+    CALL ftg_read("mo_echam_phy_config__echam_phy_config%llake", mo_echam_phy_config__echam_phy_config%llake)
+    CALL ftg_read("mo_echam_phy_config__echam_phy_config%lmlo", mo_echam_phy_config__echam_phy_config%lmlo)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux)
     ! *** WARNING: Type not supported by serialbox ***
     !     mo_model_domain__p_patch%grid_filename
     !     CHARACTER(LEN=filename_max) | dimension: 0
@@ -601,8 +584,6 @@ CONTAINS
     CALL ftg_read("mo_model_domain__p_patch%n_patch_cells", mo_model_domain__p_patch%n_patch_cells)
     CALL ftg_read("mo_model_domain__p_patch%n_patch_cells_g", mo_model_domain__p_patch%n_patch_cells_g)
     CALL ftg_read("mo_model_domain__p_patch%nblks_c", mo_model_domain__p_patch%nblks_c)
-    CALL ftg_read("mo_vdiff_config__vdiff_config%lsfc_heat_flux", mo_vdiff_config__vdiff_config%lsfc_heat_flux)
-    CALL ftg_read("mo_vdiff_config__vdiff_config%lsfc_mom_flux", mo_vdiff_config__vdiff_config%lsfc_mom_flux)
     CALL ftg_read("mo_read_netcdf_distributed__basic_data%io_chunk%first", mo_read_netcdf_distributed__basic_data%io_chunk%first)
     CALL ftg_read("mo_read_netcdf_distributed__basic_data%io_chunk%size", mo_read_netcdf_distributed__basic_data%io_chunk%size)
     
@@ -744,10 +725,7 @@ CONTAINS
       &  send_startidx)
     END DO
     
-    
-    CALL ftg_destroy_savepoint()
-
-    !=============== START MANUALLY ADDED FOR FTG ===============
+    !===================== START MANUALLY ADDED FOR FTG ===================!
     CALL init_convect_tables()
     mo_master_control__master_namelist_filename = "icon_master.namelist"
     mo_model_domain__p_patch%grid_filename = 'icon_grid_0005_R02B04_G.nc'
@@ -759,14 +737,16 @@ CONTAINS
     CALL set_tc_dt_model('PT4M')
 
     ! Do basic initialization of JSBACH
-    CALL jsbach_init_base(mo_master_control__master_namelist_filename)
+    CALL jsbach_setup_models(mo_master_control__master_namelist_filename)
 
     ! Now continue initialization of JSBACH for the different grids
-    IF (mo_mpi_phy_config__mpi_phy_config(jg)%ljsb) THEN 
-      CALL jsbach_init_model( jg, mo_model_domain__p_patch(jg)) !< in
+    IF (mo_echam_phy_config__echam_phy_config(jg)%ljsb) THEN 
+      CALL jsbach_setup_grid( jg, mo_model_domain__p_patch(jg)) !< in
     END IF
     CALL set_tc_current_date('1979-01-01T00:04:00Z')
-    !=============== END MANUALLY ADDED FOR FTG ===============
+    !===================== END MANUALLY ADDED FOR FTG =====================!
+    
+    CALL ftg_destroy_savepoint()
     
   END SUBROUTINE ftg_update_surface_replay_input
   
