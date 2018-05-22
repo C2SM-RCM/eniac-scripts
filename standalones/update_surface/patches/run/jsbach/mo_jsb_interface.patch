@@ -1,0 +1,22 @@
+diff --git a/src/interfaces/mo_jsb_interface.f90 b/src/interfaces/mo_jsb_interface.f90
+index bea2977..c144146 100644
+--- a/src/interfaces/mo_jsb_interface.f90
++++ b/src/interfaces/mo_jsb_interface.f90
+@@ -198,7 +198,7 @@ CONTAINS
+         & t_acoef, t_bcoef, q_acoef, q_bcoef, pch, cos_zenith_angle)
+     END IF
+ 
+-    IF (l_timer) CALL timer_start(timer_jsbach)
++!    IF (l_timer) CALL timer_start(timer_jsbach)
+ 
+     nc = ice - ics + 1
+ 
+@@ -307,7 +307,7 @@ CONTAINS
+     IF (debug_on('basic') .AND. iblk == 1) &
+       & CALL message(TRIM(routine), 'Updating of '//TRIM(model%name)//' completed.')
+ 
+-    IF (l_timer) CALL timer_stop(timer_jsbach)
++!    IF (l_timer) CALL timer_stop(timer_jsbach)
+ 
+   END SUBROUTINE interface_full
+ 

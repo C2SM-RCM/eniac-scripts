@@ -210,8 +210,8 @@ CONTAINS
   USE mo_time_config,    ONLY: set_tc_startdate, set_tc_stopdate, &
                                set_tc_dt_model, set_tc_current_date, &
                                set_tc_exp_startdate, set_tc_exp_stopdate
-  USE mo_jsb_base,       ONLY: jsbach_setup_models
-  USE mo_jsb_model_init, ONLY: jsbach_setup_grid
+  USE mo_jsb_base,       ONLY: jsbach_setup_models, jsbach_setup_tiles
+  USE mo_jsb_model_init, ONLY: jsbach_setup_grid, jsbach_init
   USE mo_echam_convect_tables, ONLY: init_convect_tables
   !===================== END MANUALLY ADDED FOR FTG =====================!
 
@@ -741,8 +741,10 @@ CONTAINS
 
     ! Now continue initialization of JSBACH for the different grids
     IF (mo_echam_phy_config__echam_phy_config(jg)%ljsb) THEN 
-      CALL jsbach_setup_grid( jg, mo_model_domain__p_patch(jg)) !< in
+      CALL jsbach_setup_grid(jg, mo_model_domain__p_patch(jg))
+      CALL jsbach_setup_tiles(jg)
     END IF
+    CALL jsbach_init(jg)
     CALL set_tc_current_date('1979-01-01T00:04:00Z')
     !===================== END MANUALLY ADDED FOR FTG =====================!
     
