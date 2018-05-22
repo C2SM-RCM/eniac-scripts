@@ -1,0 +1,109 @@
+--- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-05-22 10:38:01.000000000 +0200
++++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-05-22 10:51:32.324776555 +0200
+@@ -649,19 +649,6 @@
+ 
+   LOGICAL :: ldum
+ 
+-  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
+-  
+-  ftg_graupel_round = ftg_graupel_round + 1
+-  CALL ftg_graupel_capture_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, &
+-  &  qc0, prr_gsp, prs_gsp, prg_gsp, tinc_lh, pstoph, tt_lheat, qrsflux, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, &
+-  &  ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, &
+-  &  ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, &
+-  &  ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
+-  
+-  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
+-  
+-
+-
+ !------------ End of header ---------------------------------------------------
+ 
+ !------------------------------------------------------------------------------
+@@ -681,6 +668,17 @@
+   fxna(ztx)   = 1.0E2_wp * EXP(0.2_wp * (t0 - ztx))
+   fxna_cooper(ztx) = 5.0E+0_wp * EXP(0.304_wp * (t0 - ztx))   ! FR: Cooper (1986) used by Greg Thompson(2008)
+ 
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  ftg_graupel_round = ftg_graupel_round + 1
++  CALL ftg_graupel_capture_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, &
++  &  qc0, prr_gsp, prs_gsp, prg_gsp, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, &
++  &  ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, &
++  &  ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, &
++  &  ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++
+ 
+ ! Define reciprocal of heat capacity of dry air (at constant pressure vs at constant volume)
+ 
+@@ -1724,7 +1722,7 @@
+ 
+   ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
+   
+-  CALL ftg_graupel_capture_output(t, qv, qc, qi, qr, qs, qg, qnc, prr_gsp, prs_gsp, prg_gsp, tinc_lh, tt_lheat, qrsflux, &
++  CALL ftg_graupel_capture_output(t, qv, qc, qi, qr, qs, qg, qnc, prr_gsp, prs_gsp, prg_gsp, &
+   &  ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, &
+   &  ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, &
+   &  ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
+@@ -1776,7 +1774,7 @@
+ END FUNCTION ftg_graupel_capture_input_active
+ 
+ SUBROUTINE ftg_graupel_capture_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, &
+-&  qc0, prr_gsp, prs_gsp, prg_gsp, tinc_lh, pstoph, tt_lheat, qrsflux, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, &
++&  qc0, prr_gsp, prs_gsp, prg_gsp, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, &
+ &  ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, &
+ &  ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, &
+ &  ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
+@@ -1815,10 +1813,6 @@
+   REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prr_gsp
+   REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prs_gsp
+   REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prg_gsp
+-  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: tinc_lh
+-  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: pstoph
+-  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: tt_lheat
+-  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qrsflux
+   LOGICAL, INTENT(in), OPTIONAL :: l_cv
+   REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_t
+   REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qv
+@@ -1879,10 +1873,6 @@
+     CALL ftg_write("prr_gsp", prr_gsp, LBOUND(prr_gsp), UBOUND(prr_gsp))
+     CALL ftg_write("prs_gsp", prs_gsp, LBOUND(prs_gsp), UBOUND(prs_gsp))
+     CALL ftg_write("prg_gsp", prg_gsp, LBOUND(prg_gsp), UBOUND(prg_gsp))
+-    CALL ftg_write("tinc_lh", tinc_lh, LBOUND(tinc_lh), UBOUND(tinc_lh))
+-    CALL ftg_write("pstoph", pstoph, LBOUND(pstoph), UBOUND(pstoph))
+-    CALL ftg_write("tt_lheat", tt_lheat, LBOUND(tt_lheat), UBOUND(tt_lheat))
+-    CALL ftg_write("qrsflux", qrsflux, LBOUND(qrsflux), UBOUND(qrsflux))
+     
+     
+     ! OPTIONAL ARGUMENTS
+@@ -2024,7 +2014,7 @@
+ 
+ END FUNCTION ftg_graupel_capture_output_active
+ 
+-SUBROUTINE ftg_graupel_capture_output(t, qv, qc, qi, qr, qs, qg, qnc, prr_gsp, prs_gsp, prg_gsp, tinc_lh, tt_lheat, qrsflux, &
++SUBROUTINE ftg_graupel_capture_output(t, qv, qc, qi, qr, qs, qg, qnc, prr_gsp, prs_gsp, prg_gsp, &
+ &  ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, &
+ &  ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, &
+ &  ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
+@@ -2051,9 +2041,6 @@
+   REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prr_gsp
+   REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prs_gsp
+   REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prg_gsp
+-  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: tinc_lh
+-  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: tt_lheat
+-  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qrsflux
+   REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_t
+   REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qv
+   REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qc
+@@ -2103,9 +2090,6 @@
+     CALL ftg_write("prr_gsp", prr_gsp, LBOUND(prr_gsp), UBOUND(prr_gsp))
+     CALL ftg_write("prs_gsp", prs_gsp, LBOUND(prs_gsp), UBOUND(prs_gsp))
+     CALL ftg_write("prg_gsp", prg_gsp, LBOUND(prg_gsp), UBOUND(prg_gsp))
+-    CALL ftg_write("tinc_lh", tinc_lh, LBOUND(tinc_lh), UBOUND(tinc_lh))
+-    CALL ftg_write("tt_lheat", tt_lheat, LBOUND(tt_lheat), UBOUND(tt_lheat))
+-    CALL ftg_write("qrsflux", qrsflux, LBOUND(qrsflux), UBOUND(qrsflux))
+     
+     
+     ! OPTIONAL ARGUMENTS

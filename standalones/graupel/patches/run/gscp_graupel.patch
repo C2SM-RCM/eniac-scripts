@@ -1,0 +1,551 @@
+--- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-05-22 10:57:48.120866443 +0200
++++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-05-22 10:57:15.318336000 +0200
+@@ -263,6 +263,27 @@
+ 
+ !==============================================================================
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  LOGICAL :: ftg_graupel_capture_input_enabled = .TRUE.
++  LOGICAL :: ftg_graupel_capture_output_enabled = .TRUE.
++  INTEGER :: ftg_graupel_capture_round = 1
++  INTEGER :: ftg_graupel_round = 0
++  CHARACTER(len=1024) :: ftg_graupel_input_dir = &
++  '++FTGDATADIR++/data/input'
++  CHARACTER(len=1024) :: ftg_graupel_output_dir = &
++  '++FTGDATADIR++/data/output'
++  
++  PUBLIC :: ftg_graupel_capture_input_enabled, ftg_graupel_capture_output_enabled, ftg_graupel_capture_round, &
++  &  ftg_graupel_input_dir, ftg_graupel_output_dir
++  
++  PUBLIC :: message_text
++  
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ CONTAINS
+ 
+ !==============================================================================
+@@ -647,6 +668,17 @@
+   fxna(ztx)   = 1.0E2_wp * EXP(0.2_wp * (t0 - ztx))
+   fxna_cooper(ztx) = 5.0E+0_wp * EXP(0.304_wp * (t0 - ztx))   ! FR: Cooper (1986) used by Greg Thompson(2008)
+ 
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  ftg_graupel_round = ftg_graupel_round + 1
++  CALL ftg_graupel_capture_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, &
++  &  qc0, prr_gsp, prs_gsp, prg_gsp, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, &
++  &  ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, &
++  &  ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, &
++  &  ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++
+ 
+ ! Define reciprocal of heat capacity of dry air (at constant pressure vs at constant volume)
+ 
+@@ -1687,8 +1719,502 @@
+ ! End of subroutine graupel
+ !------------------------------------------------------------------------------
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  CALL ftg_graupel_capture_output(t, qv, qc, qi, qr, qs, qg, qnc, prr_gsp, prs_gsp, prg_gsp, &
++  &  ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, &
++  &  ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, &
++  &  ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ END SUBROUTINE graupel
+ 
++! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++
++SUBROUTINE ftg_graupel_init_for_capture(stage, dir)
++  
++  USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
++  USE mo_mpi,            ONLY: get_my_mpi_all_id
++  USE m_ser_ftg,         ONLY: ftg_set_serializer, ftg_add_serializer_metainfo, ignore_bullshit_max_dim_size, &
++  &  ignore_bullshit_allow_negative_indices
++  
++  CHARACTER(*), INTENT(IN) :: stage, dir
++  
++  CHARACTER(len=MAX_CHAR_LENGTH) :: basename, mkdirerr
++  
++  WRITE (basename,'(a,a,a,i0)') 'ftg_graupel_', TRIM(stage), '_', get_my_mpi_all_id()
++  
++  WRITE (0,*) 'FTG INIT graupel '//TRIM(basename), get_my_mpi_all_id()
++  
++  mkdirerr = ''
++  !  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
++  !  IF (TRIM(mkdirerr) /= '') THEN
++    !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
++    !  END IF
++    
++    ignore_bullshit_max_dim_size = 100000
++    ignore_bullshit_allow_negative_indices = .TRUE.
++    
++    CALL ftg_set_serializer(TRIM(dir), TRIM(basename), 'w')
++    CALL ftg_add_serializer_metainfo('subroutine', 'graupel')
++    CALL ftg_add_serializer_metainfo('stage', stage)
++    CALL ftg_add_serializer_metainfo('mpi_all_id', get_my_mpi_all_id())
++    
++  END SUBROUTINE ftg_graupel_init_for_capture
++  
++  LOGICAL FUNCTION ftg_graupel_capture_input_active()
++  
++  ftg_graupel_capture_input_active =       &
++  ftg_graupel_capture_input_enabled .AND.  &
++  ftg_graupel_round .EQ. ftg_graupel_capture_round
++  
++END FUNCTION ftg_graupel_capture_input_active
++
++SUBROUTINE ftg_graupel_capture_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, &
++&  qc0, prr_gsp, prs_gsp, prg_gsp, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, &
++&  ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, &
++&  ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, &
++&  ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
++  
++  USE mtime,     ONLY: calendarType
++  USE mo_mpi,    ONLY: get_my_mpi_all_id
++  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  
++  USE gscp_data, ONLY: gscp_data__ccsagg => ccsagg, gscp_data__zvzxp => zvzxp, gscp_data__ccsaxp => ccsaxp, gscp_data__ccdvtp => &
++  &  ccdvtp, gscp_data__zbev => zbev, gscp_data__zcev => zcev, gscp_data__ccsdxp => ccsdxp, gscp_data__ccslxp => ccslxp, &
++  &  gscp_data__zcevxp => zcevxp, gscp_data__ccslam => ccslam, gscp_data__zceff_min => zceff_min, gscp_data__ccsdep => ccsdep, &
++  &  gscp_data__ccswxp => ccswxp, gscp_data__zvz0i => zvz0i, gscp_data__ccsvel => ccsvel, gscp_data__ccsvxp => ccsvxp, &
++  &  gscp_data__ccsrim => ccsrim, gscp_data__zvz0r => zvz0r, gscp_data__ccidep => ccidep, gscp_data__ccshi1 => ccshi1, &
++  &  gscp_data__zbevxp => zbevxp, gscp_data__v0snow_gr => v0snow_gr, gscp_data__zconst => zconst
++  
++  INTEGER, INTENT(in) :: nvec
++  INTEGER, INTENT(in) :: ke
++  INTEGER, INTENT(in), OPTIONAL :: ivstart
++  INTEGER, INTENT(in), OPTIONAL :: ivend
++  INTEGER, INTENT(in), OPTIONAL :: kstart
++  INTEGER, INTENT(in), OPTIONAL :: idbg
++  REAL(KIND=wp), INTENT(in) :: zdt
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: dz
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: t
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: p
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: rho
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qv
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qc
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qi
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qr
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qs
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qg
++  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: qnc
++  REAL(KIND=wp), INTENT(in) :: qi0
++  REAL(KIND=wp), INTENT(in) :: qc0
++  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prr_gsp
++  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prs_gsp
++  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prg_gsp
++  LOGICAL, INTENT(in), OPTIONAL :: l_cv
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_t
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qv
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qc
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qi
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qr
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qs
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_au
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_ac
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_ev
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_nuc
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_idep
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_sdep
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_agg
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_rim
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_rcri
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_icri
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_dau
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_iau
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_imelt
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_smelt
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_cfrz
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_rfrz
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_shed
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qg
++  
++  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
++  CHARACTER(len=256) :: ftg_c
++  
++  IF (ftg_graupel_capture_input_active()) THEN
++    
++    CALL ftg_graupel_init_for_capture('input', ftg_graupel_input_dir)
++    CALL ftg_set_savepoint('input')
++    
++    WRITE (0,*) 'FTG ROUND graupel ', ftg_graupel_round, get_my_mpi_all_id()
++    WRITE (0,*) 'FTG WRITE INPUT DATA graupel', get_my_mpi_all_id()
++    
++    ! MTIME CALENDAR TYPE --> Remove this line if mtime is not used
++    CALL ftg_write("ftg_mtime_calendar", calendarType())
++    
++    ! BASIC ARGUMENTS
++    CALL ftg_write("nvec", nvec)
++    CALL ftg_write("ke", ke)
++    CALL ftg_write("zdt", zdt)
++    CALL ftg_write("dz", dz, LBOUND(dz), UBOUND(dz))
++    CALL ftg_write("t", t, LBOUND(t), UBOUND(t))
++    CALL ftg_write("p", p, LBOUND(p), UBOUND(p))
++    CALL ftg_write("rho", rho, LBOUND(rho), UBOUND(rho))
++    CALL ftg_write("qv", qv, LBOUND(qv), UBOUND(qv))
++    CALL ftg_write("qc", qc, LBOUND(qc), UBOUND(qc))
++    CALL ftg_write("qi", qi, LBOUND(qi), UBOUND(qi))
++    CALL ftg_write("qr", qr, LBOUND(qr), UBOUND(qr))
++    CALL ftg_write("qs", qs, LBOUND(qs), UBOUND(qs))
++    CALL ftg_write("qg", qg, LBOUND(qg), UBOUND(qg))
++    CALL ftg_write("qnc", qnc, LBOUND(qnc), UBOUND(qnc))
++    CALL ftg_write("qi0", qi0)
++    CALL ftg_write("qc0", qc0)
++    CALL ftg_write("prr_gsp", prr_gsp, LBOUND(prr_gsp), UBOUND(prr_gsp))
++    CALL ftg_write("prs_gsp", prs_gsp, LBOUND(prs_gsp), UBOUND(prs_gsp))
++    CALL ftg_write("prg_gsp", prg_gsp, LBOUND(prg_gsp), UBOUND(prg_gsp))
++    
++    
++    ! OPTIONAL ARGUMENTS
++    IF (PRESENT(ivstart)) THEN
++      CALL ftg_write("ivstart", ivstart)
++    END IF
++    IF (PRESENT(ivend)) THEN
++      CALL ftg_write("ivend", ivend)
++    END IF
++    IF (PRESENT(kstart)) THEN
++      CALL ftg_write("kstart", kstart)
++    END IF
++    IF (PRESENT(idbg)) THEN
++      CALL ftg_write("idbg", idbg)
++    END IF
++    IF (PRESENT(l_cv)) THEN
++      CALL ftg_write("l_cv", l_cv)
++    END IF
++    IF (PRESENT(ddt_tend_t)) THEN
++      CALL ftg_write("ddt_tend_t", ddt_tend_t, LBOUND(ddt_tend_t), UBOUND(ddt_tend_t))
++    END IF
++    IF (PRESENT(ddt_tend_qv)) THEN
++      CALL ftg_write("ddt_tend_qv", ddt_tend_qv, LBOUND(ddt_tend_qv), UBOUND(ddt_tend_qv))
++    END IF
++    IF (PRESENT(ddt_tend_qc)) THEN
++      CALL ftg_write("ddt_tend_qc", ddt_tend_qc, LBOUND(ddt_tend_qc), UBOUND(ddt_tend_qc))
++    END IF
++    IF (PRESENT(ddt_tend_qi)) THEN
++      CALL ftg_write("ddt_tend_qi", ddt_tend_qi, LBOUND(ddt_tend_qi), UBOUND(ddt_tend_qi))
++    END IF
++    IF (PRESENT(ddt_tend_qr)) THEN
++      CALL ftg_write("ddt_tend_qr", ddt_tend_qr, LBOUND(ddt_tend_qr), UBOUND(ddt_tend_qr))
++    END IF
++    IF (PRESENT(ddt_tend_qs)) THEN
++      CALL ftg_write("ddt_tend_qs", ddt_tend_qs, LBOUND(ddt_tend_qs), UBOUND(ddt_tend_qs))
++    END IF
++    IF (PRESENT(ddt_diag_au)) THEN
++      CALL ftg_write("ddt_diag_au", ddt_diag_au, LBOUND(ddt_diag_au), UBOUND(ddt_diag_au))
++    END IF
++    IF (PRESENT(ddt_diag_ac)) THEN
++      CALL ftg_write("ddt_diag_ac", ddt_diag_ac, LBOUND(ddt_diag_ac), UBOUND(ddt_diag_ac))
++    END IF
++    IF (PRESENT(ddt_diag_ev)) THEN
++      CALL ftg_write("ddt_diag_ev", ddt_diag_ev, LBOUND(ddt_diag_ev), UBOUND(ddt_diag_ev))
++    END IF
++    IF (PRESENT(ddt_diag_nuc)) THEN
++      CALL ftg_write("ddt_diag_nuc", ddt_diag_nuc, LBOUND(ddt_diag_nuc), UBOUND(ddt_diag_nuc))
++    END IF
++    IF (PRESENT(ddt_diag_idep)) THEN
++      CALL ftg_write("ddt_diag_idep", ddt_diag_idep, LBOUND(ddt_diag_idep), UBOUND(ddt_diag_idep))
++    END IF
++    IF (PRESENT(ddt_diag_sdep)) THEN
++      CALL ftg_write("ddt_diag_sdep", ddt_diag_sdep, LBOUND(ddt_diag_sdep), UBOUND(ddt_diag_sdep))
++    END IF
++    IF (PRESENT(ddt_diag_agg)) THEN
++      CALL ftg_write("ddt_diag_agg", ddt_diag_agg, LBOUND(ddt_diag_agg), UBOUND(ddt_diag_agg))
++    END IF
++    IF (PRESENT(ddt_diag_rim)) THEN
++      CALL ftg_write("ddt_diag_rim", ddt_diag_rim, LBOUND(ddt_diag_rim), UBOUND(ddt_diag_rim))
++    END IF
++    IF (PRESENT(ddt_diag_rcri)) THEN
++      CALL ftg_write("ddt_diag_rcri", ddt_diag_rcri, LBOUND(ddt_diag_rcri), UBOUND(ddt_diag_rcri))
++    END IF
++    IF (PRESENT(ddt_diag_icri)) THEN
++      CALL ftg_write("ddt_diag_icri", ddt_diag_icri, LBOUND(ddt_diag_icri), UBOUND(ddt_diag_icri))
++    END IF
++    IF (PRESENT(ddt_diag_dau)) THEN
++      CALL ftg_write("ddt_diag_dau", ddt_diag_dau, LBOUND(ddt_diag_dau), UBOUND(ddt_diag_dau))
++    END IF
++    IF (PRESENT(ddt_diag_iau)) THEN
++      CALL ftg_write("ddt_diag_iau", ddt_diag_iau, LBOUND(ddt_diag_iau), UBOUND(ddt_diag_iau))
++    END IF
++    IF (PRESENT(ddt_diag_imelt)) THEN
++      CALL ftg_write("ddt_diag_imelt", ddt_diag_imelt, LBOUND(ddt_diag_imelt), UBOUND(ddt_diag_imelt))
++    END IF
++    IF (PRESENT(ddt_diag_smelt)) THEN
++      CALL ftg_write("ddt_diag_smelt", ddt_diag_smelt, LBOUND(ddt_diag_smelt), UBOUND(ddt_diag_smelt))
++    END IF
++    IF (PRESENT(ddt_diag_cfrz)) THEN
++      CALL ftg_write("ddt_diag_cfrz", ddt_diag_cfrz, LBOUND(ddt_diag_cfrz), UBOUND(ddt_diag_cfrz))
++    END IF
++    IF (PRESENT(ddt_diag_rfrz)) THEN
++      CALL ftg_write("ddt_diag_rfrz", ddt_diag_rfrz, LBOUND(ddt_diag_rfrz), UBOUND(ddt_diag_rfrz))
++    END IF
++    IF (PRESENT(ddt_diag_shed)) THEN
++      CALL ftg_write("ddt_diag_shed", ddt_diag_shed, LBOUND(ddt_diag_shed), UBOUND(ddt_diag_shed))
++    END IF
++    IF (PRESENT(ddt_tend_qg)) THEN
++      CALL ftg_write("ddt_tend_qg", ddt_tend_qg, LBOUND(ddt_tend_qg), UBOUND(ddt_tend_qg))
++    END IF
++    
++    ! TYPE MEMBERS
++    
++    
++    ! GLOBALS
++    CALL ftg_write("gscp_data__ccdvtp", gscp_data__ccdvtp)
++    CALL ftg_write("gscp_data__ccidep", gscp_data__ccidep)
++    CALL ftg_write("gscp_data__ccsagg", gscp_data__ccsagg)
++    CALL ftg_write("gscp_data__ccsaxp", gscp_data__ccsaxp)
++    CALL ftg_write("gscp_data__ccsdep", gscp_data__ccsdep)
++    CALL ftg_write("gscp_data__ccsdxp", gscp_data__ccsdxp)
++    CALL ftg_write("gscp_data__ccshi1", gscp_data__ccshi1)
++    CALL ftg_write("gscp_data__ccslam", gscp_data__ccslam)
++    CALL ftg_write("gscp_data__ccslxp", gscp_data__ccslxp)
++    CALL ftg_write("gscp_data__ccsrim", gscp_data__ccsrim)
++    CALL ftg_write("gscp_data__ccsvel", gscp_data__ccsvel)
++    CALL ftg_write("gscp_data__ccsvxp", gscp_data__ccsvxp)
++    CALL ftg_write("gscp_data__ccswxp", gscp_data__ccswxp)
++    ! *** WARNING: Type not supported by serialbox ***
++    !     message_text
++    !     CHARACTER(132) | dimension: 0
++    CALL ftg_write("gscp_data__v0snow_gr", gscp_data__v0snow_gr)
++    CALL ftg_write("gscp_data__zbev", gscp_data__zbev)
++    CALL ftg_write("gscp_data__zbevxp", gscp_data__zbevxp)
++    CALL ftg_write("gscp_data__zceff_min", gscp_data__zceff_min)
++    CALL ftg_write("gscp_data__zcev", gscp_data__zcev)
++    CALL ftg_write("gscp_data__zcevxp", gscp_data__zcevxp)
++    CALL ftg_write("gscp_data__zconst", gscp_data__zconst)
++    CALL ftg_write("gscp_data__zvz0i", gscp_data__zvz0i)
++    CALL ftg_write("gscp_data__zvz0r", gscp_data__zvz0r)
++    CALL ftg_write("gscp_data__zvzxp", gscp_data__zvzxp)
++    
++    
++    CALL ftg_write("ftg_graupel_round", ftg_graupel_round)
++    
++    CALL ftg_destroy_savepoint()
++    WRITE (0,*) 'FTG FINALIZE INPUT DATA graupel', get_my_mpi_all_id()
++    CALL ftg_destroy_serializer()
++    
++  END IF
++  
++END SUBROUTINE ftg_graupel_capture_input
++
++LOGICAL FUNCTION ftg_graupel_capture_output_active()
++
++ftg_graupel_capture_output_active =       &
++ftg_graupel_capture_output_enabled .AND.  &
++ftg_graupel_round .EQ. ftg_graupel_capture_round
++
++END FUNCTION ftg_graupel_capture_output_active
++
++SUBROUTINE ftg_graupel_capture_output(t, qv, qc, qi, qr, qs, qg, qnc, prr_gsp, prs_gsp, prg_gsp, &
++&  ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, &
++&  ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, &
++&  ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
++  
++  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
++  USE mo_exception, ONLY: finish
++  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  
++  USE gscp_data, ONLY: gscp_data__ccsagg => ccsagg, gscp_data__zvzxp => zvzxp, gscp_data__ccsaxp => ccsaxp, gscp_data__ccdvtp => &
++  &  ccdvtp, gscp_data__zbev => zbev, gscp_data__zcev => zcev, gscp_data__ccsdxp => ccsdxp, gscp_data__ccslxp => ccslxp, &
++  &  gscp_data__zcevxp => zcevxp, gscp_data__ccslam => ccslam, gscp_data__zceff_min => zceff_min, gscp_data__ccsdep => ccsdep, &
++  &  gscp_data__ccswxp => ccswxp, gscp_data__zvz0i => zvz0i, gscp_data__ccsvel => ccsvel, gscp_data__ccsvxp => ccsvxp, &
++  &  gscp_data__ccsrim => ccsrim, gscp_data__zvz0r => zvz0r, gscp_data__ccidep => ccidep, gscp_data__ccshi1 => ccshi1, &
++  &  gscp_data__zbevxp => zbevxp, gscp_data__v0snow_gr => v0snow_gr, gscp_data__zconst => zconst
++  
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: t
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qv
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qc
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qi
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qr
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qs
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qg
++  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: qnc
++  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prr_gsp
++  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prs_gsp
++  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prg_gsp
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_t
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qv
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qc
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qi
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qr
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qs
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_au
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_ac
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_ev
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_nuc
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_idep
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_sdep
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_agg
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_rim
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_rcri
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_icri
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_dau
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_iau
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_imelt
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_smelt
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_cfrz
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_rfrz
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_diag_shed
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qg
++  
++  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
++  CHARACTER(len=256) :: ftg_c
++  
++  IF (ftg_graupel_capture_output_active()) THEN
++    
++    CALL ftg_graupel_init_for_capture('output', ftg_graupel_output_dir)
++    CALL ftg_set_savepoint('output')
++    
++    WRITE (0,*) 'FTG ROUND graupel ', ftg_graupel_round, get_my_mpi_all_id()
++    WRITE (0,*) 'FTG WRITE output DATA graupel', get_my_mpi_all_id()
++    
++    
++    ! BASIC ARGUMENTS
++    CALL ftg_write("t", t, LBOUND(t), UBOUND(t))
++    CALL ftg_write("qv", qv, LBOUND(qv), UBOUND(qv))
++    CALL ftg_write("qc", qc, LBOUND(qc), UBOUND(qc))
++    CALL ftg_write("qi", qi, LBOUND(qi), UBOUND(qi))
++    CALL ftg_write("qr", qr, LBOUND(qr), UBOUND(qr))
++    CALL ftg_write("qs", qs, LBOUND(qs), UBOUND(qs))
++    CALL ftg_write("qg", qg, LBOUND(qg), UBOUND(qg))
++    CALL ftg_write("qnc", qnc, LBOUND(qnc), UBOUND(qnc))
++    CALL ftg_write("prr_gsp", prr_gsp, LBOUND(prr_gsp), UBOUND(prr_gsp))
++    CALL ftg_write("prs_gsp", prs_gsp, LBOUND(prs_gsp), UBOUND(prs_gsp))
++    CALL ftg_write("prg_gsp", prg_gsp, LBOUND(prg_gsp), UBOUND(prg_gsp))
++    
++    
++    ! OPTIONAL ARGUMENTS
++    IF (PRESENT(ddt_tend_t)) THEN
++      CALL ftg_write("ddt_tend_t", ddt_tend_t, LBOUND(ddt_tend_t), UBOUND(ddt_tend_t))
++    END IF
++    IF (PRESENT(ddt_tend_qv)) THEN
++      CALL ftg_write("ddt_tend_qv", ddt_tend_qv, LBOUND(ddt_tend_qv), UBOUND(ddt_tend_qv))
++    END IF
++    IF (PRESENT(ddt_tend_qc)) THEN
++      CALL ftg_write("ddt_tend_qc", ddt_tend_qc, LBOUND(ddt_tend_qc), UBOUND(ddt_tend_qc))
++    END IF
++    IF (PRESENT(ddt_tend_qi)) THEN
++      CALL ftg_write("ddt_tend_qi", ddt_tend_qi, LBOUND(ddt_tend_qi), UBOUND(ddt_tend_qi))
++    END IF
++    IF (PRESENT(ddt_tend_qr)) THEN
++      CALL ftg_write("ddt_tend_qr", ddt_tend_qr, LBOUND(ddt_tend_qr), UBOUND(ddt_tend_qr))
++    END IF
++    IF (PRESENT(ddt_tend_qs)) THEN
++      CALL ftg_write("ddt_tend_qs", ddt_tend_qs, LBOUND(ddt_tend_qs), UBOUND(ddt_tend_qs))
++    END IF
++    IF (PRESENT(ddt_diag_au)) THEN
++      CALL ftg_write("ddt_diag_au", ddt_diag_au, LBOUND(ddt_diag_au), UBOUND(ddt_diag_au))
++    END IF
++    IF (PRESENT(ddt_diag_ac)) THEN
++      CALL ftg_write("ddt_diag_ac", ddt_diag_ac, LBOUND(ddt_diag_ac), UBOUND(ddt_diag_ac))
++    END IF
++    IF (PRESENT(ddt_diag_ev)) THEN
++      CALL ftg_write("ddt_diag_ev", ddt_diag_ev, LBOUND(ddt_diag_ev), UBOUND(ddt_diag_ev))
++    END IF
++    IF (PRESENT(ddt_diag_nuc)) THEN
++      CALL ftg_write("ddt_diag_nuc", ddt_diag_nuc, LBOUND(ddt_diag_nuc), UBOUND(ddt_diag_nuc))
++    END IF
++    IF (PRESENT(ddt_diag_idep)) THEN
++      CALL ftg_write("ddt_diag_idep", ddt_diag_idep, LBOUND(ddt_diag_idep), UBOUND(ddt_diag_idep))
++    END IF
++    IF (PRESENT(ddt_diag_sdep)) THEN
++      CALL ftg_write("ddt_diag_sdep", ddt_diag_sdep, LBOUND(ddt_diag_sdep), UBOUND(ddt_diag_sdep))
++    END IF
++    IF (PRESENT(ddt_diag_agg)) THEN
++      CALL ftg_write("ddt_diag_agg", ddt_diag_agg, LBOUND(ddt_diag_agg), UBOUND(ddt_diag_agg))
++    END IF
++    IF (PRESENT(ddt_diag_rim)) THEN
++      CALL ftg_write("ddt_diag_rim", ddt_diag_rim, LBOUND(ddt_diag_rim), UBOUND(ddt_diag_rim))
++    END IF
++    IF (PRESENT(ddt_diag_rcri)) THEN
++      CALL ftg_write("ddt_diag_rcri", ddt_diag_rcri, LBOUND(ddt_diag_rcri), UBOUND(ddt_diag_rcri))
++    END IF
++    IF (PRESENT(ddt_diag_icri)) THEN
++      CALL ftg_write("ddt_diag_icri", ddt_diag_icri, LBOUND(ddt_diag_icri), UBOUND(ddt_diag_icri))
++    END IF
++    IF (PRESENT(ddt_diag_dau)) THEN
++      CALL ftg_write("ddt_diag_dau", ddt_diag_dau, LBOUND(ddt_diag_dau), UBOUND(ddt_diag_dau))
++    END IF
++    IF (PRESENT(ddt_diag_iau)) THEN
++      CALL ftg_write("ddt_diag_iau", ddt_diag_iau, LBOUND(ddt_diag_iau), UBOUND(ddt_diag_iau))
++    END IF
++    IF (PRESENT(ddt_diag_imelt)) THEN
++      CALL ftg_write("ddt_diag_imelt", ddt_diag_imelt, LBOUND(ddt_diag_imelt), UBOUND(ddt_diag_imelt))
++    END IF
++    IF (PRESENT(ddt_diag_smelt)) THEN
++      CALL ftg_write("ddt_diag_smelt", ddt_diag_smelt, LBOUND(ddt_diag_smelt), UBOUND(ddt_diag_smelt))
++    END IF
++    IF (PRESENT(ddt_diag_cfrz)) THEN
++      CALL ftg_write("ddt_diag_cfrz", ddt_diag_cfrz, LBOUND(ddt_diag_cfrz), UBOUND(ddt_diag_cfrz))
++    END IF
++    IF (PRESENT(ddt_diag_rfrz)) THEN
++      CALL ftg_write("ddt_diag_rfrz", ddt_diag_rfrz, LBOUND(ddt_diag_rfrz), UBOUND(ddt_diag_rfrz))
++    END IF
++    IF (PRESENT(ddt_diag_shed)) THEN
++      CALL ftg_write("ddt_diag_shed", ddt_diag_shed, LBOUND(ddt_diag_shed), UBOUND(ddt_diag_shed))
++    END IF
++    IF (PRESENT(ddt_tend_qg)) THEN
++      CALL ftg_write("ddt_tend_qg", ddt_tend_qg, LBOUND(ddt_tend_qg), UBOUND(ddt_tend_qg))
++    END IF
++    
++    ! TYPE MEMBERS
++    
++    
++    ! GLOBALS
++    CALL ftg_write("gscp_data__ccdvtp", gscp_data__ccdvtp)
++    CALL ftg_write("gscp_data__ccidep", gscp_data__ccidep)
++    CALL ftg_write("gscp_data__ccsagg", gscp_data__ccsagg)
++    CALL ftg_write("gscp_data__ccsaxp", gscp_data__ccsaxp)
++    CALL ftg_write("gscp_data__ccsdep", gscp_data__ccsdep)
++    CALL ftg_write("gscp_data__ccsdxp", gscp_data__ccsdxp)
++    CALL ftg_write("gscp_data__ccshi1", gscp_data__ccshi1)
++    CALL ftg_write("gscp_data__ccslam", gscp_data__ccslam)
++    CALL ftg_write("gscp_data__ccslxp", gscp_data__ccslxp)
++    CALL ftg_write("gscp_data__ccsrim", gscp_data__ccsrim)
++    CALL ftg_write("gscp_data__ccsvel", gscp_data__ccsvel)
++    CALL ftg_write("gscp_data__ccsvxp", gscp_data__ccsvxp)
++    CALL ftg_write("gscp_data__ccswxp", gscp_data__ccswxp)
++    ! *** WARNING: Type not supported by serialbox ***
++    !     message_text
++    !     CHARACTER(132) | dimension: 0
++    CALL ftg_write("gscp_data__v0snow_gr", gscp_data__v0snow_gr)
++    CALL ftg_write("gscp_data__zbev", gscp_data__zbev)
++    CALL ftg_write("gscp_data__zbevxp", gscp_data__zbevxp)
++    CALL ftg_write("gscp_data__zceff_min", gscp_data__zceff_min)
++    CALL ftg_write("gscp_data__zcev", gscp_data__zcev)
++    CALL ftg_write("gscp_data__zcevxp", gscp_data__zcevxp)
++    CALL ftg_write("gscp_data__zconst", gscp_data__zconst)
++    CALL ftg_write("gscp_data__zvz0i", gscp_data__zvz0i)
++    CALL ftg_write("gscp_data__zvz0r", gscp_data__zvz0r)
++    CALL ftg_write("gscp_data__zvzxp", gscp_data__zvzxp)
++    
++    
++    CALL ftg_write("ftg_graupel_round", ftg_graupel_round)
++    
++    CALL ftg_destroy_savepoint()
++    WRITE (0,*) 'FTG FINALIZE output DATA graupel', get_my_mpi_all_id()
++    CALL ftg_destroy_serializer()
++    
++    CALL work_mpi_barrier()
++    !      CALL finish('FTG EXIT', 'Output captured: graupel', 0)
++    
++  END IF
++  
++END SUBROUTINE ftg_graupel_capture_output
++
++! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++
++
++
+ !==============================================================================
+ 
+ END MODULE gscp_graupel
