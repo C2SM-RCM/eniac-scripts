@@ -31,7 +31,7 @@ run_command sed -i -e "s/--ntasks-per-node=[0-9]*$/--ntasks-per-node=1/g" -e "s/
 run_command cp ${commondir}/submit_reference.sh ${workdir}/ || exit 1
 
 # Run serialization
-for nproma in 16 2729 20480; do
+while read -r nproma; do
 
   # Prepare output directories
   run_command mkdir -p "${ftgoutputdir}/nproma_${nproma}" || exit 1
@@ -44,4 +44,4 @@ for nproma in 16 2729 20480; do
 
   run_command rm "${ftgoutputdir}/data" || exit 1
 
-done
+done <${scriptdir}/nproma_list.txt

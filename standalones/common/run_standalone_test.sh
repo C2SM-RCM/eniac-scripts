@@ -44,7 +44,7 @@ run_command ln -sf ${workdir}/build/*/bin/${testname} . || exit 1
 teststatus=0
 tid=0
 export nproma
-for nproma in 16 2729 20480; do
+while read -r nproma; do
 
   # Sync serialization data for FTG
   run_command mkdir -p "${ftginputdir}" || exit 1
@@ -73,7 +73,7 @@ for nproma in 16 2729 20480; do
   run_command rm "${ftgoutputdir}/data" || exit 1
   let "tid+=1"
 
-done
+done <${scriptdir}/nproma_list.txt
 
 # Final status report
 if [ "${teststatus}" -eq 0 ]; then
