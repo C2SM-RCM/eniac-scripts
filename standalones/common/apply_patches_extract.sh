@@ -19,7 +19,7 @@ specific_patches ()
     # Extraction patches for JSBACH
     if [ -d ${patchdir}/jsbach ]; then
       for f in ${patchdir}/jsbach/*.patch; do
-        patch -d externals/jsbach -p1 <$f
+        patch -p1 <$f
       done
     fi
   fi
