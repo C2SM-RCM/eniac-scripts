@@ -1,0 +1,19 @@
+--- eniac_a/src/atm_phy_echam/mo_surface.f90	2018-05-25 14:41:38.000000000 +0200
++++ eniac_b/src/atm_phy_echam/mo_surface.f90	2018-05-25 14:46:48.217831106 +0200
+@@ -2074,14 +2074,14 @@
+     CALL ftg_write("mo_jsb_control__is_standalone", mo_jsb_control__is_standalone)
+     CALL ftg_write("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
+     CALL ftg_write("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
+-    CALL ftg_write("mo_jsb_control__l_timer", mo_jsb_control__l_timer)
++    ! CALL ftg_write("mo_jsb_control__l_timer", mo_jsb_control__l_timer)
+     IF (ASSOCIATED(lsfc_heat_flux)) THEN
+       CALL ftg_write("lsfc_heat_flux", lsfc_heat_flux)
+     END IF
+     IF (ASSOCIATED(lsfc_mom_flux)) THEN
+       CALL ftg_write("lsfc_mom_flux", lsfc_mom_flux)
+     END IF
+-    CALL ftg_write("mo_run_config__ltimer", mo_run_config__ltimer)
++    ! CALL ftg_write("mo_run_config__ltimer", mo_run_config__ltimer)
+     ! *** WARNING: Type not supported by serialbox ***
+     !     mo_master_control__master_namelist_filename
+     !     CHARACTER(len=filename_max) | dimension: 0

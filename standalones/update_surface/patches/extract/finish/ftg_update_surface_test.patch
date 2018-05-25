@@ -1,6 +1,6 @@
---- a/src/tests/ftg_update_surface_test.f90	2018-05-15 14:59:34.924586000 +0200
-+++ b/src/tests/ftg_update_surface_test.f90	2018-05-15 15:21:34.145488520 +0200
-@@ -206,6 +206,15 @@
+--- eniac_a/src/tests/ftg_update_surface_test.f90	2018-05-25 10:52:01.000000000 +0200
++++ eniac_b/src/tests/ftg_update_surface_test.f90	2018-05-25 10:52:16.732396000 +0200
+@@ -207,6 +207,15 @@
    &  albnirdir, albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, &
    &  pco2_flux_tile, ptsfc, ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, &
    &  albvisdif_ice, albnirdir_ice, albnirdif_ice)
@@ -8,19 +8,20 @@
 +  USE mo_time_config,    ONLY: set_tc_startdate, set_tc_stopdate, &
 +                               set_tc_dt_model, set_tc_current_date, &
 +                               set_tc_exp_startdate, set_tc_exp_stopdate
-+  USE mo_jsb_base,       ONLY: jsbach_setup_models
-+  USE mo_jsb_model_init, ONLY: jsbach_setup_grid
++  USE mo_jsb_base,       ONLY: jsbach_setup_models, jsbach_setup_tiles
++  USE mo_jsb_model_init, ONLY: jsbach_setup_grid, jsbach_init
 +  USE mo_echam_convect_tables, ONLY: init_convect_tables
++  USE mo_zaxis_type, ONLY: zaxisTypeList, t_zaxisTypeList
 +  !===================== END MANUALLY ADDED FOR FTG =====================!
-+
      
      INTEGER, INTENT(inout) :: jg
      INTEGER, INTENT(inout) :: kproma
-@@ -716,6 +725,26 @@
+@@ -719,6 +728,31 @@
        &  send_startidx)
      END DO
      
 +    !===================== START MANUALLY ADDED FOR FTG ===================!
++    mo_run_config__ltimer = .FALSE.
 +    CALL init_convect_tables()
 +    mo_master_control__master_namelist_filename = "icon_master.namelist"
 +    mo_model_domain__p_patch%grid_filename = 'icon_grid_0005_R02B04_G.nc'
@@ -32,12 +33,16 @@
 +    CALL set_tc_dt_model('PT4M')
 +
 +    ! Do basic initialization of JSBACH
++    zaxisTypeList = t_zaxisTypeList()
 +    CALL jsbach_setup_models(mo_master_control__master_namelist_filename)
++    mo_jsb_control__l_timer = .FALSE.
 +
 +    ! Now continue initialization of JSBACH for the different grids
 +    IF (mo_echam_phy_config__echam_phy_config(jg)%ljsb) THEN 
-+      CALL jsbach_setup_grid( jg, mo_model_domain__p_patch(jg)) !< in
++      CALL jsbach_setup_grid(jg, mo_model_domain__p_patch(jg))
++      CALL jsbach_setup_tiles(jg)
 +    END IF
++    CALL jsbach_init(jg)
 +    CALL set_tc_current_date('1979-01-01T00:04:00Z')
 +    !===================== END MANUALLY ADDED FOR FTG =====================!
      

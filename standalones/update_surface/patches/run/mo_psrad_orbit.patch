@@ -1,0 +1,17 @@
+--- eniac_a/src/atm_phy_psrad/mo_psrad_orbit.f90	2018-05-25 11:29:25.730535130 +0200
++++ eniac_b/src/atm_phy_psrad/mo_psrad_orbit.f90	2018-05-25 11:29:25.275589000 +0200
+@@ -65,6 +65,14 @@
+ 
+   REAL(wp), SAVE :: clonp  =  282.7000_wp !< Long. of Perihelion (from v.eqin)
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  PUBLIC :: declination, initialized
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ CONTAINS
+   !-----------------------------------------------------------------------------
+   !>

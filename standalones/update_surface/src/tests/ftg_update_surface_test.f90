@@ -15,16 +15,16 @@ PROGRAM ftg_update_surface_test
   &  ftg_allocate_and_read_allocatable
   
   USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
-  USE mo_run_config, ONLY: mo_run_config__ltimer => ltimer
+  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
+  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
   USE mo_echam_sfc_indices, ONLY: mo_echam_sfc_indices__nsfc_type => nsfc_type
   USE mo_echam_vdf_config, ONLY: mo_echam_vdf_config__echam_vdf_config => echam_vdf_config, t_echam_vdf_config
   USE mo_jsb_test, ONLY: mo_jsb_test__write_interface_vars => write_interface_vars
   USE mo_vdiff_solver, ONLY: mo_vdiff_solver__imh => imh, mo_vdiff_solver__imuv => imuv, mo_vdiff_solver__nmatrix => nmatrix, &
   &  mo_vdiff_solver__imqv => imqv, mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ih => &
   &  ih, mo_vdiff_solver__iv => iv, mo_vdiff_solver__iu => iu
-  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
-  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
-  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
+  USE mo_run_config, ONLY: mo_run_config__ltimer => ltimer
+  USE mo_psrad_orbit, ONLY: mo_psrad_orbit__initialized => initialized, mo_psrad_orbit__declination => declination
   USE mo_echam_phy_config, ONLY: mo_echam_phy_config__echam_phy_config => echam_phy_config, t_echam_phy_config
   USE mo_master_control, ONLY: mo_master_control__master_namelist_filename => master_namelist_filename
   USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
@@ -34,6 +34,7 @@ PROGRAM ftg_update_surface_test
   USE mo_jsb_control, ONLY: mo_jsb_control__l_timer => l_timer, mo_jsb_control__debug => debug, mo_jsb_control__is_standalone => &
   &  is_standalone
   USE mo_surface, ONLY: lsfc_heat_flux, lsfc_mom_flux
+  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
   
   USE mo_read_netcdf_distributed, ONLY: t_basic_distrib_read_data
   USE mo_echam_vdf_config, ONLY: t_echam_vdf_config
@@ -213,8 +214,8 @@ CONTAINS
   USE mo_jsb_base,       ONLY: jsbach_setup_models, jsbach_setup_tiles
   USE mo_jsb_model_init, ONLY: jsbach_setup_grid, jsbach_init
   USE mo_echam_convect_tables, ONLY: init_convect_tables
+  USE mo_zaxis_type, ONLY: zaxisTypeList, t_zaxisTypeList
   !===================== END MANUALLY ADDED FOR FTG =====================!
-
     
     INTEGER, INTENT(inout) :: jg
     INTEGER, INTENT(inout) :: kproma
@@ -530,6 +531,7 @@ CONTAINS
     ! GLOBALS
     CALL ftg_read("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
     CALL ftg_read("mo_jsb_control__debug", mo_jsb_control__debug)
+    CALL ftg_read("mo_psrad_orbit__declination", mo_psrad_orbit__declination)
     CALL ftg_read("mo_sea_ice_nml__hci_layer", mo_sea_ice_nml__hci_layer)
     CALL ftg_read("mo_sea_ice_nml__i_ice_albedo", mo_sea_ice_nml__i_ice_albedo)
     CALL ftg_read("mo_sea_ice_nml__i_ice_therm", mo_sea_ice_nml__i_ice_therm)
@@ -538,6 +540,7 @@ CONTAINS
     CALL ftg_read("mo_vdiff_solver__imh", mo_vdiff_solver__imh)
     CALL ftg_read("mo_vdiff_solver__imqv", mo_vdiff_solver__imqv)
     CALL ftg_read("mo_vdiff_solver__imuv", mo_vdiff_solver__imuv)
+    CALL ftg_read("mo_psrad_orbit__initialized", mo_psrad_orbit__initialized)
     CALL ftg_read("mo_vdiff_solver__iqv", mo_vdiff_solver__iqv)
     CALL ftg_read("mo_jsb_control__is_standalone", mo_jsb_control__is_standalone)
     CALL ftg_read("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
@@ -726,6 +729,7 @@ CONTAINS
     END DO
     
     !===================== START MANUALLY ADDED FOR FTG ===================!
+    mo_run_config__ltimer = .FALSE.
     CALL init_convect_tables()
     mo_master_control__master_namelist_filename = "icon_master.namelist"
     mo_model_domain__p_patch%grid_filename = 'icon_grid_0005_R02B04_G.nc'
@@ -737,7 +741,9 @@ CONTAINS
     CALL set_tc_dt_model('PT4M')
 
     ! Do basic initialization of JSBACH
+    zaxisTypeList = t_zaxisTypeList()
     CALL jsbach_setup_models(mo_master_control__master_namelist_filename)
+    mo_jsb_control__l_timer = .FALSE.
 
     ! Now continue initialization of JSBACH for the different grids
     IF (mo_echam_phy_config__echam_phy_config(jg)%ljsb) THEN 

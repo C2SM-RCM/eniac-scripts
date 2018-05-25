@@ -1,6 +1,6 @@
---- a/src/atm_phy_echam/mo_surface.f90	2018-05-16 12:10:43.248662820 +0200
-+++ b/src/atm_phy_echam/mo_surface.f90	2018-05-16 12:10:41.977984000 +0200
-@@ -40,6 +40,27 @@
+--- eniac_a/src/atm_phy_echam/mo_surface.f90	2018-05-25 11:29:25.729829003 +0200
++++ eniac_b/src/atm_phy_echam/mo_surface.f90	2018-05-25 11:29:25.284250000 +0200
+@@ -40,6 +40,28 @@
    USE mo_ice_interface,     ONLY: ice_fast
    USE mo_ml_ocean,          ONLY: ml_ocean
  #endif
@@ -23,12 +23,13 @@
 +    USE mo_read_netcdf_distributed, ONLY: basic_data
 +    USE mo_sea_ice_nml, ONLY: i_ice_therm, i_ice_albedo, use_no_flux_gradients
 +    USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
++    USE mo_psrad_orbit, ONLY: inquire_declination
 +   !================= STOP FORCE SERIALIZATION OF MISSED DATA =====================!
 +#endif
  
    IMPLICIT NONE
    PRIVATE
-@@ -49,6 +70,27 @@
+@@ -49,6 +71,27 @@
    !
    LOGICAL, POINTER :: lsfc_mom_flux, lsfc_heat_flux
  
@@ -56,10 +57,12 @@
  CONTAINS
    !>
    !!
-@@ -264,6 +306,69 @@
+@@ -263,6 +306,71 @@
+     LOGICAL :: mask(kbdim)
  
     CHARACTER(len=*), PARAMETER :: method_name='mo_surface:update_surface'
- 
++   REAL(wp) :: xdecl
++
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  
 +  ftg_update_surface_round = ftg_update_surface_round + 1
@@ -78,6 +81,7 @@
 +
 +#ifdef FORCE_FTG_SERIALIZATION
 +!================= START FORCE SERIALIZATION OF MISSED DATA =====================!
++  CALL inquire_declination(xdecl)
 +  PRINT *, p_patch(jg)%id
 +  PRINT *, get_grid_filename_domain(patch = p_patch(jg))
 +  PRINT *, get_ntotal_domain       (patch = p_patch(jg))
@@ -122,11 +126,10 @@
 +  basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%io_chunk%size
 +!================= STOP FORCE SERIALIZATION OF MISSED DATA =====================!
 +#endif
-+
+ 
     ! Shortcuts to components of echam_vdf_config
     !
-    lsfc_mom_flux  => echam_vdf_config(jg)% lsfc_mom_flux
-@@ -924,7 +1029,1424 @@
+@@ -924,7 +1032,1430 @@
    !
    !---------------------------------------------------------------------------
  
@@ -199,15 +202,15 @@
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
 +  
 +  USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
-+  USE mo_run_config, ONLY: mo_run_config__ltimer => ltimer
++  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
++  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
 +  USE mo_echam_sfc_indices, ONLY: mo_echam_sfc_indices__nsfc_type => nsfc_type
 +  USE mo_echam_vdf_config, ONLY: mo_echam_vdf_config__echam_vdf_config => echam_vdf_config, t_echam_vdf_config
 +  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__imh => imh, mo_vdiff_solver__imuv => imuv, mo_vdiff_solver__nmatrix => nmatrix, &
 +  &  mo_vdiff_solver__imqv => imqv, mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ih => &
 +  &  ih, mo_vdiff_solver__iv => iv, mo_vdiff_solver__iu => iu
-+  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
-+  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
-+  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
++  USE mo_run_config, ONLY: mo_run_config__ltimer => ltimer
++  USE mo_psrad_orbit, ONLY: mo_psrad_orbit__initialized => initialized, mo_psrad_orbit__declination => declination
 +  USE mo_echam_phy_config, ONLY: mo_echam_phy_config__echam_phy_config => echam_phy_config, t_echam_phy_config
 +  USE mo_master_control, ONLY: mo_master_control__master_namelist_filename => master_namelist_filename
 +  USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
@@ -217,6 +220,7 @@
 +  USE mo_jsb_control, ONLY: mo_jsb_control__l_timer => l_timer, mo_jsb_control__debug => debug, mo_jsb_control__is_standalone => &
 +  &  is_standalone
 +  USE mo_jsb_test, ONLY: mo_jsb_test__write_interface_vars => write_interface_vars
++  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
 +  
 +  INTEGER, INTENT(in) :: jg
 +  INTEGER, INTENT(in) :: kproma
@@ -534,6 +538,7 @@
 +    ! GLOBALS
 +    CALL ftg_write("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
 +    CALL ftg_write("mo_jsb_control__debug", mo_jsb_control__debug)
++    CALL ftg_write("mo_psrad_orbit__declination", mo_psrad_orbit__declination)
 +    CALL ftg_write("mo_sea_ice_nml__hci_layer", mo_sea_ice_nml__hci_layer)
 +    CALL ftg_write("mo_sea_ice_nml__i_ice_albedo", mo_sea_ice_nml__i_ice_albedo)
 +    CALL ftg_write("mo_sea_ice_nml__i_ice_therm", mo_sea_ice_nml__i_ice_therm)
@@ -542,6 +547,7 @@
 +    CALL ftg_write("mo_vdiff_solver__imh", mo_vdiff_solver__imh)
 +    CALL ftg_write("mo_vdiff_solver__imqv", mo_vdiff_solver__imqv)
 +    CALL ftg_write("mo_vdiff_solver__imuv", mo_vdiff_solver__imuv)
++    CALL ftg_write("mo_psrad_orbit__initialized", mo_psrad_orbit__initialized)
 +    CALL ftg_write("mo_vdiff_solver__iqv", mo_vdiff_solver__iqv)
 +    CALL ftg_write("mo_jsb_control__is_standalone", mo_jsb_control__is_standalone)
 +    CALL ftg_write("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
@@ -941,15 +947,15 @@
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
 +  
 +  USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
-+  USE mo_run_config, ONLY: mo_run_config__ltimer => ltimer
++  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
++  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
 +  USE mo_echam_sfc_indices, ONLY: mo_echam_sfc_indices__nsfc_type => nsfc_type
 +  USE mo_echam_vdf_config, ONLY: mo_echam_vdf_config__echam_vdf_config => echam_vdf_config, t_echam_vdf_config
 +  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__imh => imh, mo_vdiff_solver__imuv => imuv, mo_vdiff_solver__nmatrix => nmatrix, &
 +  &  mo_vdiff_solver__imqv => imqv, mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ih => &
 +  &  ih, mo_vdiff_solver__iv => iv, mo_vdiff_solver__iu => iu
-+  USE mo_sea_ice_nml, ONLY: mo_sea_ice_nml__hci_layer => hci_layer, mo_sea_ice_nml__use_no_flux_gradients => &
-+  &  use_no_flux_gradients, mo_sea_ice_nml__i_ice_albedo => i_ice_albedo, mo_sea_ice_nml__i_ice_therm => i_ice_therm
-+  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
++  USE mo_run_config, ONLY: mo_run_config__ltimer => ltimer
++  USE mo_psrad_orbit, ONLY: mo_psrad_orbit__initialized => initialized, mo_psrad_orbit__declination => declination
 +  USE mo_echam_phy_config, ONLY: mo_echam_phy_config__echam_phy_config => echam_phy_config, t_echam_phy_config
 +  USE mo_master_control, ONLY: mo_master_control__master_namelist_filename => master_namelist_filename
 +  USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
@@ -959,6 +965,7 @@
 +  USE mo_jsb_control, ONLY: mo_jsb_control__l_timer => l_timer, mo_jsb_control__debug => debug, mo_jsb_control__is_standalone => &
 +  &  is_standalone
 +  USE mo_jsb_test, ONLY: mo_jsb_test__write_interface_vars => write_interface_vars
++  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
 +  
 +  REAL(wp), DIMENSION(:,:,:,:), INTENT(in) :: aa
 +  REAL(wp), DIMENSION(:,:,:,:), INTENT(in) :: aa_btm
@@ -1154,6 +1161,7 @@
 +    ! GLOBALS
 +    CALL ftg_write("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
 +    CALL ftg_write("mo_jsb_control__debug", mo_jsb_control__debug)
++    CALL ftg_write("mo_psrad_orbit__declination", mo_psrad_orbit__declination)
 +    CALL ftg_write("mo_sea_ice_nml__hci_layer", mo_sea_ice_nml__hci_layer)
 +    CALL ftg_write("mo_sea_ice_nml__i_ice_albedo", mo_sea_ice_nml__i_ice_albedo)
 +    CALL ftg_write("mo_sea_ice_nml__i_ice_therm", mo_sea_ice_nml__i_ice_therm)
@@ -1162,18 +1170,19 @@
 +    CALL ftg_write("mo_vdiff_solver__imh", mo_vdiff_solver__imh)
 +    CALL ftg_write("mo_vdiff_solver__imqv", mo_vdiff_solver__imqv)
 +    CALL ftg_write("mo_vdiff_solver__imuv", mo_vdiff_solver__imuv)
++    CALL ftg_write("mo_psrad_orbit__initialized", mo_psrad_orbit__initialized)
 +    CALL ftg_write("mo_vdiff_solver__iqv", mo_vdiff_solver__iqv)
 +    CALL ftg_write("mo_jsb_control__is_standalone", mo_jsb_control__is_standalone)
 +    CALL ftg_write("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
 +    CALL ftg_write("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
-+    CALL ftg_write("mo_jsb_control__l_timer", mo_jsb_control__l_timer)
++    ! CALL ftg_write("mo_jsb_control__l_timer", mo_jsb_control__l_timer)
 +    IF (ASSOCIATED(lsfc_heat_flux)) THEN
 +      CALL ftg_write("lsfc_heat_flux", lsfc_heat_flux)
 +    END IF
 +    IF (ASSOCIATED(lsfc_mom_flux)) THEN
 +      CALL ftg_write("lsfc_mom_flux", lsfc_mom_flux)
 +    END IF
-+    CALL ftg_write("mo_run_config__ltimer", mo_run_config__ltimer)
++    ! CALL ftg_write("mo_run_config__ltimer", mo_run_config__ltimer)
 +    ! *** WARNING: Type not supported by serialbox ***
 +    !     mo_master_control__master_namelist_filename
 +    !     CHARACTER(len=filename_max) | dimension: 0

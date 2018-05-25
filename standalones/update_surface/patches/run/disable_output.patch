@@ -1,0 +1,56 @@
+--- a/run/exp.atm_amip_test	2018-05-24 11:57:54.910187000 +0200
++++ b/run/exp.atm_amip_test	2018-05-24 11:58:57.958161000 +0200
+@@ -79,7 +79,7 @@
+ jsbach_with_hd=no
+ jsbach_with_carbon=no         # yes needs jsbach_pfts usecase
+ jsbach_check_wbal=no          # check water balance
+-output_lnd=min                # amount of output: min/full/no
++output_lnd=no                # amount of output: min/full/no
+ 
+ # further processing for land configuration
+ ljsbach=$([ "${run_jsbach:=no}" == yes ] && echo .TRUE. || echo .FALSE. )
+@@ -426,7 +426,7 @@
+ # 3-dimensional files include 'ps' and 'pfull' to allow the vertical
+ # interpolation to pressure levels by cdo ap2pl.
+ 
+-output_atm_cgrid=yes
++output_atm_cgrid=no
+ #
+ if [[ "$output_atm_cgrid" == "yes" ]]; then
+   #
+@@ -449,7 +449,7 @@
+ fi
+ 
+ 
+-output_atm_3d=yes
++output_atm_3d=no
+ #
+ if [[ "$output_atm_3d" == "yes" ]]; then
+   #
+@@ -476,7 +476,7 @@
+ fi
+ 
+ 
+-output_atm_2d=yes
++output_atm_2d=no
+ #
+ if [[ "$output_atm_2d" == "yes" ]]; then
+   #
+@@ -515,7 +515,7 @@
+ fi
+ 
+ 
+-output_phy_3d=yes
++output_phy_3d=no
+ #
+ if [[ "$output_phy_3d" == "yes" ]]; then
+   #
+@@ -550,7 +550,7 @@
+ fi
+ 
+ 
+-output_trc_3d=yes
++output_trc_3d=no
+ #
+ if [[ "$output_trc_3d" == "yes" ]]; then
+   #

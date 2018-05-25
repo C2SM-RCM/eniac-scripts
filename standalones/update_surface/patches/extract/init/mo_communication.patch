@@ -1,0 +1,15 @@
+--- eniac_a/src/parallel_infrastructure/mo_communication.f90	2018-05-25 09:17:08.000000000 +0200
++++ eniac_b/src/parallel_infrastructure/mo_communication.f90	2018-05-25 09:21:52.722521000 +0200
+@@ -92,7 +92,11 @@
+ !
+ TYPE t_comm_pattern
+ 
+-  PRIVATE
++  !================= START FORCE FORTRAN TEST GENERATOR (FTG) =======================!
++
++  !PRIVATE
++
++  !================= STOP FORCE FORTRAN TEST GENERATOR (FTG) =========================!
+ 
+    ! Number of points we receive in communication,
+    ! this is the same as recv_limits

@@ -1,6 +1,6 @@
---- a/src/atm_phy_echam/mo_surface.f90	2018-05-15 14:23:44.506327000 +0200
-+++ b/src/atm_phy_echam/mo_surface.f90	2018-05-15 14:29:48.202349108 +0200
-@@ -40,6 +40,27 @@
+--- eniac_a/src/atm_phy_echam/mo_surface.f90	2018-05-25 09:17:08.000000000 +0200
++++ eniac_b/src/atm_phy_echam/mo_surface.f90	2018-05-25 09:23:02.874511427 +0200
+@@ -40,6 +40,28 @@
    USE mo_ice_interface,     ONLY: ice_fast
    USE mo_ml_ocean,          ONLY: ml_ocean
  #endif
@@ -23,17 +23,21 @@
 +    USE mo_read_netcdf_distributed, ONLY: basic_data
 +    USE mo_sea_ice_nml, ONLY: i_ice_therm, i_ice_albedo, use_no_flux_gradients
 +    USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
++    USE mo_psrad_orbit, ONLY: inquire_declination
 +   !================= STOP FORCE SERIALIZATION OF MISSED DATA =====================!
 +#endif
  
    IMPLICIT NONE
    PRIVATE
-@@ -264,6 +285,53 @@
+@@ -263,6 +285,55 @@
+     LOGICAL :: mask(kbdim)
  
     CHARACTER(len=*), PARAMETER :: method_name='mo_surface:update_surface'
- 
++   REAL(wp) :: xdecl
++
 +#ifdef FORCE_FTG_SERIALIZATION
 +!================= START FORCE SERIALIZATION OF MISSED DATA =====================!
++  CALL inquire_declination(xdecl)
 +  PRINT *, p_patch(jg)%id
 +  PRINT *, get_grid_filename_domain(patch = p_patch(jg))
 +  PRINT *, get_ntotal_domain       (patch = p_patch(jg))
@@ -78,7 +82,6 @@
 +  basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%io_chunk%size
 +!================= STOP FORCE SERIALIZATION OF MISSED DATA =====================!
 +#endif
-+
+ 
     ! Shortcuts to components of echam_vdf_config
     !
-    lsfc_mom_flux  => echam_vdf_config(jg)% lsfc_mom_flux
