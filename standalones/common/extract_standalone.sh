@@ -8,7 +8,7 @@ if [[ !("${compiler}" == "gcc" && "${target}" == "cpu") ]]; then
   echo "Extraction of standalone only works with GCC on CPU"
   run_command echo "###########################################" || exit 1
   run_command echo "##          Extraction FAILED            ##" || exit 1
-  run_command echo "## Extraction only works with GCC on CP! ##" || exit 1
+  run_command echo "## Extraction only works with GCC on CPU ##" || exit 1
   run_command echo "###########################################" || exit 1
   exit 1
 fi
@@ -75,8 +75,9 @@ if [[ ${run_next_part} -eq 1 ]]; then
   run_command ./build_command >& standalone_build_c.log || exit 1
 
   # Generate capture code
+  run_command echo "Generating capture code ..." || exit 1
   run_command cd fortrantestgenerator/
-  run_command ./FortranTestGenerator.py -c ${testmodule} ${testroutine}
+  run_command ./FortranTestGenerator.py -c ${testmodule} ${testroutine} &> standalone_ftg_c.log
   run_command cd ../
 
   # Cleanup
@@ -112,8 +113,9 @@ if [[ ${run_next_part} -eq 1 ]]; then
   run_command ./build_command >& standalone_build_r.log || exit 1
 
   # Generate replay code
+  run_command echo "Generating replay code ..." || exit 1
   run_command cd fortrantestgenerator/
-  run_command ./FortranTestGenerator.py -r ${testmodule} ${testroutine}
+  run_command ./FortranTestGenerator.py -r ${testmodule} ${testroutine} &> standalone_ftg_r.log
   run_command cd ../
 
   # Cleanup
@@ -206,8 +208,9 @@ interactive_step "reset repository"
 if [[ ${run_next_part} -eq 1 ]]; then
 
   # Revert FTG changes
+  run_command echo "Restoring backup files ..." || exit 1
   run_command cd fortrantestgenerator/ || exit 1
-  run_command ./FortranTestGenerator.py -b ${testmodule} ${testroutine} || exit 1
+  run_command ./FortranTestGenerator.py -b ${testmodule} ${testroutine} &> standalone_ftg_b.log || exit 1
   run_command cd ../ || exit 1
 
   # Reset all changes
