@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 if [[ $# -ne 3 ]]; then
-  echo "USAGE: script requires 4 arguments"
+  echo "USAGE: script requires 3 arguments"
   echo "       create_reference.sh slave compiler target"
   exit 1
 fi
