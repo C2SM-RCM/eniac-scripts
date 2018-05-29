@@ -1,35 +1,6 @@
---- eniac_a/src/atm_phy_echam/mo_surface.f90	2018-05-29 14:41:55.527368088 +0200
-+++ eniac_b/src/atm_phy_echam/mo_surface.f90	2018-05-29 14:41:40.148555000 +0200
-@@ -40,6 +40,28 @@
-   USE mo_ice_interface,     ONLY: ice_fast
-   USE mo_ml_ocean,          ONLY: ml_ocean
- #endif
-+#ifdef FORCE_FTG_SERIALIZATION
-+  !================= START FORCE SERIALIZATION OF MISSED DATA =====================!
-+  USE mo_master_control,    ONLY: master_namelist_filename
-+  USE mo_jsb_time_iface,    ONLY: get_time_nsteps, get_time_dt
-+  USE mo_model_domain,      ONLY: p_patch
-+  USE mo_jsb_domain_iface,  ONLY:                                                  &
-+                                  get_grid_filename_domain => get_grid_filename,   &
-+                                  get_ntotal_domain        => get_ntotal,          &
-+                                  get_ntotal_g_domain      => get_ntotal_g,        &
-+                                  get_dims_g_domain        => get_dims_g,          &
-+                                  get_nlat_g_domain        => get_nlat_g,          &
-+                                  get_nproma_domain        => get_nproma,          &
-+                                  get_nblks_domain         => get_nblks,           &
-+                                  get_lon_domain           => get_lon,             &
-+                                  get_lat_domain           => get_lat,             &
-+                                  get_area_domain          => get_area
-+    USE mo_read_netcdf_distributed, ONLY: basic_data
-+    USE mo_sea_ice_nml, ONLY: i_ice_therm, i_ice_albedo, use_no_flux_gradients
-+    USE mo_dynamics_config, ONLY: mo_dynamics_config__iequations => iequations
-+    USE mo_psrad_orbit, ONLY: inquire_declination
-+   !================= STOP FORCE SERIALIZATION OF MISSED DATA =====================!
-+#endif
- 
-   IMPLICIT NONE
-   PRIVATE
-@@ -49,6 +71,27 @@
+--- eniac_a/src/atm_phy_echam/mo_surface.f90	2018-05-29 15:56:22.613853007 +0200
++++ eniac_b/src/atm_phy_echam/mo_surface.f90	2018-05-29 15:56:15.843823000 +0200
+@@ -49,6 +49,27 @@
    !
    LOGICAL, POINTER :: lsfc_mom_flux, lsfc_heat_flux
  
@@ -57,7 +28,7 @@
  CONTAINS
    !>
    !!
-@@ -263,6 +306,71 @@
+@@ -263,6 +284,21 @@
      LOGICAL :: mask(kbdim)
  
     CHARACTER(len=*), PARAMETER :: method_name='mo_surface:update_surface'
@@ -76,60 +47,10 @@
 +  &  albvisdif_ice, albnirdir_ice, albnirdif_ice)
 +  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
-+  
-+
-+
-+#ifdef FORCE_FTG_SERIALIZATION
-+!================= START FORCE SERIALIZATION OF MISSED DATA =====================!
-+  CALL inquire_declination(xdecl)
-+  PRINT *, p_patch(jg)%id
-+  PRINT *, get_grid_filename_domain(patch = p_patch(jg))
-+  PRINT *, get_ntotal_domain       (patch = p_patch(jg))
-+  PRINT *, get_ntotal_g_domain     (patch = p_patch(jg))
-+  PRINT *, get_dims_g_domain       (patch = p_patch(jg))
-+  PRINT *, get_nlat_g_domain       (patch = p_patch(jg))
-+  PRINT *, get_nblks_domain        (patch = p_patch(jg))
-+  PRINT *, get_nproma_domain       (patch = p_patch(jg))
-+  PRINT *, get_lon_domain          (patch = p_patch(jg))
-+  PRINT *, get_lat_domain          (patch = p_patch(jg))
-+  PRINT *, get_area_domain         (patch = p_patch(jg))
-+  PRINT *, get_time_nsteps()
-+  PRINT *, get_time_dt()
-+  PRINT *, master_namelist_filename
-+  PRINT *, i_ice_therm
-+  PRINT *, i_ice_albedo
-+  PRINT *, use_no_flux_gradients
-+  PRINT *, mo_dynamics_config__iequations
-+  PRINT *, p_patch(jg)%cells%dist_io_data%basic_data_index
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%n_recv
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%n_pnts 
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%n_send 
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%np_recv
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%np_send
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_limits
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_src
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_dst_blk
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_dst_idx
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_limits
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_src_blk
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_src_idx
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%pelist_send
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%pelist_recv
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_startidx
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%send_count
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_startidx
-+  PRINT *, p_patch(jg)%cells%dist_io_data%redistrib_pattern%recv_count
-+  PRINT *, basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%n_g
-+  PRINT *, &
-+  basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%io_chunk%first
-+  PRINT *, &
-+  basic_data(p_patch(jg)%cells%dist_io_data%basic_data_index)%io_chunk%size
-+!================= STOP FORCE SERIALIZATION OF MISSED DATA =====================!
-+#endif
  
      !$ACC DATA PRESENT( echam_phy_config )
  
-@@ -1345,7 +1453,1430 @@
+@@ -1345,7 +1381,1430 @@
      !$ACC END DATA
      !$ACC END DATA
  
