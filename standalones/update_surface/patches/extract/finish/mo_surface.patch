@@ -1,6 +1,6 @@
 --- eniac_a/src/atm_phy_echam/mo_surface.f90	2018-05-25 14:41:38.000000000 +0200
 +++ eniac_b/src/atm_phy_echam/mo_surface.f90	2018-05-25 14:46:48.217831106 +0200
-@@ -2074,14 +2074,14 @@
+@@ -2495,14 +2495,14 @@
      CALL ftg_write("mo_jsb_control__is_standalone", mo_jsb_control__is_standalone)
      CALL ftg_write("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
      CALL ftg_write("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
