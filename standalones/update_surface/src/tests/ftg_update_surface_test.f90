@@ -171,6 +171,26 @@ CONTAINS
     &  albvisdir_ice, albvisdif_ice, albnirdir_ice, albnirdif_ice)
     CALL ftg_destroy_serializer()
     
+    !$ACC ENTER DATA COPYIN( mo_echam_phy_config__echam_phy_config )
+    !$ACC ENTER DATA COPYIN( pfrc, pcfh_tile, pcfm_tile, pfac_sfc, pocu, pocv, &
+    !$ACC                    aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile,    &
+    !$ACC                    ptsfc_tile, pu_stress_gbm, pv_stress_gbm,         &
+    !$ACC                    plhflx_gbm, pshflx_gbm, pevap_gbm,                &
+    !$ACC                    pu_stress_tile, pv_stress_tile, plhflx_tile,      &
+    !$ACC                    pshflx_tile, pevap_tile, pco2nat, lsm, alake, pu, &
+    !$ACC                    pv, ptemp, pq, pco2, prsfl, prsfc, pssfl, pssfc,  &
+    !$ACC                    rlds, rlus, rsds, rsus, rvds_dir, rpds_dir,       &
+    !$ACC                    rnds_dir, rvds_dif, rpds_dif, rnds_dif, ps,       &
+    !$ACC                    pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt,     &
+    !$ACC                    z0m_tile, z0h_lnd, albvisdir, albnirdir,          &
+    !$ACC                    albvisdif, albnirdif, albvisdir_tile,             &
+    !$ACC                    albnirdir_tile, albvisdif_tile, albnirdif_tile,   &
+    !$ACC                    albedo, albedo_tile, pco2_flux_tile, ptsfc,       &
+    !$ACC                    ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc,    &
+    !$ACC                    Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc,          &
+    !$ACC                    albvisdir_ice, albvisdif_ice, albnirdir_ice,      &
+    !$ACC                    albnirdif_ice )
+
     CALL update_surface(jg, kproma, kbdim, kice, klev, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, pfrc, pcfh_tile, pcfm_tile, &
     &  pfac_sfc, pocu, pocv, aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile, ptsfc_tile, pu_stress_gbm, pv_stress_gbm, plhflx_gbm, &
     &  pshflx_gbm, pevap_gbm, pu_stress_tile, pv_stress_tile, plhflx_tile, pshflx_tile, pevap_tile, pco2nat, nblock, lsm, alake, &
@@ -179,6 +199,26 @@ CONTAINS
     &  albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, pco2_flux_tile, ptsfc, &
     &  ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, albvisdif_ice, &
     &  albnirdir_ice, albnirdif_ice)
+    
+    !$ACC EXIT DATA DELETE( pfrc, pcfh_tile, pcfm_tile, pfac_sfc, pocu, pocv,  &
+    !$ACC                   aa, aa_btm, bb, bb_btm, pcpt_tile, pqsat_tile,     &
+    !$ACC                   ptsfc_tile, pu_stress_gbm, pv_stress_gbm,          &
+    !$ACC                   plhflx_gbm, pshflx_gbm, pevap_gbm,                 &
+    !$ACC                   pu_stress_tile, pv_stress_tile, plhflx_tile,       &
+    !$ACC                   pshflx_tile, pevap_tile, pco2nat, lsm, alake, pu,  &
+    !$ACC                   pv, ptemp, pq, pco2, prsfl, prsfc, pssfl, pssfc,   &
+    !$ACC                   rlds, rlus, rsds, rsus, rvds_dir, rpds_dir,        &
+    !$ACC                   rnds_dir, rvds_dif, rpds_dif, rnds_dif, ps,        &
+    !$ACC                   pcosmu0, pch_tile, pcsat, pcair, q_snocpymlt,      &
+    !$ACC                   z0m_tile, z0h_lnd, albvisdir, albnirdir,           &
+    !$ACC                   albvisdif, albnirdif, albvisdir_tile,              &
+    !$ACC                   albnirdir_tile, albvisdif_tile, albnirdif_tile,    &
+    !$ACC                   albedo, albedo_tile, pco2_flux_tile, ptsfc,        &
+    !$ACC                   ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc,     &
+    !$ACC                   Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc,           &
+    !$ACC                   albvisdir_ice, albvisdif_ice, albnirdir_ice,       &
+    !$ACC                   albnirdif_ice )
+    !$ACC EXIT DATA DELETE( mo_echam_phy_config__echam_phy_config )
     
   END SUBROUTINE ftg_test_update_surface
   

@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_echam/mo_surface.f90	2018-05-25 11:29:25.729829003 +0200
-+++ eniac_b/src/atm_phy_echam/mo_surface.f90	2018-05-25 11:29:25.284250000 +0200
+--- eniac_a/src/atm_phy_echam/mo_surface.f90	2018-05-29 14:41:55.527368088 +0200
++++ eniac_b/src/atm_phy_echam/mo_surface.f90	2018-05-29 14:41:40.148555000 +0200
 @@ -40,6 +40,28 @@
    USE mo_ice_interface,     ONLY: ice_fast
    USE mo_ml_ocean,          ONLY: ml_ocean
@@ -127,11 +127,11 @@
 +!================= STOP FORCE SERIALIZATION OF MISSED DATA =====================!
 +#endif
  
-    ! Shortcuts to components of echam_vdf_config
-    !
-@@ -924,7 +1032,1430 @@
-   !
-   !---------------------------------------------------------------------------
+     !$ACC DATA PRESENT( echam_phy_config )
+ 
+@@ -1345,7 +1453,1430 @@
+     !$ACC END DATA
+     !$ACC END DATA
  
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
