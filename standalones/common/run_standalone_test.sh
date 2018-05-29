@@ -81,6 +81,7 @@ if [[ ${run_next_part} -eq 1 ]]; then
   tid=0
   export nproma
   while read -r nproma; do
+    run_command echo "Test with nproma = ${nproma}"
 
     # Sync serialization data for FTG
     run_command mkdir -p "${ftginputdir}" || exit 1
