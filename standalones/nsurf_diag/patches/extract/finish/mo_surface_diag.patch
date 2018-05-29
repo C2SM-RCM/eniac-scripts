@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-05-17 11:53:17.000000000 +0200
-+++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-05-17 13:42:12.220100000 +0200
+--- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-05-29 09:50:04.000000000 +0200
++++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-05-29 09:56:11.110206436 +0200
 @@ -442,6 +442,7 @@
      REAL(wp), POINTER :: pbtile(:,:)
  #ifdef HAVE_FC_ATTRIBUTE_CONTIGUOUS
@@ -8,15 +8,16 @@
  
    ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
    
-@@ -453,7 +454,6 @@
+@@ -453,8 +454,6 @@
    ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
    
  
 -#endif
-     !CONSTANTS
-     zhuv          =  10._wp ! 10m
-     zhtq          =   2._wp !  2m
-@@ -611,7 +611,7 @@
+-
+     !$ACC DATA PCOPYIN( pfrc, pqm1, pzf, pzs, pcptgz, pcpt_tile, pbn_tile,     &
+     !$ACC               pbhn_tile, pbh_tile, pbm_tile, pri_tile, ptm1, papm1,  &
+     !$ACC               pxm1, pum1, pvm1, paphm1, pocu, pocv, ptasmax,         &
+@@ -671,7 +670,7 @@
    USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
    USE mo_mpi,            ONLY: get_my_mpi_all_id
    USE m_ser_ftg,         ONLY: ftg_set_serializer, ftg_add_serializer_metainfo, ignore_bullshit_max_dim_size, &
@@ -25,7 +26,7 @@
    
    CHARACTER(*), INTENT(IN) :: stage, dir
    
-@@ -627,6 +627,7 @@
+@@ -687,6 +686,7 @@
      !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
      !  END IF
      
