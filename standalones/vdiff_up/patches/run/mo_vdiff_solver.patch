@@ -1,5 +1,5 @@
---- a/src/atm_phy_echam/mo_vdiff_solver.f90	2018-05-16 12:33:10.720953353 +0200
-+++ b/src/atm_phy_echam/mo_vdiff_solver.f90	2018-05-16 12:33:09.164212000 +0200
+--- eniac_a/src/atm_phy_echam/mo_vdiff_solver.f90	2018-05-30 08:50:49.283317436 +0200
++++ eniac_b/src/atm_phy_echam/mo_vdiff_solver.f90	2018-05-30 08:50:32.990098000 +0200
 @@ -52,6 +52,14 @@
  
    CHARACTER(len=*), PARAMETER :: thismodule = 'mo_vdiff_solver'
@@ -7,8 +7,8 @@
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  
-+  PUBLIC :: ibtm_var, matrix_idx
-+  
++  PUBLIC :: ibtm_var, ithv, itotte, itrc_start, ixi, ixl, ixv, matrix_idx
++
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
 +  
 +

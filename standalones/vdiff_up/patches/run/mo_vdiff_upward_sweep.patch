@@ -1,5 +1,5 @@
---- a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-05-16 12:33:10.721482000 +0200
-+++ b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-05-16 12:33:09.164401000 +0200
+--- eniac_a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-05-30 08:50:49.284082000 +0200
++++ eniac_b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-05-30 08:50:32.990265000 +0200
 @@ -28,6 +28,27 @@
    PRIVATE
    PUBLIC :: vdiff_up
