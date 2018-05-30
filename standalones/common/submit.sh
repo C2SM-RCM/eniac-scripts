@@ -5,7 +5,7 @@ if [ "${slave}" = "kesch" ]; then
 fi
 opts=" --time=00:05:00 --gres=gpu:1 --output=${testname}.log "
 if [ "${slave}" = "daint" ]; then
-  srun --input=none --partition=normal --account=g110 --constraint=gpu ${opts} ./${testname}
+  srun --input=none --partition=normal --account=g110 --constraint=gpu ${opts} ./${testname} || exit 0
 else
-  srun --input=none --partition=debug ${opts} ./${testname}
+  srun --input=none --partition=debug ${opts} ./${testname} || exit 0
 fi
