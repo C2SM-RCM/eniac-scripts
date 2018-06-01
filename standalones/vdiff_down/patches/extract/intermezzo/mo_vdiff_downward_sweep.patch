@@ -1,5 +1,5 @@
---- a/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-05-15 16:43:41.131273000 +0200
-+++ b/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-05-15 16:47:20.366682891 +0200
+--- eniac_a/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-05-31 09:49:33.000000000 +0200
++++ eniac_b/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-05-31 09:57:15.646894000 +0200
 @@ -415,8 +415,10 @@
    &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx &
    &  => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &

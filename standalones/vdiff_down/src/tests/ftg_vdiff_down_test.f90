@@ -14,20 +14,20 @@ PROGRAM ftg_vdiff_down_test
   &  ftg_print_serializer_debuginfo, ftg_field_exists, ftg_get_bounds, ftg_read, ftg_allocate_and_read_pointer, &
   &  ftg_allocate_and_read_allocatable
   
-  USE mo_vdiff_config, ONLY: mo_vdiff_config__vdiff_config => vdiff_config, t_vdiff_config
+  USE mo_echam_vdf_config, ONLY: mo_echam_vdf_config__echam_vdf_config => echam_vdf_config, t_echam_vdf_config
   USE mo_vdiff_solver, ONLY: mo_vdiff_solver__ixl => ixl, mo_vdiff_solver__ixi => ixi, mo_vdiff_solver__nmatrix => nmatrix, &
-  &  mo_vdiff_solver__imh => imh, mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__ixv => ixv, mo_vdiff_solver__imqv => &
-  &  imqv, mo_vdiff_solver__matrix_idx => matrix_idx, mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, &
-  &  mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start &
-  &  => itrc_start, mo_vdiff_solver__iv => iv, mo_vdiff_solver__iu => iu, mo_vdiff_solver__itke => itke
+  &  mo_vdiff_solver__imh => imh, mo_vdiff_solver__itotte => itotte, mo_vdiff_solver__nvar_vdiff => nvar_vdiff, &
+  &  mo_vdiff_solver__ixv => ixv, mo_vdiff_solver__imqv => imqv, mo_vdiff_solver__matrix_idx => matrix_idx, &
+  &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx &
+  &  => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
+  &  mo_vdiff_solver__iu => iu
   USE mo_convect_tables, ONLY: mo_convect_tables__tlucu => tlucu, mo_convect_tables__lookupoverflow => lookupoverflow
 #ifdef __SPLINE_TEST__
   USE mo_convect_tables, ONLY: mo_convect_tables__za => za, mo_convect_tables__ua => ua, mo_convect_tables__dua => dua
 #endif
-  USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__tke_min => tke_min, mo_echam_vdiff_params__itop => itop, &
-  &  mo_echam_vdiff_params__da1 => da1
+  USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
   
-  USE mo_vdiff_config, ONLY: t_vdiff_config
+  USE mo_echam_vdf_config, ONLY: t_echam_vdf_config
   
   IMPLICIT NONE
   
@@ -48,6 +48,7 @@ CONTAINS
   
   SUBROUTINE ftg_test_vdiff_down()
     
+    INTEGER :: jg
     INTEGER :: kproma
     INTEGER :: kbdim
     INTEGER :: klev
@@ -76,7 +77,7 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pxm1
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: pxtm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pmair
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pmdry
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pmref
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: paphm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: papm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: ptvm1
@@ -85,12 +86,12 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pthvvar
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pxvar
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pz0m_tile
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: ptkem1
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: ptottem1
     REAL(wp), DIMENSION(:), ALLOCATABLE :: pustar
     REAL(wp), DIMENSION(:), ALLOCATABLE :: pwstar
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pwstar_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pqsat_tile
-    REAL(wp), DIMENSION(:), ALLOCATABLE :: pghpbl
+    REAL(wp), DIMENSION(:), ALLOCATABLE :: phdtcbl
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pri
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pri_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pmixlen
@@ -99,7 +100,7 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pcfh
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pcfh_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pcfv
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pcftke
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pcftotte
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pcfthv
     REAL(wp), DIMENSION(:,:,:,:), ALLOCATABLE :: aa
     REAL(wp), DIMENSION(:,:,:,:), ALLOCATABLE :: aa_btm
@@ -110,7 +111,7 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pcptgz
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pzthvvar
     REAL(wp), DIMENSION(:), ALLOCATABLE :: pthvsig
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pztkevn
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pztottevn
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pch_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pbn_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pbhn_tile
@@ -128,18 +129,19 @@ CONTAINS
     ftg_vdiff_down_capture_round = 1
     
     CALL ftg_vdiff_down_init_for_replay('input')
-    CALL ftg_vdiff_down_replay_input(kproma, kbdim, klev, klevm1, klevp1, ktrac, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, &
-    &  pcoriol, pzf, pzh, pfrc, ptsfc_tile, pocu, pocv, ppsfc, pum1, pvm1, ptm1, pqm1, pxlm1, pxim1, pxm1, pxtm1, pmair, pmdry, &
-    &  paphm1, papm1, ptvm1, paclc, pxt_emis, pthvvar, pxvar, pz0m_tile, ptkem1, pustar, pwstar, pwstar_tile, pqsat_tile, pghpbl, &
-    &  pri, pri_tile, pmixlen, pcfm, pcfm_tile, pcfh, pcfh_tile, pcfv, pcftke, pcfthv, aa, aa_btm, bb, bb_btm, pfactor_sfc, &
-    &  pcpt_tile, pcptgz, pzthvvar, pthvsig, pztkevn, pch_tile, pbn_tile, pbhn_tile, pbm_tile, pbh_tile, pcsat, pcair, paz0lh)
+    CALL ftg_vdiff_down_replay_input(jg, kproma, kbdim, klev, klevm1, klevp1, ktrac, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, &
+    &  pcoriol, pzf, pzh, pfrc, ptsfc_tile, pocu, pocv, ppsfc, pum1, pvm1, ptm1, pqm1, pxlm1, pxim1, pxm1, pxtm1, pmair, pmref, &
+    &  paphm1, papm1, ptvm1, paclc, pxt_emis, pthvvar, pxvar, pz0m_tile, ptottem1, pustar, pwstar, pwstar_tile, pqsat_tile, &
+    &  phdtcbl, pri, pri_tile, pmixlen, pcfm, pcfm_tile, pcfh, pcfh_tile, pcfv, pcftotte, pcfthv, aa, aa_btm, bb, bb_btm, &
+    &  pfactor_sfc, pcpt_tile, pcptgz, pzthvvar, pthvsig, pztottevn, pch_tile, pbn_tile, pbhn_tile, pbm_tile, pbh_tile, pcsat, &
+    &  pcair, paz0lh)
     CALL ftg_destroy_serializer()
     
-    CALL vdiff_down(kproma, kbdim, klev, klevm1, klevp1, ktrac, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, pcoriol, pzf, pzh, &
-    &  pfrc, ptsfc_tile, pocu, pocv, ppsfc, pum1, pvm1, ptm1, pqm1, pxlm1, pxim1, pxm1, pxtm1, pmair, pmdry, paphm1, papm1, ptvm1, &
-    &  paclc, pxt_emis, pthvvar, pxvar, pz0m_tile, ptkem1, pustar, pwstar, pwstar_tile, pqsat_tile, pghpbl, pri, pri_tile, &
-    &  pmixlen, pcfm, pcfm_tile, pcfh, pcfh_tile, pcfv, pcftke, pcfthv, aa, aa_btm, bb, bb_btm, pfactor_sfc, pcpt_tile, pcptgz, &
-    &  pzthvvar, pthvsig, pztkevn, pch_tile, pbn_tile, pbhn_tile, pbm_tile, pbh_tile, pcsat, pcair, paz0lh)
+    CALL vdiff_down(jg, kproma, kbdim, klev, klevm1, klevp1, ktrac, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, pcoriol, pzf, &
+    &  pzh, pfrc, ptsfc_tile, pocu, pocv, ppsfc, pum1, pvm1, ptm1, pqm1, pxlm1, pxim1, pxm1, pxtm1, pmair, pmref, paphm1, papm1, &
+    &  ptvm1, paclc, pxt_emis, pthvvar, pxvar, pz0m_tile, ptottem1, pustar, pwstar, pwstar_tile, pqsat_tile, phdtcbl, pri, &
+    &  pri_tile, pmixlen, pcfm, pcfm_tile, pcfh, pcfh_tile, pcfv, pcftotte, pcfthv, aa, aa_btm, bb, bb_btm, pfactor_sfc, &
+    &  pcpt_tile, pcptgz, pzthvvar, pthvsig, pztottevn, pch_tile, pbn_tile, pbhn_tile, pbm_tile, pbh_tile, pcsat, pcair, paz0lh)
     
   END SUBROUTINE ftg_test_vdiff_down
   
@@ -160,12 +162,14 @@ CONTAINS
     
   END SUBROUTINE ftg_vdiff_down_init_for_replay
   
-  SUBROUTINE ftg_vdiff_down_replay_input(kproma, kbdim, klev, klevm1, klevp1, ktrac, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, &
-  &  pcoriol, pzf, pzh, pfrc, ptsfc_tile, pocu, pocv, ppsfc, pum1, pvm1, ptm1, pqm1, pxlm1, pxim1, pxm1, pxtm1, pmair, pmdry, &
-  &  paphm1, papm1, ptvm1, paclc, pxt_emis, pthvvar, pxvar, pz0m_tile, ptkem1, pustar, pwstar, pwstar_tile, pqsat_tile, pghpbl, &
-  &  pri, pri_tile, pmixlen, pcfm, pcfm_tile, pcfh, pcfh_tile, pcfv, pcftke, pcfthv, aa, aa_btm, bb, bb_btm, pfactor_sfc, &
-  &  pcpt_tile, pcptgz, pzthvvar, pthvsig, pztkevn, pch_tile, pbn_tile, pbhn_tile, pbm_tile, pbh_tile, pcsat, pcair, paz0lh)
+  SUBROUTINE ftg_vdiff_down_replay_input(jg, kproma, kbdim, klev, klevm1, klevp1, ktrac, ksfc_type, idx_wtr, idx_ice, idx_lnd, &
+  &  pdtime, pcoriol, pzf, pzh, pfrc, ptsfc_tile, pocu, pocv, ppsfc, pum1, pvm1, ptm1, pqm1, pxlm1, pxim1, pxm1, pxtm1, pmair, &
+  &  pmref, paphm1, papm1, ptvm1, paclc, pxt_emis, pthvvar, pxvar, pz0m_tile, ptottem1, pustar, pwstar, pwstar_tile, pqsat_tile, &
+  &  phdtcbl, pri, pri_tile, pmixlen, pcfm, pcfm_tile, pcfh, pcfh_tile, pcfv, pcftotte, pcfthv, aa, aa_btm, bb, bb_btm, &
+  &  pfactor_sfc, pcpt_tile, pcptgz, pzthvvar, pthvsig, pztottevn, pch_tile, pbn_tile, pbhn_tile, pbm_tile, pbh_tile, pcsat, &
+  &  pcair, paz0lh)
     
+    INTEGER, INTENT(inout) :: jg
     INTEGER, INTENT(inout) :: kproma
     INTEGER, INTENT(inout) :: kbdim
     INTEGER, INTENT(inout) :: klev
@@ -194,7 +198,7 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pxm1
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) :: pxtm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pmair
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pmdry
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pmref
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: paphm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: papm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: ptvm1
@@ -203,12 +207,12 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pthvvar
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pxvar
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pz0m_tile
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: ptkem1
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: ptottem1
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: pustar
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: pwstar
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pwstar_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pqsat_tile
-    REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: pghpbl
+    REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: phdtcbl
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pri
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pri_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pmixlen
@@ -217,7 +221,7 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pcfh
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pcfh_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pcfv
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pcftke
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pcftotte
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pcfthv
     REAL(wp), DIMENSION(:,:,:,:), ALLOCATABLE, INTENT(inout) :: aa
     REAL(wp), DIMENSION(:,:,:,:), ALLOCATABLE, INTENT(inout) :: aa_btm
@@ -228,7 +232,7 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pcptgz
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pzthvvar
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: pthvsig
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pztkevn
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pztottevn
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pch_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pbn_tile
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pbhn_tile
@@ -252,6 +256,7 @@ CONTAINS
     CALL setCalendar(ftg_mtime_calendar)
     
     ! BASIC ARGUMENTS
+    CALL ftg_read("jg", jg)
     CALL ftg_read("kproma", kproma)
     CALL ftg_read("kbdim", kbdim)
     CALL ftg_read("klev", klev)
@@ -280,7 +285,7 @@ CONTAINS
     CALL ftg_allocate_and_read_allocatable("pxm1", pxm1)
     CALL ftg_allocate_and_read_allocatable("pxtm1", pxtm1)
     CALL ftg_allocate_and_read_allocatable("pmair", pmair)
-    CALL ftg_allocate_and_read_allocatable("pmdry", pmdry)
+    CALL ftg_allocate_and_read_allocatable("pmref", pmref)
     CALL ftg_allocate_and_read_allocatable("paphm1", paphm1)
     CALL ftg_allocate_and_read_allocatable("papm1", papm1)
     CALL ftg_allocate_and_read_allocatable("ptvm1", ptvm1)
@@ -289,12 +294,12 @@ CONTAINS
     CALL ftg_allocate_and_read_allocatable("pthvvar", pthvvar)
     CALL ftg_allocate_and_read_allocatable("pxvar", pxvar)
     CALL ftg_allocate_and_read_allocatable("pz0m_tile", pz0m_tile)
-    CALL ftg_allocate_and_read_allocatable("ptkem1", ptkem1)
+    CALL ftg_allocate_and_read_allocatable("ptottem1", ptottem1)
     CALL ftg_allocate_and_read_allocatable("pustar", pustar)
     CALL ftg_allocate_and_read_allocatable("pwstar", pwstar)
     CALL ftg_allocate_and_read_allocatable("pwstar_tile", pwstar_tile)
     CALL ftg_allocate_and_read_allocatable("pqsat_tile", pqsat_tile)
-    CALL ftg_allocate_and_read_allocatable("pghpbl", pghpbl)
+    CALL ftg_allocate_and_read_allocatable("phdtcbl", phdtcbl)
     CALL ftg_allocate_and_read_allocatable("pri", pri)
     CALL ftg_allocate_and_read_allocatable("pri_tile", pri_tile)
     CALL ftg_allocate_and_read_allocatable("pmixlen", pmixlen)
@@ -303,7 +308,7 @@ CONTAINS
     CALL ftg_allocate_and_read_allocatable("pcfh", pcfh)
     CALL ftg_allocate_and_read_allocatable("pcfh_tile", pcfh_tile)
     CALL ftg_allocate_and_read_allocatable("pcfv", pcfv)
-    CALL ftg_allocate_and_read_allocatable("pcftke", pcftke)
+    CALL ftg_allocate_and_read_allocatable("pcftotte", pcftotte)
     CALL ftg_allocate_and_read_allocatable("pcfthv", pcfthv)
     CALL ftg_allocate_and_read_allocatable("aa", aa)
     CALL ftg_allocate_and_read_allocatable("aa_btm", aa_btm)
@@ -314,7 +319,7 @@ CONTAINS
     CALL ftg_allocate_and_read_allocatable("pcptgz", pcptgz)
     CALL ftg_allocate_and_read_allocatable("pzthvvar", pzthvvar)
     CALL ftg_allocate_and_read_allocatable("pthvsig", pthvsig)
-    CALL ftg_allocate_and_read_allocatable("pztkevn", pztkevn)
+    CALL ftg_allocate_and_read_allocatable("pztottevn", pztottevn)
     CALL ftg_allocate_and_read_allocatable("pch_tile", pch_tile)
     CALL ftg_allocate_and_read_allocatable("pbn_tile", pbn_tile)
     CALL ftg_allocate_and_read_allocatable("pbhn_tile", pbhn_tile)
@@ -336,7 +341,6 @@ CONTAINS
     
     
     ! GLOBALS
-    CALL ftg_read("mo_echam_vdiff_params__da1", mo_echam_vdiff_params__da1)
 #ifdef __SPLINE_TEST__
     CALL ftg_read("mo_convect_tables__dua", mo_convect_tables__dua)
 #endif
@@ -347,8 +351,8 @@ CONTAINS
     CALL ftg_read("mo_vdiff_solver__imqv", mo_vdiff_solver__imqv)
     CALL ftg_read("mo_vdiff_solver__iqv", mo_vdiff_solver__iqv)
     CALL ftg_read("mo_vdiff_solver__ithv", mo_vdiff_solver__ithv)
-    CALL ftg_read("mo_vdiff_solver__itke", mo_vdiff_solver__itke)
     CALL ftg_read("mo_echam_vdiff_params__itop", mo_echam_vdiff_params__itop)
+    CALL ftg_read("mo_vdiff_solver__itotte", mo_vdiff_solver__itotte)
     CALL ftg_read("mo_vdiff_solver__itrc_start", mo_vdiff_solver__itrc_start)
     CALL ftg_read("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
     CALL ftg_read("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
@@ -359,14 +363,22 @@ CONTAINS
     CALL ftg_allocate_and_read_allocatable("mo_vdiff_solver__matrix_idx", mo_vdiff_solver__matrix_idx)
     CALL ftg_read("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
     CALL ftg_read("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
-    CALL ftg_read("mo_echam_vdiff_params__tke_min", mo_echam_vdiff_params__tke_min)
     CALL ftg_read("mo_convect_tables__tlucu", mo_convect_tables__tlucu)
 #ifdef __SPLINE_TEST__
     CALL ftg_read("mo_convect_tables__ua", mo_convect_tables__ua)
     CALL ftg_read("mo_convect_tables__za", mo_convect_tables__za)
 #endif
-    CALL ftg_read("mo_vdiff_config__vdiff_config%lsfc_heat_flux", mo_vdiff_config__vdiff_config%lsfc_heat_flux)
-    CALL ftg_read("mo_vdiff_config__vdiff_config%lsfc_mom_flux", mo_vdiff_config__vdiff_config%lsfc_mom_flux)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%c_e", mo_echam_vdf_config__echam_vdf_config%c_e)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%c_f", mo_echam_vdf_config__echam_vdf_config%c_f)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%c_n", mo_echam_vdf_config__echam_vdf_config%c_n)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%f_tau0", mo_echam_vdf_config__echam_vdf_config%f_tau0)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%f_theta0", mo_echam_vdf_config__echam_vdf_config%f_theta0)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%fbl", mo_echam_vdf_config__echam_vdf_config%fbl)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%fsl", mo_echam_vdf_config__echam_vdf_config%fsl)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%pr0", mo_echam_vdf_config__echam_vdf_config%pr0)
+    CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%wmc", mo_echam_vdf_config__echam_vdf_config%wmc)
     
     
     CALL ftg_destroy_savepoint()

@@ -67,6 +67,14 @@ if [[ ${run_next_part} -eq 1 ]]; then
   run_command rsync -aqv "${datadir}/experiments" ${workdir} || exit 1
   run_command cp ${commondir}/submit.sh ${expdir} || exit 1
   run_command cd ${expdir} || exit 1
+  # Copy links to files to avoid issues if files are on unavailable FS
+  run_command mkdir ../tmp_nolinks || exit 1
+  for f in *;do
+    run_command cp -Lr $f ../tmp_nolinks/ || exit
+    run_command rm -rf $f || exit 1
+    run_command mv ../tmp_nolinks/$f . || exit 1
+  done
+  run_command rmdir ../tmp_nolinks || exit 1
   run_command ln -sf ${workdir}/build/*/bin/${testname} . || exit 1
 
 fi
