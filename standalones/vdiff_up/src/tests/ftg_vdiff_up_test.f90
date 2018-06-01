@@ -15,20 +15,20 @@ PROGRAM ftg_vdiff_up_test
   &  ftg_allocate_and_read_allocatable
   
   USE mo_vdiff_solver, ONLY: mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ixl => ixl, mo_vdiff_solver__ixi => ixi, &
-  &  mo_vdiff_solver__nmatrix => nmatrix, mo_vdiff_solver__ih => ih, mo_vdiff_solver__matrix_idx => matrix_idx, &
+  &  mo_vdiff_solver__nmatrix => nmatrix, mo_vdiff_solver__itotte => itotte, mo_vdiff_solver__matrix_idx => matrix_idx, &
   &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
   &  mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iu => iu, mo_vdiff_solver__ixv => &
-  &  ixv, mo_vdiff_solver__itke => itke
-  USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop, mo_echam_vdiff_params__tke_min => tke_min
+  &  ixv, mo_vdiff_solver__ih => ih
+  USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
   
   
   
   IMPLICIT NONE
   
   CHARACTER(*), PARAMETER :: INPUT_DIR = &
-    '++FTGDATADIR++/data/input'
+  '++FTGDATADIR++/data/input'
   CHARACTER(*), PARAMETER :: OUTPUT_DIR = &
-    '++FTGDATADIR++/data/output_test'
+  '++FTGDATADIR++/data/output_test'
   LOGICAL, PARAMETER :: OUTPUT_ENABLED = .TRUE.
   LOGICAL, PARAMETER :: SERIALBOX_DEBUG = .FALSE.
   
@@ -58,13 +58,13 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pvm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: ptm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pmair
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pmdry
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pmref
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pqm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pxlm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pxim1
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: pxtm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pgeom1
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pztkevn
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pztottevn
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: bb
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pzthvvar
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pxvar
@@ -79,7 +79,7 @@ CONTAINS
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE :: pxtte_vdf
     REAL(wp), DIMENSION(:), ALLOCATABLE :: pz0m
     REAL(wp), DIMENSION(:,:), ALLOCATABLE :: pthvvar
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: ptke
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE :: ptotte
     REAL(wp), DIMENSION(:), ALLOCATABLE :: psh_vdiff
     REAL(wp), DIMENSION(:), ALLOCATABLE :: pqv_vdiff
     
@@ -92,13 +92,13 @@ CONTAINS
     
     CALL ftg_vdiff_up_init_for_replay('input')
     CALL ftg_vdiff_up_replay_input(kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, pcptgz, &
-    &  pum1, pvm1, ptm1, pmair, pmdry, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztkevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, &
-    &  pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptke, psh_vdiff, pqv_vdiff)
+    &  pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, &
+    &  pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
     CALL ftg_destroy_serializer()
     
     CALL vdiff_up(kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, pcptgz, pum1, pvm1, ptm1, &
-    &  pmair, pmdry, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztkevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, pute_vdf, pvte_vdf, &
-    &  pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptke, psh_vdiff, pqv_vdiff)
+    &  pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, pute_vdf, pvte_vdf, &
+    &  pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
     
   END SUBROUTINE ftg_test_vdiff_up
   
@@ -120,8 +120,8 @@ CONTAINS
   END SUBROUTINE ftg_vdiff_up_init_for_replay
   
   SUBROUTINE ftg_vdiff_up_replay_input(kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, &
-  &  pcptgz, pum1, pvm1, ptm1, pmair, pmdry, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztkevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, &
-  &  pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptke, psh_vdiff, pqv_vdiff)
+  &  pcptgz, pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, &
+  &  pkedisp, pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
     
     INTEGER, INTENT(inout) :: kproma
     INTEGER, INTENT(inout) :: kbdim
@@ -139,13 +139,13 @@ CONTAINS
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pvm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: ptm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pmair
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pmdry
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pmref
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pqm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pxlm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pxim1
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) :: pxtm1
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pgeom1
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pztkevn
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pztottevn
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) :: bb
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pzthvvar
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pxvar
@@ -160,7 +160,7 @@ CONTAINS
     REAL(wp), DIMENSION(:,:,:), ALLOCATABLE, INTENT(inout) :: pxtte_vdf
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: pz0m
     REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pthvvar
-    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: ptke
+    REAL(wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: ptotte
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: psh_vdiff
     REAL(wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: pqv_vdiff
     
@@ -194,13 +194,13 @@ CONTAINS
     CALL ftg_allocate_and_read_allocatable("pvm1", pvm1)
     CALL ftg_allocate_and_read_allocatable("ptm1", ptm1)
     CALL ftg_allocate_and_read_allocatable("pmair", pmair)
-    CALL ftg_allocate_and_read_allocatable("pmdry", pmdry)
+    CALL ftg_allocate_and_read_allocatable("pmref", pmref)
     CALL ftg_allocate_and_read_allocatable("pqm1", pqm1)
     CALL ftg_allocate_and_read_allocatable("pxlm1", pxlm1)
     CALL ftg_allocate_and_read_allocatable("pxim1", pxim1)
     CALL ftg_allocate_and_read_allocatable("pxtm1", pxtm1)
     CALL ftg_allocate_and_read_allocatable("pgeom1", pgeom1)
-    CALL ftg_allocate_and_read_allocatable("pztkevn", pztkevn)
+    CALL ftg_allocate_and_read_allocatable("pztottevn", pztottevn)
     CALL ftg_allocate_and_read_allocatable("bb", bb)
     CALL ftg_allocate_and_read_allocatable("pzthvvar", pzthvvar)
     CALL ftg_allocate_and_read_allocatable("pxvar", pxvar)
@@ -215,7 +215,7 @@ CONTAINS
     CALL ftg_allocate_and_read_allocatable("pxtte_vdf", pxtte_vdf)
     CALL ftg_allocate_and_read_allocatable("pz0m", pz0m)
     CALL ftg_allocate_and_read_allocatable("pthvvar", pthvvar)
-    CALL ftg_allocate_and_read_allocatable("ptke", ptke)
+    CALL ftg_allocate_and_read_allocatable("ptotte", ptotte)
     CALL ftg_allocate_and_read_allocatable("psh_vdiff", psh_vdiff)
     CALL ftg_allocate_and_read_allocatable("pqv_vdiff", pqv_vdiff)
     
@@ -229,8 +229,8 @@ CONTAINS
     CALL ftg_read("mo_vdiff_solver__ih", mo_vdiff_solver__ih)
     CALL ftg_read("mo_vdiff_solver__iqv", mo_vdiff_solver__iqv)
     CALL ftg_read("mo_vdiff_solver__ithv", mo_vdiff_solver__ithv)
-    CALL ftg_read("mo_vdiff_solver__itke", mo_vdiff_solver__itke)
     CALL ftg_read("mo_echam_vdiff_params__itop", mo_echam_vdiff_params__itop)
+    CALL ftg_read("mo_vdiff_solver__itotte", mo_vdiff_solver__itotte)
     CALL ftg_read("mo_vdiff_solver__itrc_start", mo_vdiff_solver__itrc_start)
     CALL ftg_read("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
     CALL ftg_read("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
@@ -240,7 +240,6 @@ CONTAINS
     CALL ftg_allocate_and_read_allocatable("mo_vdiff_solver__matrix_idx", mo_vdiff_solver__matrix_idx)
     CALL ftg_read("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
     CALL ftg_read("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
-    CALL ftg_read("mo_echam_vdiff_params__tke_min", mo_echam_vdiff_params__tke_min)
     
     
     CALL ftg_destroy_savepoint()

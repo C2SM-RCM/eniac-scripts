@@ -1,5 +1,5 @@
---- a/src/tests/ftg_vdiff_down_test.f90	2018-05-15 17:00:52.728727000 +0200
-+++ b/src/tests/ftg_vdiff_down_test.f90	2018-05-15 17:02:45.705293879 +0200
+--- eniac_a/src/tests/ftg_vdiff_down_test.f90	2018-05-31 10:01:43.000000000 +0200
++++ eniac_b/src/tests/ftg_vdiff_down_test.f90	2018-05-31 10:01:58.074827000 +0200
 @@ -21,8 +21,10 @@
    &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx &
    &  => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
