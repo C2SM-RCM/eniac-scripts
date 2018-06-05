@@ -206,7 +206,7 @@ if [[ ${run_next_part} -eq 1 ]]; then
   run_command cd ${standalonedir} || exit 1
   run_command chmod 755 configure || exit 1
   run_command ./configure --with-fortran=gcc >& /dev/null || exit 1
-  run_command make distclean || exit 1
+  run_command make distclean >& /dev/null || exit 1
   while read -r f;do
     run_command sed -i -e "s|++FTGDATADIR++|./ftg|g" "$f" || exit 1
   done <${scriptdir}/ftgdatadir_files.txt
