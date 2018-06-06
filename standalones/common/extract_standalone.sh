@@ -20,6 +20,10 @@ if [ -d ${standalonedir} ]; then
   run_command echo "##          Extraction FAILED           ##" || exit 1
   run_command echo "## Standalone directory already exists! ##" || exit 1
   run_command echo "##########################################" || exit 1
+  run_command echo "" || exit 1
+  run_command echo " 1) Move or delete ${standalonedir}" || exit 1
+  run_command echo " 2) run extract_standalone.sh again" || exit 1
+  run_command echo "------------------------------------------" || exit 1
   exit 1
 fi
 
