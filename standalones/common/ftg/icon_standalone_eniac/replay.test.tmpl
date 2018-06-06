@@ -9,6 +9,7 @@ PROGRAM ftg_${subroutine.name}_test
   USE ${module.name}, ONLY: ${subroutine.name}, ftg_${subroutine.name}_capture_input_enabled, ftg_${subroutine.name}_capture_output_enabled, ftg_${subroutine.name}_capture_round, ftg_${subroutine.name}_output_dir
 
   USE m_ser_ftg, ONLY: ftg_set_serializer, ftg_set_savepoint, ftg_destroy_serializer, ftg_destroy_savepoint, ftg_print_serializer_debuginfo, ftg_field_exists, ftg_get_bounds, ftg_read, ftg_allocate_and_read_pointer, ftg_allocate_and_read_allocatable
+  USE m_ser_perturb, ONLY: ser_fld_perturb
 
   ${globals.imports}
 
@@ -22,6 +23,7 @@ CHARACTER(*), PARAMETER :: OUTPUT_DIR = &
   '++FTGDATADIR++/data/output_test'
 LOGICAL, PARAMETER :: OUTPUT_ENABLED = .TRUE.
 LOGICAL, PARAMETER :: SERIALBOX_DEBUG = .FALSE.
+REAL, PARAMETER :: ftg_rperturb = 1.0
 
 CALL start_mpi('ftg_${subroutine.name}_test') !ICON
 
@@ -91,6 +93,9 @@ CONTAINS
         #else
           CALL ftg_read("$argument", $argument)
         #end if
+        IF (ftg_rperturb .NE. 1.0) THEN
+          CALL ser_fld_perturb($argument, ftg_rperturb)
+        END IF
     #end for
 
     ! OPTIONAL ARGUMENTS
@@ -101,6 +106,9 @@ CONTAINS
         #else
           CALL ftg_read("$argument", $argument)
         #end if
+        IF (ftg_rperturb .NE. 1.0) THEN
+          CALL ser_fld_perturb($argument, ftg_rperturb)
+        END IF
       END IF
     #end for
 
@@ -148,6 +156,9 @@ END PROGRAM ftg_${subroutine.name}_test
       #else
         CALL ftg_read("$var", $var)
       #end if
+      IF (ftg_rperturb .NE. 1.0) THEN
+        CALL ser_fld_perturb($var, ftg_rperturb)
+      END IF
     #else
 
       #set $mandDims = $getNumberOfMandatoryDimensions($var)
@@ -193,6 +204,9 @@ END PROGRAM ftg_${subroutine.name}_test
       #else
         CALL ftg_read(ftg_c, $filled)
       #end if 
+      IF (ftg_rperturb .NE. 1.0) THEN
+        CALL ser_fld_perturb($filled, ftg_rperturb)
+      END IF
       #for $d in range(1, $getNumberOfMandatoryDimensions($var) + 1)
         END DO
       #end for
