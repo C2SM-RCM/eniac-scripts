@@ -23,7 +23,7 @@ CHARACTER(*), PARAMETER :: OUTPUT_DIR = &
   '++FTGDATADIR++/data/output_test'
 LOGICAL, PARAMETER :: OUTPUT_ENABLED = .TRUE.
 LOGICAL, PARAMETER :: SERIALBOX_DEBUG = .FALSE.
-REAL, PARAMETER :: ftg_rperturb = 1.0
+REAL, PARAMETER :: ftg_rperturb = 0.0
 
 CALL start_mpi('ftg_${subroutine.name}_test') !ICON
 
@@ -93,7 +93,7 @@ CONTAINS
         #else
           CALL ftg_read("$argument", $argument)
         #end if
-        IF (ftg_rperturb .NE. 1.0) THEN
+        IF (ftg_rperturb .NE. 0.0) THEN
           CALL ser_fld_perturb($argument, ftg_rperturb)
         END IF
     #end for
@@ -106,7 +106,7 @@ CONTAINS
         #else
           CALL ftg_read("$argument", $argument)
         #end if
-        IF (ftg_rperturb .NE. 1.0) THEN
+        IF (ftg_rperturb .NE. 0.0) THEN
           CALL ser_fld_perturb($argument, ftg_rperturb)
         END IF
       END IF
@@ -156,7 +156,7 @@ END PROGRAM ftg_${subroutine.name}_test
       #else
         CALL ftg_read("$var", $var)
       #end if
-      IF (ftg_rperturb .NE. 1.0) THEN
+      IF (ftg_rperturb .NE. 0.0) THEN
         CALL ser_fld_perturb($var, ftg_rperturb)
       END IF
     #else
@@ -204,7 +204,7 @@ END PROGRAM ftg_${subroutine.name}_test
       #else
         CALL ftg_read(ftg_c, $filled)
       #end if 
-      IF (ftg_rperturb .NE. 1.0) THEN
+      IF (ftg_rperturb .NE. 0.0) THEN
         CALL ser_fld_perturb($filled, ftg_rperturb)
       END IF
       #for $d in range(1, $getNumberOfMandatoryDimensions($var) + 1)
