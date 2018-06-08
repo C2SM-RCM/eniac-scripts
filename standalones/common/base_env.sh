@@ -9,8 +9,9 @@ fdepdir=/project/c14/data-eniac/standalones/fdependencies
 scriptdir="${workdir}/eniac-scripts/standalones/${testroutine}"
 
 # Check if global install of Cheetah3 is required
-need_cheetah=$(python -c 'import imp;imp.find_module("Cheetah")' >& /dev/null;echo $?)
-if [[ ${need_cheetah} == 1 ]];then
+need_cheetah="$(python -c 'import imp;imp.find_module("Cheetah")' >& /dev/null;echo $?)"
+if [ "${need_cheetah}" -eq "1" ];then
+  CHEETAHTYPE="GLOBAL"
   if [ "${slave}" == "kesch" ];then
     CHEETAHPATH=/project/c14/install/kesch/cheetah3-3.1.0
   elif [ "${slave}" == "daint" ];then
@@ -18,8 +19,12 @@ if [[ ${need_cheetah} == 1 ]];then
   fi
   export PYTHONPATH=${PYTHONPATH}${PYTHONPATH+":"}${CHEETAHPATH}
 else
-  echo "Using local install of Cheetah3"
+  CHEETAHTYPE="LOCAL"
 fi
+CHEETAHVERSION="$(python -c 'import Cheetah;print(Cheetah.Version)')"
+echo "---------------------------------------------------------------------"
+echo "Using ${CHEETAHTYPE} install of Cheetah3 v${CHEETAHVERSION}"
+echo ""
 
 export slave
 export compiler
