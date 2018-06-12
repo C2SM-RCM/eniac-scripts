@@ -1,7 +1,7 @@
 diff --git eniac_a/externals/jsbach/src/soil_snow_energy/mo_sse_interface.f90 eniac_b/externals/jsbach/src/soil_snow_energy/mo_sse_interface.f90
 index 3352e76..8a6076c 100644
---- eniac_a/externals/jsbach/src/soil_snow_energy/mo_sse_interface.f90
-+++ eniac_b/externals/jsbach/src/soil_snow_energy/mo_sse_interface.f90
+--- eniac_a/src/soil_snow_energy/mo_sse_interface.f90
++++ eniac_b/src/soil_snow_energy/mo_sse_interface.f90
 @@ -48,7 +48,7 @@ MODULE mo_sse_interface
  
    !> Constructor interface for soil_temperature task
