@@ -20,6 +20,10 @@ if [ -d ${standalonedir} ]; then
   run_command echo "##          Extraction FAILED           ##" || exit 1
   run_command echo "## Standalone directory already exists! ##" || exit 1
   run_command echo "##########################################" || exit 1
+  run_command echo "" || exit 1
+  run_command echo " 1) Move or delete ${standalonedir}" || exit 1
+  run_command echo " 2) run extract_standalone.sh again" || exit 1
+  run_command echo "------------------------------------------" || exit 1
   exit 1
 fi
 
@@ -144,6 +148,8 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Configure build
   run_command echo "Configuring standalone ..." || exit 1
+  run_command git checkout config/mh-linux || exit 1
+  run_command patch -p1 <${commondir}/patches/mh-linux_ftg.patch
   run_command ./configure --with-fortran=gcc >& standalone_configure.log || exit 1
   # Tune configuration for standalone
   ${commondir}/tune_configuration.sh
@@ -199,7 +205,16 @@ if [[ ${run_next_part} -eq 1 ]]; then
       run_command cp -r --parents $f ${standalonedir} || exit 1
     done <${scriptdir}/external_dependencies.txt
   fi
-  run_command chmod 755 ${standalonedir}/configure || exit 1
+
+  # Cleanup generated standalone
+  run_command cd ${standalonedir} || exit 1
+  run_command chmod 755 configure || exit 1
+  run_command ./configure --with-fortran=gcc >& /dev/null || exit 1
+  run_command make distclean >& /dev/null || exit 1
+  while read -r f;do
+    run_command sed -i -e "s|++FTGDATADIR++|./ftg|g" "$f" || exit 1
+  done <${scriptdir}/ftgdatadir_files.txt
+  run_command cd ${workdir} || exit 1
 
 fi
 

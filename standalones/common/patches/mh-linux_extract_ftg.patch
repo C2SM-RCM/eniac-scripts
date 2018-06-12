@@ -16,7 +16,7 @@ index 454bdc654..60d992928 100644
  
          DEBUG_FLAGS = -g -O -march=native -fbacktrace -fbounds-check -fstack-protector-all $FCHECK
 -        STD_FLAGS   = -g    -march=native -fbacktrace -fbounds-check -fstack-protector-all $FCHECK -march=native -O2 -mpc64 -D__LOOP_EXCHANGE 
-+        STD_FLAGS   = -g    -march=native -O2 -mpc64 -D__LOOP_EXCHANGE 
++        STD_FLAGS   = -D__LOOP_EXCHANGE
          HIOPT_FLAGS = -march=native -O3 -ffast-math -mpc64 -D__LOOP_EXCHANGE -g
  
          FC          = gfortran

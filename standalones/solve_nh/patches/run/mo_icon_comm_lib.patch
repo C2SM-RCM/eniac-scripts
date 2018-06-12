@@ -1,0 +1,20 @@
+--- eniac_a/src/parallel_infrastructure/mo_icon_comm_lib.f90	2018-06-05 16:23:53.000000000 +0200
++++ eniac_b/src/parallel_infrastructure/mo_icon_comm_lib.f90	2018-06-05 16:22:49.000000000 +0200
+@@ -283,6 +283,17 @@
+   END INTERFACE
+   
+   !-------------------------------------------------------------------------
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  PUBLIC :: active_comm_variables, active_recv_buffers, active_send_buffers, buffer_comm_status, comm_lib_is_initialized, &
++  &  log_file_id, max_active_comm_variables, max_send_buffer_size, my_work_communicator, recv_buffer, send_buffer, &
++  &  this_is_mpi_sequential, comm_variable, t_comm_variable_real, grid_comm_pattern_list, t_grid_comm_pattern, recv_procs_buffer, &
++  &  t_comm_process_buffer, send_procs_buffer
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ CONTAINS
+ 
+   !-----------------------------------------------------------------------
