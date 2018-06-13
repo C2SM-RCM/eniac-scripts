@@ -11,7 +11,7 @@ source ${commondir}/run_command.sh
 
 # Revert NOACC replacements (ie. not first run)
 if [ ${revert_noacc} -eq 1 ]; then
-  run_command cd ${standalonedir} || exit 1
+  run_command pushd ${standalonedir} || exit 1
   if [ -f ${scriptdir}/noacc_list.txt ]; then
     while read -r f;do
       if [ -f $f ]; then
@@ -19,7 +19,7 @@ if [ ${revert_noacc} -eq 1 ]; then
       fi
     done <${scriptdir}/noacc_list.txt
   fi
-  run_command cd ${workdir} || exit 1
+  run_command popd || exit 1
 fi
 
 diff_files ()
@@ -57,7 +57,7 @@ done
 
 # Remove existing ACC statements unrelated to standalone
 if [ ${revert_noacc} -eq 1 ]; then
-  run_command cd ${standalonedir} || exit 1
+  run_command pushd ${standalonedir} || exit 1
   if [ -f ${scriptdir}/noacc_list.txt ]; then
     while read -r f;do
       if [ -f $f ]; then
@@ -65,5 +65,5 @@ if [ ${revert_noacc} -eq 1 ]; then
       fi
     done <${scriptdir}/noacc_list.txt
   fi
-  run_command cd ${workdir} || exit 1
+  run_command popd ${workdir} || exit 1
 fi
