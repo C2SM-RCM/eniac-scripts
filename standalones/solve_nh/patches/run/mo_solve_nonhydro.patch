@@ -1,5 +1,5 @@
---- eniac_a/src/atm_dyn_iconam/mo_solve_nonhydro.f90	2018-06-05 16:23:53.000000000 +0200
-+++ eniac_b/src/atm_dyn_iconam/mo_solve_nonhydro.f90	2018-06-05 16:23:48.000000000 +0200
+--- eniac_a/src/atm_dyn_iconam/mo_solve_nonhydro.f90	2018-06-15 12:01:11.527671857 +0200
++++ eniac_b/src/atm_dyn_iconam/mo_solve_nonhydro.f90	2018-06-15 11:51:33.335312000 +0200
 @@ -104,6 +104,27 @@
  #endif
  #endif
@@ -12,9 +12,9 @@
 +  INTEGER :: ftg_solve_nh_capture_round = 1
 +  INTEGER :: ftg_solve_nh_round = 0
 +  CHARACTER(len=1024) :: ftg_solve_nh_input_dir = &
-+  './ftg/data/input'
++  '++FTGDATADIR++/data/input'
 +  CHARACTER(len=1024) :: ftg_solve_nh_output_dir = &
-+  './ftg/data/output'
++  '++FTGDATADIR++/data/output'
 +  
 +  PUBLIC :: ftg_solve_nh_capture_input_enabled, ftg_solve_nh_capture_output_enabled, ftg_solve_nh_capture_round, &
 +  &  ftg_solve_nh_input_dir, ftg_solve_nh_output_dir
@@ -145,8 +145,8 @@
 +  &  max_send_buffer_size, mo_icon_comm_lib__active_recv_buffers => active_recv_buffers, mo_icon_comm_lib__active_send_buffers => &
 +  &  active_send_buffers, mo_icon_comm_lib__buffer_comm_status => buffer_comm_status, mo_icon_comm_lib__my_work_communicator => &
 +  &  my_work_communicator, mo_icon_comm_lib__max_active_comm_variables => max_active_comm_variables, &
-+  &  mo_icon_comm_lib__grid_comm_pattern_list => grid_comm_pattern_list, t_comm_process_buffer, t_grid_comm_pattern, &
-+  &  t_comm_variable_real
++  &  mo_icon_comm_lib__grid_comm_pattern_list => grid_comm_pattern_list, t_comm_process_buffer, t_comm_variable_real, &
++  &  t_grid_comm_pattern
 +  USE mo_vertical_grid, ONLY: mo_vertical_grid__nflat_gradp => nflat_gradp, mo_vertical_grid__nrdmax => nrdmax
 +  USE mo_parallel_config, ONLY: mo_parallel_config__icon_comm_debug => icon_comm_debug, mo_parallel_config__n_ghost_rows => &
 +  &  n_ghost_rows, mo_parallel_config__iorder_sendrecv => iorder_sendrecv, mo_parallel_config__sync_barrier_mode => &
@@ -1131,8 +1131,8 @@
 +  &  max_send_buffer_size, mo_icon_comm_lib__active_recv_buffers => active_recv_buffers, mo_icon_comm_lib__active_send_buffers => &
 +  &  active_send_buffers, mo_icon_comm_lib__buffer_comm_status => buffer_comm_status, mo_icon_comm_lib__my_work_communicator => &
 +  &  my_work_communicator, mo_icon_comm_lib__max_active_comm_variables => max_active_comm_variables, &
-+  &  mo_icon_comm_lib__grid_comm_pattern_list => grid_comm_pattern_list, t_comm_process_buffer, t_grid_comm_pattern, &
-+  &  t_comm_variable_real
++  &  mo_icon_comm_lib__grid_comm_pattern_list => grid_comm_pattern_list, t_comm_process_buffer, t_comm_variable_real, &
++  &  t_grid_comm_pattern
 +  USE mo_vertical_grid, ONLY: mo_vertical_grid__nflat_gradp => nflat_gradp, mo_vertical_grid__nrdmax => nrdmax
 +  USE mo_parallel_config, ONLY: mo_parallel_config__icon_comm_debug => icon_comm_debug, mo_parallel_config__n_ghost_rows => &
 +  &  n_ghost_rows, mo_parallel_config__iorder_sendrecv => iorder_sendrecv, mo_parallel_config__sync_barrier_mode => &
