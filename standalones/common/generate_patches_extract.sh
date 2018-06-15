@@ -11,7 +11,7 @@ diff_files ()
   run_command mkdir -p ${patchdir} || exit 1
   for f in `find -L ${bdir}/src/ -type f`;do 
     patchfile=${patchdir}/$(basename ${f/.f90/.patch})
-    diff -uBb ${f/eniac_b\//eniac_a\/} $f > ${patchfile} || true
+    diff -uBb ${f/eniac_b\//eniac_a\/} $f > ${patchfile} 2> /dev/null || true
     if [ `wc -l <${patchfile}` -eq 0 ]; then
       run_command rm ${patchfile} || exit 1
     fi
