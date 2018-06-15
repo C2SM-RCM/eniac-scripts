@@ -90,7 +90,7 @@ CONTAINS
         #if $isArray($argument)
           CALL ftg_allocate_and_read_allocatable("$argument", $argument, ftg_rperturb)
         #else
-          CALL ftg_read("$argument", $argument, ftg_rperturb)
+          CALL ftg_read("$argument", $argument)
         #end if
     #end for
 
@@ -100,7 +100,7 @@ CONTAINS
         #if $isArray($argument)
           CALL ftg_allocate_and_read_allocatable("$argument", $argument, ftg_rperturb)
         #else
-          CALL ftg_read("$argument", $argument, ftg_rperturb)
+          CALL ftg_read("$argument", $argument)
         #end if
       END IF
     #end for
@@ -147,7 +147,7 @@ END PROGRAM ftg_${subroutine.name}_test
             CALL ftg_allocate_and_read_allocatable("$var", $var, ftg_rperturb)
         #end if
       #else
-        CALL ftg_read("$var", $var, ftg_rperturb)
+        CALL ftg_read("$var", $var)
       #end if
     #else
 
@@ -192,7 +192,7 @@ END PROGRAM ftg_${subroutine.name}_test
       #else if $isAllocatable($var)
         CALL ftg_allocate_and_read_allocatable(ftg_c, $filled, ftg_rperturb)
       #else
-        CALL ftg_read(ftg_c, $filled, ftg_rperturb)
+        CALL ftg_read(ftg_c, $filled)
       #end if 
       #for $d in range(1, $getNumberOfMandatoryDimensions($var) + 1)
         END DO
