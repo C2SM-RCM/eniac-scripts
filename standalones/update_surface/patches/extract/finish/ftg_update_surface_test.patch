@@ -1,6 +1,6 @@
---- eniac_a/src/tests/ftg_update_surface_test.f90	2018-05-25 10:52:01.000000000 +0200
-+++ eniac_b/src/tests/ftg_update_surface_test.f90	2018-05-25 10:52:16.732396000 +0200
-@@ -207,6 +207,15 @@
+--- eniac_a/src/tests/ftg_update_surface_test.f90	2018-06-15 09:38:07.000000000 +0200
++++ eniac_b/src/tests/ftg_update_surface_test.f90	2018-06-15 09:39:13.396843000 +0200
+@@ -208,6 +208,15 @@
    &  albnirdir, albvisdif, albnirdif, albvisdir_tile, albnirdir_tile, albvisdif_tile, albnirdif_tile, albedo, albedo_tile, &
    &  pco2_flux_tile, ptsfc, ptsfc_rad, rsns_tile, rlns_tile, lake_ice_frc, Tsurf, T1, T2, hi, hs, Qtop, Qbot, conc, albvisdir_ice, &
    &  albvisdif_ice, albnirdir_ice, albnirdif_ice)
@@ -16,8 +16,8 @@
      
      INTEGER, INTENT(inout) :: jg
      INTEGER, INTENT(inout) :: kproma
-@@ -719,6 +728,31 @@
-       &  send_startidx)
+@@ -721,6 +730,31 @@
+       &  send_startidx, ftg_rperturb)
      END DO
      
 +    !===================== START MANUALLY ADDED FOR FTG ===================!

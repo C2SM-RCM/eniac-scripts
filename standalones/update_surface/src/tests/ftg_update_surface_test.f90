@@ -49,6 +49,7 @@ PROGRAM ftg_update_surface_test
   '++FTGDATADIR++/data/output_test'
   LOGICAL, PARAMETER :: OUTPUT_ENABLED = .TRUE.
   LOGICAL, PARAMETER :: SERIALBOX_DEBUG = .FALSE.
+  REAL, PARAMETER :: ftg_rperturb = 0.0
   
   CALL start_mpi('ftg_update_surface_test') !ICON
   
@@ -334,195 +335,195 @@ CONTAINS
     CALL ftg_read("idx_ice", idx_ice)
     CALL ftg_read("idx_lnd", idx_lnd)
     CALL ftg_read("pdtime", pdtime)
-    CALL ftg_allocate_and_read_allocatable("pfrc", pfrc)
-    CALL ftg_allocate_and_read_allocatable("pcfh_tile", pcfh_tile)
-    CALL ftg_allocate_and_read_allocatable("pcfm_tile", pcfm_tile)
-    CALL ftg_allocate_and_read_allocatable("pfac_sfc", pfac_sfc)
-    CALL ftg_allocate_and_read_allocatable("pocu", pocu)
-    CALL ftg_allocate_and_read_allocatable("pocv", pocv)
-    CALL ftg_allocate_and_read_allocatable("aa", aa)
-    CALL ftg_allocate_and_read_allocatable("aa_btm", aa_btm)
-    CALL ftg_allocate_and_read_allocatable("bb", bb)
-    CALL ftg_allocate_and_read_allocatable("bb_btm", bb_btm)
-    CALL ftg_allocate_and_read_allocatable("pcpt_tile", pcpt_tile)
-    CALL ftg_allocate_and_read_allocatable("pqsat_tile", pqsat_tile)
-    CALL ftg_allocate_and_read_allocatable("ptsfc_tile", ptsfc_tile)
-    CALL ftg_allocate_and_read_allocatable("pu_stress_gbm", pu_stress_gbm)
-    CALL ftg_allocate_and_read_allocatable("pv_stress_gbm", pv_stress_gbm)
-    CALL ftg_allocate_and_read_allocatable("plhflx_gbm", plhflx_gbm)
-    CALL ftg_allocate_and_read_allocatable("pshflx_gbm", pshflx_gbm)
-    CALL ftg_allocate_and_read_allocatable("pevap_gbm", pevap_gbm)
-    CALL ftg_allocate_and_read_allocatable("pu_stress_tile", pu_stress_tile)
-    CALL ftg_allocate_and_read_allocatable("pv_stress_tile", pv_stress_tile)
-    CALL ftg_allocate_and_read_allocatable("plhflx_tile", plhflx_tile)
-    CALL ftg_allocate_and_read_allocatable("pshflx_tile", pshflx_tile)
-    CALL ftg_allocate_and_read_allocatable("pevap_tile", pevap_tile)
-    CALL ftg_allocate_and_read_allocatable("rvds_dir", rvds_dir)
-    CALL ftg_allocate_and_read_allocatable("rpds_dir", rpds_dir)
-    CALL ftg_allocate_and_read_allocatable("rnds_dir", rnds_dir)
-    CALL ftg_allocate_and_read_allocatable("rvds_dif", rvds_dif)
-    CALL ftg_allocate_and_read_allocatable("rpds_dif", rpds_dif)
-    CALL ftg_allocate_and_read_allocatable("rnds_dif", rnds_dif)
+    CALL ftg_allocate_and_read_allocatable("pfrc", pfrc, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pcfh_tile", pcfh_tile, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pcfm_tile", pcfm_tile, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pfac_sfc", pfac_sfc, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pocu", pocu, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pocv", pocv, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("aa", aa, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("aa_btm", aa_btm, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("bb", bb, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("bb_btm", bb_btm, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pcpt_tile", pcpt_tile, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pqsat_tile", pqsat_tile, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("ptsfc_tile", ptsfc_tile, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pu_stress_gbm", pu_stress_gbm, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pv_stress_gbm", pv_stress_gbm, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("plhflx_gbm", plhflx_gbm, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pshflx_gbm", pshflx_gbm, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pevap_gbm", pevap_gbm, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pu_stress_tile", pu_stress_tile, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pv_stress_tile", pv_stress_tile, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("plhflx_tile", plhflx_tile, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pshflx_tile", pshflx_tile, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pevap_tile", pevap_tile, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("rvds_dir", rvds_dir, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("rpds_dir", rpds_dir, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("rnds_dir", rnds_dir, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("rvds_dif", rvds_dif, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("rpds_dif", rpds_dif, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("rnds_dif", rnds_dif, ftg_rperturb)
     
     ! OPTIONAL ARGUMENTS
     IF (PRESENT(pco2nat)) THEN
-      CALL ftg_allocate_and_read_allocatable("pco2nat", pco2nat)
+      CALL ftg_allocate_and_read_allocatable("pco2nat", pco2nat, ftg_rperturb)
     END IF
     IF (PRESENT(nblock)) THEN
       CALL ftg_read("nblock", nblock)
     END IF
     IF (PRESENT(lsm)) THEN
-      CALL ftg_allocate_and_read_allocatable("lsm", lsm)
+      CALL ftg_allocate_and_read_allocatable("lsm", lsm, ftg_rperturb)
     END IF
     IF (PRESENT(alake)) THEN
-      CALL ftg_allocate_and_read_allocatable("alake", alake)
+      CALL ftg_allocate_and_read_allocatable("alake", alake, ftg_rperturb)
     END IF
     IF (PRESENT(pu)) THEN
-      CALL ftg_allocate_and_read_allocatable("pu", pu)
+      CALL ftg_allocate_and_read_allocatable("pu", pu, ftg_rperturb)
     END IF
     IF (PRESENT(pv)) THEN
-      CALL ftg_allocate_and_read_allocatable("pv", pv)
+      CALL ftg_allocate_and_read_allocatable("pv", pv, ftg_rperturb)
     END IF
     IF (PRESENT(ptemp)) THEN
-      CALL ftg_allocate_and_read_allocatable("ptemp", ptemp)
+      CALL ftg_allocate_and_read_allocatable("ptemp", ptemp, ftg_rperturb)
     END IF
     IF (PRESENT(pq)) THEN
-      CALL ftg_allocate_and_read_allocatable("pq", pq)
+      CALL ftg_allocate_and_read_allocatable("pq", pq, ftg_rperturb)
     END IF
     IF (PRESENT(pco2)) THEN
-      CALL ftg_allocate_and_read_allocatable("pco2", pco2)
+      CALL ftg_allocate_and_read_allocatable("pco2", pco2, ftg_rperturb)
     END IF
     IF (PRESENT(prsfl)) THEN
-      CALL ftg_allocate_and_read_allocatable("prsfl", prsfl)
+      CALL ftg_allocate_and_read_allocatable("prsfl", prsfl, ftg_rperturb)
     END IF
     IF (PRESENT(prsfc)) THEN
-      CALL ftg_allocate_and_read_allocatable("prsfc", prsfc)
+      CALL ftg_allocate_and_read_allocatable("prsfc", prsfc, ftg_rperturb)
     END IF
     IF (PRESENT(pssfl)) THEN
-      CALL ftg_allocate_and_read_allocatable("pssfl", pssfl)
+      CALL ftg_allocate_and_read_allocatable("pssfl", pssfl, ftg_rperturb)
     END IF
     IF (PRESENT(pssfc)) THEN
-      CALL ftg_allocate_and_read_allocatable("pssfc", pssfc)
+      CALL ftg_allocate_and_read_allocatable("pssfc", pssfc, ftg_rperturb)
     END IF
     IF (PRESENT(rlds)) THEN
-      CALL ftg_allocate_and_read_allocatable("rlds", rlds)
+      CALL ftg_allocate_and_read_allocatable("rlds", rlds, ftg_rperturb)
     END IF
     IF (PRESENT(rlus)) THEN
-      CALL ftg_allocate_and_read_allocatable("rlus", rlus)
+      CALL ftg_allocate_and_read_allocatable("rlus", rlus, ftg_rperturb)
     END IF
     IF (PRESENT(rsds)) THEN
-      CALL ftg_allocate_and_read_allocatable("rsds", rsds)
+      CALL ftg_allocate_and_read_allocatable("rsds", rsds, ftg_rperturb)
     END IF
     IF (PRESENT(rsus)) THEN
-      CALL ftg_allocate_and_read_allocatable("rsus", rsus)
+      CALL ftg_allocate_and_read_allocatable("rsus", rsus, ftg_rperturb)
     END IF
     IF (PRESENT(ps)) THEN
-      CALL ftg_allocate_and_read_allocatable("ps", ps)
+      CALL ftg_allocate_and_read_allocatable("ps", ps, ftg_rperturb)
     END IF
     IF (PRESENT(pcosmu0)) THEN
-      CALL ftg_allocate_and_read_allocatable("pcosmu0", pcosmu0)
+      CALL ftg_allocate_and_read_allocatable("pcosmu0", pcosmu0, ftg_rperturb)
     END IF
     IF (PRESENT(pch_tile)) THEN
-      CALL ftg_allocate_and_read_allocatable("pch_tile", pch_tile)
+      CALL ftg_allocate_and_read_allocatable("pch_tile", pch_tile, ftg_rperturb)
     END IF
     IF (PRESENT(pcsat)) THEN
-      CALL ftg_allocate_and_read_allocatable("pcsat", pcsat)
+      CALL ftg_allocate_and_read_allocatable("pcsat", pcsat, ftg_rperturb)
     END IF
     IF (PRESENT(pcair)) THEN
-      CALL ftg_allocate_and_read_allocatable("pcair", pcair)
+      CALL ftg_allocate_and_read_allocatable("pcair", pcair, ftg_rperturb)
     END IF
     IF (PRESENT(q_snocpymlt)) THEN
-      CALL ftg_allocate_and_read_allocatable("q_snocpymlt", q_snocpymlt)
+      CALL ftg_allocate_and_read_allocatable("q_snocpymlt", q_snocpymlt, ftg_rperturb)
     END IF
     IF (PRESENT(z0m_tile)) THEN
-      CALL ftg_allocate_and_read_allocatable("z0m_tile", z0m_tile)
+      CALL ftg_allocate_and_read_allocatable("z0m_tile", z0m_tile, ftg_rperturb)
     END IF
     IF (PRESENT(z0h_lnd)) THEN
-      CALL ftg_allocate_and_read_allocatable("z0h_lnd", z0h_lnd)
+      CALL ftg_allocate_and_read_allocatable("z0h_lnd", z0h_lnd, ftg_rperturb)
     END IF
     IF (PRESENT(albvisdir)) THEN
-      CALL ftg_allocate_and_read_allocatable("albvisdir", albvisdir)
+      CALL ftg_allocate_and_read_allocatable("albvisdir", albvisdir, ftg_rperturb)
     END IF
     IF (PRESENT(albnirdir)) THEN
-      CALL ftg_allocate_and_read_allocatable("albnirdir", albnirdir)
+      CALL ftg_allocate_and_read_allocatable("albnirdir", albnirdir, ftg_rperturb)
     END IF
     IF (PRESENT(albvisdif)) THEN
-      CALL ftg_allocate_and_read_allocatable("albvisdif", albvisdif)
+      CALL ftg_allocate_and_read_allocatable("albvisdif", albvisdif, ftg_rperturb)
     END IF
     IF (PRESENT(albnirdif)) THEN
-      CALL ftg_allocate_and_read_allocatable("albnirdif", albnirdif)
+      CALL ftg_allocate_and_read_allocatable("albnirdif", albnirdif, ftg_rperturb)
     END IF
     IF (PRESENT(albvisdir_tile)) THEN
-      CALL ftg_allocate_and_read_allocatable("albvisdir_tile", albvisdir_tile)
+      CALL ftg_allocate_and_read_allocatable("albvisdir_tile", albvisdir_tile, ftg_rperturb)
     END IF
     IF (PRESENT(albnirdir_tile)) THEN
-      CALL ftg_allocate_and_read_allocatable("albnirdir_tile", albnirdir_tile)
+      CALL ftg_allocate_and_read_allocatable("albnirdir_tile", albnirdir_tile, ftg_rperturb)
     END IF
     IF (PRESENT(albvisdif_tile)) THEN
-      CALL ftg_allocate_and_read_allocatable("albvisdif_tile", albvisdif_tile)
+      CALL ftg_allocate_and_read_allocatable("albvisdif_tile", albvisdif_tile, ftg_rperturb)
     END IF
     IF (PRESENT(albnirdif_tile)) THEN
-      CALL ftg_allocate_and_read_allocatable("albnirdif_tile", albnirdif_tile)
+      CALL ftg_allocate_and_read_allocatable("albnirdif_tile", albnirdif_tile, ftg_rperturb)
     END IF
     IF (PRESENT(albedo)) THEN
-      CALL ftg_allocate_and_read_allocatable("albedo", albedo)
+      CALL ftg_allocate_and_read_allocatable("albedo", albedo, ftg_rperturb)
     END IF
     IF (PRESENT(albedo_tile)) THEN
-      CALL ftg_allocate_and_read_allocatable("albedo_tile", albedo_tile)
+      CALL ftg_allocate_and_read_allocatable("albedo_tile", albedo_tile, ftg_rperturb)
     END IF
     IF (PRESENT(pco2_flux_tile)) THEN
-      CALL ftg_allocate_and_read_allocatable("pco2_flux_tile", pco2_flux_tile)
+      CALL ftg_allocate_and_read_allocatable("pco2_flux_tile", pco2_flux_tile, ftg_rperturb)
     END IF
     IF (PRESENT(ptsfc)) THEN
-      CALL ftg_allocate_and_read_allocatable("ptsfc", ptsfc)
+      CALL ftg_allocate_and_read_allocatable("ptsfc", ptsfc, ftg_rperturb)
     END IF
     IF (PRESENT(ptsfc_rad)) THEN
-      CALL ftg_allocate_and_read_allocatable("ptsfc_rad", ptsfc_rad)
+      CALL ftg_allocate_and_read_allocatable("ptsfc_rad", ptsfc_rad, ftg_rperturb)
     END IF
     IF (PRESENT(rsns_tile)) THEN
-      CALL ftg_allocate_and_read_allocatable("rsns_tile", rsns_tile)
+      CALL ftg_allocate_and_read_allocatable("rsns_tile", rsns_tile, ftg_rperturb)
     END IF
     IF (PRESENT(rlns_tile)) THEN
-      CALL ftg_allocate_and_read_allocatable("rlns_tile", rlns_tile)
+      CALL ftg_allocate_and_read_allocatable("rlns_tile", rlns_tile, ftg_rperturb)
     END IF
     IF (PRESENT(lake_ice_frc)) THEN
-      CALL ftg_allocate_and_read_allocatable("lake_ice_frc", lake_ice_frc)
+      CALL ftg_allocate_and_read_allocatable("lake_ice_frc", lake_ice_frc, ftg_rperturb)
     END IF
     IF (PRESENT(Tsurf)) THEN
-      CALL ftg_allocate_and_read_allocatable("Tsurf", Tsurf)
+      CALL ftg_allocate_and_read_allocatable("Tsurf", Tsurf, ftg_rperturb)
     END IF
     IF (PRESENT(T1)) THEN
-      CALL ftg_allocate_and_read_allocatable("T1", T1)
+      CALL ftg_allocate_and_read_allocatable("T1", T1, ftg_rperturb)
     END IF
     IF (PRESENT(T2)) THEN
-      CALL ftg_allocate_and_read_allocatable("T2", T2)
+      CALL ftg_allocate_and_read_allocatable("T2", T2, ftg_rperturb)
     END IF
     IF (PRESENT(hi)) THEN
-      CALL ftg_allocate_and_read_allocatable("hi", hi)
+      CALL ftg_allocate_and_read_allocatable("hi", hi, ftg_rperturb)
     END IF
     IF (PRESENT(hs)) THEN
-      CALL ftg_allocate_and_read_allocatable("hs", hs)
+      CALL ftg_allocate_and_read_allocatable("hs", hs, ftg_rperturb)
     END IF
     IF (PRESENT(Qtop)) THEN
-      CALL ftg_allocate_and_read_allocatable("Qtop", Qtop)
+      CALL ftg_allocate_and_read_allocatable("Qtop", Qtop, ftg_rperturb)
     END IF
     IF (PRESENT(Qbot)) THEN
-      CALL ftg_allocate_and_read_allocatable("Qbot", Qbot)
+      CALL ftg_allocate_and_read_allocatable("Qbot", Qbot, ftg_rperturb)
     END IF
     IF (PRESENT(conc)) THEN
-      CALL ftg_allocate_and_read_allocatable("conc", conc)
+      CALL ftg_allocate_and_read_allocatable("conc", conc, ftg_rperturb)
     END IF
     IF (PRESENT(albvisdir_ice)) THEN
-      CALL ftg_allocate_and_read_allocatable("albvisdir_ice", albvisdir_ice)
+      CALL ftg_allocate_and_read_allocatable("albvisdir_ice", albvisdir_ice, ftg_rperturb)
     END IF
     IF (PRESENT(albvisdif_ice)) THEN
-      CALL ftg_allocate_and_read_allocatable("albvisdif_ice", albvisdif_ice)
+      CALL ftg_allocate_and_read_allocatable("albvisdif_ice", albvisdif_ice, ftg_rperturb)
     END IF
     IF (PRESENT(albnirdir_ice)) THEN
-      CALL ftg_allocate_and_read_allocatable("albnirdir_ice", albnirdir_ice)
+      CALL ftg_allocate_and_read_allocatable("albnirdir_ice", albnirdir_ice, ftg_rperturb)
     END IF
     IF (PRESENT(albnirdif_ice)) THEN
-      CALL ftg_allocate_and_read_allocatable("albnirdif_ice", albnirdif_ice)
+      CALL ftg_allocate_and_read_allocatable("albnirdif_ice", albnirdif_ice, ftg_rperturb)
     END IF
     
     ! TYPE MEMBERS
@@ -546,8 +547,8 @@ CONTAINS
     CALL ftg_read("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
     CALL ftg_read("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
     CALL ftg_read("mo_jsb_control__l_timer", mo_jsb_control__l_timer)
-    CALL ftg_allocate_and_read_pointer("lsfc_heat_flux", lsfc_heat_flux)
-    CALL ftg_allocate_and_read_pointer("lsfc_mom_flux", lsfc_mom_flux)
+    CALL ftg_allocate_and_read_pointer("lsfc_heat_flux", lsfc_heat_flux, ftg_rperturb)
+    CALL ftg_allocate_and_read_pointer("lsfc_mom_flux", lsfc_mom_flux, ftg_rperturb)
     CALL ftg_read("mo_run_config__ltimer", mo_run_config__ltimer)
     ! *** WARNING: Type not supported by serialbox ***
     !     mo_master_control__master_namelist_filename
@@ -592,7 +593,7 @@ CONTAINS
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%area'
-      CALL ftg_allocate_and_read_pointer(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%area)
+      CALL ftg_allocate_and_read_pointer(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%area, ftg_rperturb)
     END DO
     CALL ftg_read("mo_model_domain__p_patch%geometry_info%mean_characteristic_length", mo_model_domain__p_patch%geometry_info% &
     &  mean_characteristic_length)
@@ -654,78 +655,79 @@ CONTAINS
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%pelist_recv'
       CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
-      &  pelist_recv)
+      &  pelist_recv, ftg_rperturb)
     END DO
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%pelist_send'
       CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
-      &  pelist_send)
+      &  pelist_send, ftg_rperturb)
     END DO
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_count'
       CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
-      &  recv_count)
+      &  recv_count, ftg_rperturb)
     END DO
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_dst_blk'
       CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
-      &  recv_dst_blk)
+      &  recv_dst_blk, ftg_rperturb)
     END DO
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_dst_idx'
       CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
-      &  recv_dst_idx)
+      &  recv_dst_idx, ftg_rperturb)
     END DO
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_limits'
       CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
-      &  recv_limits)
+      &  recv_limits, ftg_rperturb)
     END DO
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_src'
-      CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern%recv_src)
+      CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
+      &  recv_src, ftg_rperturb)
     END DO
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%recv_startidx'
       CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
-      &  recv_startidx)
+      &  recv_startidx, ftg_rperturb)
     END DO
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_count'
       CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
-      &  send_count)
+      &  send_count, ftg_rperturb)
     END DO
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_limits'
       CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
-      &  send_limits)
+      &  send_limits, ftg_rperturb)
     END DO
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_src_blk'
       CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
-      &  send_src_blk)
+      &  send_src_blk, ftg_rperturb)
     END DO
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_src_idx'
       CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
-      &  send_src_idx)
+      &  send_src_idx, ftg_rperturb)
     END DO
     
     DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
       WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%dist_io_data%redistrib_pattern%send_startidx'
       CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%dist_io_data%redistrib_pattern% &
-      &  send_startidx)
+      &  send_startidx, ftg_rperturb)
     END DO
     
     !===================== START MANUALLY ADDED FOR FTG ===================!
