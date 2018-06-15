@@ -1,21 +1,5 @@
---- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-05-17 11:53:17.000000000 +0200
-+++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-05-17 13:42:12.220100000 +0200
-@@ -442,6 +442,7 @@
-     REAL(wp), POINTER :: pbtile(:,:)
- #ifdef HAVE_FC_ATTRIBUTE_CONTIGUOUS
-     CONTIGUOUS :: pbtile
-+#endif
- 
-   ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
-   
-@@ -453,7 +454,6 @@
-   ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
-   
- 
--#endif
-     !CONSTANTS
-     zhuv          =  10._wp ! 10m
-     zhtq          =   2._wp !  2m
+--- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-06-15 07:35:12.000000000 +0200
++++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-06-15 07:42:27.906814000 +0200
 @@ -611,7 +611,7 @@
    USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
    USE mo_mpi,            ONLY: get_my_mpi_all_id
