@@ -32,6 +32,7 @@ PROGRAM ftg_graupel_test
   '++FTGDATADIR++/data/output_test'
   LOGICAL, PARAMETER :: OUTPUT_ENABLED = .TRUE.
   LOGICAL, PARAMETER :: SERIALBOX_DEBUG = .FALSE.
+  REAL, PARAMETER :: ftg_rperturb = 0.0
   
   CALL start_mpi('ftg_graupel_test') !ICON
   
@@ -66,6 +67,10 @@ CONTAINS
     REAL(KIND=wp), DIMENSION(:), ALLOCATABLE :: prr_gsp
     REAL(KIND=wp), DIMENSION(:), ALLOCATABLE :: prs_gsp
     REAL(KIND=wp), DIMENSION(:), ALLOCATABLE :: prg_gsp
+    REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE :: tinc_lh
+    REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE :: pstoph
+    REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE :: tt_lheat
+    REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE :: qrsflux
     LOGICAL :: l_cv
     REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE :: ddt_tend_t
     REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE :: ddt_tend_qv
@@ -101,14 +106,14 @@ CONTAINS
     
     CALL ftg_graupel_init_for_replay('input')
     CALL ftg_graupel_replay_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, &
-    &  qc0, prr_gsp, prs_gsp, prg_gsp, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, &
+    &  qc0, prr_gsp, prs_gsp, prg_gsp, tinc_lh, pstoph, tt_lheat, qrsflux, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, &
     &  ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, &
     &  ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, &
     &  ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
     CALL ftg_destroy_serializer()
     
     CALL graupel(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, qc0, prr_gsp, &
-    &  prs_gsp, prg_gsp, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, &
+    &  prs_gsp, prg_gsp, tinc_lh, pstoph, tt_lheat, qrsflux, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, &
     &  ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, &
     &  ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, &
     &  ddt_diag_shed, ddt_tend_qg)
@@ -133,7 +138,7 @@ CONTAINS
   END SUBROUTINE ftg_graupel_init_for_replay
   
   SUBROUTINE ftg_graupel_replay_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, &
-  &  qi0, qc0, prr_gsp, prs_gsp, prg_gsp, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, &
+  &  qi0, qc0, prr_gsp, prs_gsp, prg_gsp, tinc_lh, pstoph, tt_lheat, qrsflux, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, &
   &  ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, &
   &  ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, &
   &  ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
@@ -161,6 +166,10 @@ CONTAINS
     REAL(KIND=wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: prr_gsp
     REAL(KIND=wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: prs_gsp
     REAL(KIND=wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: prg_gsp
+    REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: tinc_lh
+    REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pstoph
+    REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: tt_lheat
+    REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: qrsflux
     LOGICAL, INTENT(inout), OPTIONAL :: l_cv
     REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout), OPTIONAL :: ddt_tend_t
     REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout), OPTIONAL :: ddt_tend_qv
@@ -204,22 +213,26 @@ CONTAINS
     CALL ftg_read("nvec", nvec)
     CALL ftg_read("ke", ke)
     CALL ftg_read("zdt", zdt)
-    CALL ftg_allocate_and_read_allocatable("dz", dz)
-    CALL ftg_allocate_and_read_allocatable("t", t)
-    CALL ftg_allocate_and_read_allocatable("p", p)
-    CALL ftg_allocate_and_read_allocatable("rho", rho)
-    CALL ftg_allocate_and_read_allocatable("qv", qv)
-    CALL ftg_allocate_and_read_allocatable("qc", qc)
-    CALL ftg_allocate_and_read_allocatable("qi", qi)
-    CALL ftg_allocate_and_read_allocatable("qr", qr)
-    CALL ftg_allocate_and_read_allocatable("qs", qs)
-    CALL ftg_allocate_and_read_allocatable("qg", qg)
-    CALL ftg_allocate_and_read_allocatable("qnc", qnc)
+    CALL ftg_allocate_and_read_allocatable("dz", dz, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("t", t, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("p", p, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("rho", rho, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("qv", qv, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("qc", qc, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("qi", qi, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("qr", qr, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("qs", qs, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("qg", qg, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("qnc", qnc, ftg_rperturb)
     CALL ftg_read("qi0", qi0)
     CALL ftg_read("qc0", qc0)
-    CALL ftg_allocate_and_read_allocatable("prr_gsp", prr_gsp)
-    CALL ftg_allocate_and_read_allocatable("prs_gsp", prs_gsp)
-    CALL ftg_allocate_and_read_allocatable("prg_gsp", prg_gsp)
+    CALL ftg_allocate_and_read_allocatable("prr_gsp", prr_gsp, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("prs_gsp", prs_gsp, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("prg_gsp", prg_gsp, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("tinc_lh", tinc_lh, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("pstoph", pstoph, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("tt_lheat", tt_lheat, ftg_rperturb)
+    CALL ftg_allocate_and_read_allocatable("qrsflux", qrsflux, ftg_rperturb)
     
     ! OPTIONAL ARGUMENTS
     IF (PRESENT(ivstart)) THEN
@@ -238,76 +251,76 @@ CONTAINS
       CALL ftg_read("l_cv", l_cv)
     END IF
     IF (PRESENT(ddt_tend_t)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_tend_t", ddt_tend_t)
+      CALL ftg_allocate_and_read_allocatable("ddt_tend_t", ddt_tend_t, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_tend_qv)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_tend_qv", ddt_tend_qv)
+      CALL ftg_allocate_and_read_allocatable("ddt_tend_qv", ddt_tend_qv, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_tend_qc)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_tend_qc", ddt_tend_qc)
+      CALL ftg_allocate_and_read_allocatable("ddt_tend_qc", ddt_tend_qc, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_tend_qi)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_tend_qi", ddt_tend_qi)
+      CALL ftg_allocate_and_read_allocatable("ddt_tend_qi", ddt_tend_qi, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_tend_qr)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_tend_qr", ddt_tend_qr)
+      CALL ftg_allocate_and_read_allocatable("ddt_tend_qr", ddt_tend_qr, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_tend_qs)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_tend_qs", ddt_tend_qs)
+      CALL ftg_allocate_and_read_allocatable("ddt_tend_qs", ddt_tend_qs, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_au)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_au", ddt_diag_au)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_au", ddt_diag_au, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_ac)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_ac", ddt_diag_ac)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_ac", ddt_diag_ac, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_ev)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_ev", ddt_diag_ev)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_ev", ddt_diag_ev, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_nuc)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_nuc", ddt_diag_nuc)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_nuc", ddt_diag_nuc, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_idep)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_idep", ddt_diag_idep)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_idep", ddt_diag_idep, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_sdep)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_sdep", ddt_diag_sdep)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_sdep", ddt_diag_sdep, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_agg)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_agg", ddt_diag_agg)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_agg", ddt_diag_agg, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_rim)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_rim", ddt_diag_rim)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_rim", ddt_diag_rim, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_rcri)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_rcri", ddt_diag_rcri)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_rcri", ddt_diag_rcri, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_icri)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_icri", ddt_diag_icri)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_icri", ddt_diag_icri, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_dau)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_dau", ddt_diag_dau)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_dau", ddt_diag_dau, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_iau)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_iau", ddt_diag_iau)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_iau", ddt_diag_iau, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_imelt)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_imelt", ddt_diag_imelt)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_imelt", ddt_diag_imelt, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_smelt)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_smelt", ddt_diag_smelt)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_smelt", ddt_diag_smelt, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_cfrz)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_cfrz", ddt_diag_cfrz)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_cfrz", ddt_diag_cfrz, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_rfrz)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_rfrz", ddt_diag_rfrz)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_rfrz", ddt_diag_rfrz, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_diag_shed)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_diag_shed", ddt_diag_shed)
+      CALL ftg_allocate_and_read_allocatable("ddt_diag_shed", ddt_diag_shed, ftg_rperturb)
     END IF
     IF (PRESENT(ddt_tend_qg)) THEN
-      CALL ftg_allocate_and_read_allocatable("ddt_tend_qg", ddt_tend_qg)
+      CALL ftg_allocate_and_read_allocatable("ddt_tend_qg", ddt_tend_qg, ftg_rperturb)
     END IF
     
     ! TYPE MEMBERS
