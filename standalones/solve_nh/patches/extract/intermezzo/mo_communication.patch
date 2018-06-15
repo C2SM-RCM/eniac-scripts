@@ -1,0 +1,11 @@
+--- eniac_a/src/parallel_infrastructure/mo_communication.f90	2018-06-07 15:58:13.000000000 +0200
++++ eniac_b/src/parallel_infrastructure/mo_communication.f90	2018-06-07 16:57:17.000000000 +0200
+@@ -92,7 +92,7 @@
+ !
+ TYPE t_comm_pattern
+ 
+-  PRIVATE
++  !PRIVATE
+ 
+    ! Number of points we receive in communication,
+    ! this is the same as recv_limits

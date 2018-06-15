@@ -1,0 +1,17 @@
+--- eniac_a/src/parallel_infrastructure/mo_sync.f90	2018-06-05 16:23:53.000000000 +0200
++++ eniac_b/src/parallel_infrastructure/mo_sync.f90	2018-06-05 16:22:49.000000000 +0200
+@@ -159,6 +159,14 @@
+ #endif
+ #endif
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  PUBLIC :: do_sync_checks, log_unit
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ CONTAINS
+ 
+ 
