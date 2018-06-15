@@ -13,8 +13,6 @@ if [[ !("${compiler}" == "gcc" && "${target}" == "cpu") ]]; then
   exit 1
 fi
 
-export standalonedir="standalone/${testroutine}"
-export newrunfilesdir="eniac-scripts_runfiles/${testroutine}"
 # Fail if standalone already exits
 if [ -d ${standalonedir} ]; then
   run_command echo "##########################################" || exit 1
@@ -254,12 +252,12 @@ if [[ ${run_next_part} -eq 1 ]]; then
   run_command popd > /dev/null || exit 1
 
   # Move run patches for standalone
-  run_command mkdir -p ${newrunfilesdir}/patches/run || exit 1
-  run_command rsync -qav --delete ${standalonedir}/eniac_patches/ ${newrunfilesdir}/patches/run || exit 1
+  run_command mkdir -p ${updatedfilesdir}/patches/run || exit 1
+  run_command rsync -qav --delete ${standalonedir}/eniac_patches/ ${updatedfilesdir}/patches/run || exit 1
   run_command rm -r ${standalonedir}/eniac_patches || exit 1
   # Move FTG test driver
-  run_command mkdir -p ${newrunfilesdir}/src/tests || exit 1
-  run_command cp ${standalonedir}/src/tests/${testname}.f90 ${newrunfilesdir}/src/tests/ || exit 1
+  run_command mkdir -p ${updatedfilesdir}/src/tests || exit 1
+  run_command cp ${standalonedir}/src/tests/${testname}.f90 ${updatedfilesdir}/src/tests/ || exit 1
 
 fi
 

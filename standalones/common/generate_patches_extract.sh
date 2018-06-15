@@ -22,7 +22,7 @@ diff_files ()
 }
 
 # Create SRC patches
-patchdir="eniac_patches/extract/${timing}"
+patchdir="${updatedfilesdir}/patches/extract/${timing}"
 diff_files "eniac_a" "eniac_b"
 
 # Create externals patches
