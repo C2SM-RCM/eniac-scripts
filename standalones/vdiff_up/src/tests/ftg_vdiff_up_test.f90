@@ -31,7 +31,7 @@ PROGRAM ftg_vdiff_up_test
   '++FTGDATADIR++/data/output_test'
   LOGICAL, PARAMETER :: OUTPUT_ENABLED = .TRUE.
   LOGICAL, PARAMETER :: SERIALBOX_DEBUG = .FALSE.
-  REAL, PARAMETER :: ftg_rperturb = 0.0
+  REAL, PARAMETER :: ftg_rperturb = ++FTGPERTURB++
   
   CALL start_mpi('ftg_vdiff_up_test') !ICON
   

@@ -44,3 +44,7 @@ export dataftgdir
 export fdepdir
 export standalonedir
 export updatedfilesdir
+
+if [ ! -z "${rperturb}" ]; then
+  export rperturb
+fi
