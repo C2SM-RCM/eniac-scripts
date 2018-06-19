@@ -13,7 +13,6 @@ if [[ !("${compiler}" == "gcc" && "${target}" == "cpu") ]]; then
   exit 1
 fi
 
-export standalonedir="standalone/${testroutine}"
 # Fail if standalone already exits
 if [ -d ${standalonedir} ]; then
   run_command echo "##########################################" || exit 1
@@ -80,9 +79,9 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Generate capture code
   run_command echo "Generating capture code ..." || exit 1
-  run_command pushd fortrantestgenerator/
+  run_command pushd fortrantestgenerator/ > /dev/null || exit 1
   run_command ./FortranTestGenerator.py -c ${testmodule} ${testroutine} &> standalone_ftg_c.log
-  run_command popd
+  run_command popd > /dev/null || exit 1
 
   # Cleanup
   run_command make distclean >& /dev/null || exit 1
@@ -118,9 +117,9 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Generate replay code
   run_command echo "Generating replay code ..." || exit 1
-  run_command pushd fortrantestgenerator/
+  run_command pushd fortrantestgenerator/ > /dev/null || exit 1
   run_command ./FortranTestGenerator.py -r ${testmodule} ${testroutine} &> standalone_ftg_r.log
-  run_command popd
+  run_command popd > /dev/null || exit 1
 
   # Cleanup
   run_command make distclean >& /dev/null || exit 1
@@ -207,14 +206,11 @@ if [[ ${run_next_part} -eq 1 ]]; then
   fi
 
   # Cleanup generated standalone
-  run_command pushd ${standalonedir} || exit 1
+  run_command pushd ${standalonedir} > /dev/null || exit 1
   run_command chmod 755 configure || exit 1
   run_command ./configure --with-fortran=gcc >& /dev/null || exit 1
   run_command make distclean >& /dev/null || exit 1
-  while read -r f;do
-    run_command sed -i -e "s|++FTGDATADIR++|./ftg|g" "$f" || exit 1
-  done <${scriptdir}/ftgdatadir_files.txt
-  run_command popd || exit 1
+  run_command popd > /dev/null || exit 1
 
 fi
 
@@ -224,9 +220,9 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Revert FTG changes
   run_command echo "Restoring backup files ..." || exit 1
-  run_command pushd fortrantestgenerator/ || exit 1
+  run_command pushd fortrantestgenerator/ > /dev/null || exit 1
   run_command ./FortranTestGenerator.py -b ${testmodule} ${testroutine} &> standalone_ftg_b.log || exit 1
-  run_command popd || exit 1
+  run_command popd > /dev/null || exit 1
 
   # Reset all changes
   run_command ${scriptdir}/reset_repo.sh || exit 1
@@ -245,7 +241,7 @@ if [[ ${run_next_part} -eq 1 ]]; then
   run_command ${commondir}/generate_patches_standalone.sh || exit 1
 
   # Remove existing ACC statements unrelated to standalone
-  run_command pushd ${standalonedir} || exit 1
+  run_command pushd ${standalonedir} > /dev/null || exit 1
   if [ -f ${scriptdir}/noacc_list.txt ]; then
     while read -r f;do
       if [ -f $f ]; then
@@ -253,6 +249,28 @@ if [[ ${run_next_part} -eq 1 ]]; then
       fi
     done <${scriptdir}/noacc_list.txt
   fi
-  run_command popd ${workdir} || exit 1
+  run_command popd > /dev/null || exit 1
+
+  # Move run patches for standalone
+  run_command mkdir -p ${updatedfilesdir}/patches/run || exit 1
+  run_command rsync -qav --delete ${standalonedir}/eniac_patches/ ${updatedfilesdir}/patches/run || exit 1
+  run_command rm -r ${standalonedir}/eniac_patches || exit 1
+  # Move FTG test driver
+  run_command mkdir -p ${updatedfilesdir}/src/tests || exit 1
+  run_command cp ${standalonedir}/src/tests/${testname}.f90 ${updatedfilesdir}/src/tests/ || exit 1
+
+fi
+
+# Allow for interactive interruption
+interactive_step "finalize local standalone"
+if [[ ${run_next_part} -eq 1 ]]; then
+
+  # Create local path for FTG
+  run_command pushd ${standalonedir} > /dev/null || exit 1
+  while read -r f;do
+    run_command sed -i -e "s|++FTGDATADIR++|./ftg|g" "$f" || exit 1
+  done <${scriptdir}/ftgdatadir_files.txt
+  run_command sed -i -e "s|++FTGPERTURB++|0.0 ! or 10.0*10.0_wp**(-PRECISION(1.0_wp))|g" src/tests/${testname}.f90 || exit 1
+  run_command popd > /dev/null || exit 1
 
 fi

@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-05-31 07:02:20.111565000 +0200
-+++ eniac_b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-05-31 07:02:16.158087000 +0200
+--- eniac_a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-06-15 10:08:28.265789000 +0200
++++ eniac_b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-06-15 10:08:14.980261000 +0200
 @@ -28,6 +28,27 @@
    PRIVATE
    PUBLIC :: vdiff_up
@@ -111,12 +111,11 @@
 +  USE mo_mpi,    ONLY: get_my_mpi_all_id
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
 +  
-+  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__ixl => ixl, mo_vdiff_solver__ixi => ixi, mo_vdiff_solver__nmatrix => nmatrix, &
-+  &  mo_vdiff_solver__itotte => itotte, mo_vdiff_solver__nvar_vdiff => nvar_vdiff, &
-+  &  mo_vdiff_solver__ixv => ixv, mo_vdiff_solver__matrix_idx => matrix_idx, &
-+  &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iqv => iqv, &
-+  &  mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
-+  &  mo_vdiff_solver__iu => iu
++  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ixl => ixl, mo_vdiff_solver__ixi => ixi, &
++  &  mo_vdiff_solver__nmatrix => nmatrix, mo_vdiff_solver__itotte => itotte, mo_vdiff_solver__matrix_idx => matrix_idx, &
++  &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
++  &  mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iu => iu, mo_vdiff_solver__ixv => &
++  &  ixv, mo_vdiff_solver__ih => ih
 +  USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
 +  
 +  INTEGER, INTENT(in) :: kproma
@@ -227,16 +226,10 @@
 +      CALL ftg_write("mo_vdiff_solver__ibtm_var", mo_vdiff_solver__ibtm_var, LBOUND(mo_vdiff_solver__ibtm_var), UBOUND( &
 +      &  mo_vdiff_solver__ibtm_var))
 +    END IF
-+    CALL ftg_write("mo_echam_vdiff_params__itop", mo_echam_vdiff_params__itop)
-+    IF (ALLOCATED(mo_vdiff_solver__matrix_idx)) THEN
-+      CALL ftg_write("mo_vdiff_solver__matrix_idx", mo_vdiff_solver__matrix_idx, LBOUND(mo_vdiff_solver__matrix_idx), UBOUND( &
-+      &  mo_vdiff_solver__matrix_idx))
-+    END IF
-+    CALL ftg_write("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
-+    CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
 +    CALL ftg_write("mo_vdiff_solver__ih", mo_vdiff_solver__ih)
 +    CALL ftg_write("mo_vdiff_solver__iqv", mo_vdiff_solver__iqv)
 +    CALL ftg_write("mo_vdiff_solver__ithv", mo_vdiff_solver__ithv)
++    CALL ftg_write("mo_echam_vdiff_params__itop", mo_echam_vdiff_params__itop)
 +    CALL ftg_write("mo_vdiff_solver__itotte", mo_vdiff_solver__itotte)
 +    CALL ftg_write("mo_vdiff_solver__itrc_start", mo_vdiff_solver__itrc_start)
 +    CALL ftg_write("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
@@ -244,6 +237,13 @@
 +    CALL ftg_write("mo_vdiff_solver__ixi", mo_vdiff_solver__ixi)
 +    CALL ftg_write("mo_vdiff_solver__ixl", mo_vdiff_solver__ixl)
 +    CALL ftg_write("mo_vdiff_solver__ixv", mo_vdiff_solver__ixv)
++    IF (ALLOCATED(mo_vdiff_solver__matrix_idx)) THEN
++      CALL ftg_write("mo_vdiff_solver__matrix_idx", mo_vdiff_solver__matrix_idx, LBOUND(mo_vdiff_solver__matrix_idx), UBOUND( &
++      &  mo_vdiff_solver__matrix_idx))
++    END IF
++    CALL ftg_write("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
++    CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
++    
 +    
 +    CALL ftg_write("ftg_vdiff_up_round", ftg_vdiff_up_round)
 +    
@@ -270,12 +270,11 @@
 +  USE mo_exception, ONLY: finish
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
 +  
-+  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__ixl => ixl, mo_vdiff_solver__ixi => ixi, mo_vdiff_solver__nmatrix => nmatrix, &
-+  &  mo_vdiff_solver__itotte => itotte, mo_vdiff_solver__nvar_vdiff => nvar_vdiff, &
-+  &  mo_vdiff_solver__ixv => ixv, mo_vdiff_solver__matrix_idx => matrix_idx, &
-+  &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iqv => iqv, &
-+  &  mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
-+  &  mo_vdiff_solver__iu => iu
++  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ixl => ixl, mo_vdiff_solver__ixi => ixi, &
++  &  mo_vdiff_solver__nmatrix => nmatrix, mo_vdiff_solver__itotte => itotte, mo_vdiff_solver__matrix_idx => matrix_idx, &
++  &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
++  &  mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iu => iu, mo_vdiff_solver__ixv => &
++  &  ixv, mo_vdiff_solver__ih => ih
 +  USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
 +  
 +  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: bb
@@ -336,16 +335,10 @@
 +      CALL ftg_write("mo_vdiff_solver__ibtm_var", mo_vdiff_solver__ibtm_var, LBOUND(mo_vdiff_solver__ibtm_var), UBOUND( &
 +      &  mo_vdiff_solver__ibtm_var))
 +    END IF
-+    CALL ftg_write("mo_echam_vdiff_params__itop", mo_echam_vdiff_params__itop)
-+    IF (ALLOCATED(mo_vdiff_solver__matrix_idx)) THEN
-+      CALL ftg_write("mo_vdiff_solver__matrix_idx", mo_vdiff_solver__matrix_idx, LBOUND(mo_vdiff_solver__matrix_idx), UBOUND( &
-+      &  mo_vdiff_solver__matrix_idx))
-+    END IF
-+    CALL ftg_write("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
-+    CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
 +    CALL ftg_write("mo_vdiff_solver__ih", mo_vdiff_solver__ih)
 +    CALL ftg_write("mo_vdiff_solver__iqv", mo_vdiff_solver__iqv)
 +    CALL ftg_write("mo_vdiff_solver__ithv", mo_vdiff_solver__ithv)
++    CALL ftg_write("mo_echam_vdiff_params__itop", mo_echam_vdiff_params__itop)
 +    CALL ftg_write("mo_vdiff_solver__itotte", mo_vdiff_solver__itotte)
 +    CALL ftg_write("mo_vdiff_solver__itrc_start", mo_vdiff_solver__itrc_start)
 +    CALL ftg_write("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
@@ -353,6 +346,13 @@
 +    CALL ftg_write("mo_vdiff_solver__ixi", mo_vdiff_solver__ixi)
 +    CALL ftg_write("mo_vdiff_solver__ixl", mo_vdiff_solver__ixl)
 +    CALL ftg_write("mo_vdiff_solver__ixv", mo_vdiff_solver__ixv)
++    IF (ALLOCATED(mo_vdiff_solver__matrix_idx)) THEN
++      CALL ftg_write("mo_vdiff_solver__matrix_idx", mo_vdiff_solver__matrix_idx, LBOUND(mo_vdiff_solver__matrix_idx), UBOUND( &
++      &  mo_vdiff_solver__matrix_idx))
++    END IF
++    CALL ftg_write("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
++    CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
++    
 +    
 +    CALL ftg_write("ftg_vdiff_up_round", ftg_vdiff_up_round)
 +    

@@ -7,6 +7,8 @@ ftgoutputdir="${expdir}/ftg"
 dataftgdir="${datadir}/ftg/${compiler}/${slave}"
 fdepdir=/project/c14/data-eniac/standalones/fdependencies
 scriptdir="${workdir}/eniac-scripts/standalones/${testroutine}"
+standalonedir="standalone/${testroutine}"
+updatedfilesdir="updated_eniac-scripts_files/${testroutine}"
 
 # Check if global install of Cheetah3 is required
 need_cheetah="$(python -c 'import imp;imp.find_module("Cheetah")' >& /dev/null;echo $?)"
@@ -40,3 +42,9 @@ export ftginputdir
 export ftgoutputdir
 export dataftgdir
 export fdepdir
+export standalonedir
+export updatedfilesdir
+
+if [ ! -z "${rperturb}" ]; then
+  export rperturb
+fi

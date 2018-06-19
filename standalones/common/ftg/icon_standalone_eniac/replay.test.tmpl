@@ -22,6 +22,7 @@ CHARACTER(*), PARAMETER :: OUTPUT_DIR = &
   '++FTGDATADIR++/data/output_test'
 LOGICAL, PARAMETER :: OUTPUT_ENABLED = .TRUE.
 LOGICAL, PARAMETER :: SERIALBOX_DEBUG = .FALSE.
+REAL, PARAMETER :: ftg_rperturb = ++FTGPERTURB++
 
 CALL start_mpi('ftg_${subroutine.name}_test') !ICON
 
@@ -87,7 +88,7 @@ CONTAINS
     ! BASIC ARGUMENTS
     #for $argument in $arguments.all.basic
         #if $isArray($argument)
-          CALL ftg_allocate_and_read_allocatable("$argument", $argument)
+          CALL ftg_allocate_and_read_allocatable("$argument", $argument, ftg_rperturb)
         #else
           CALL ftg_read("$argument", $argument)
         #end if
@@ -97,7 +98,7 @@ CONTAINS
     #for $argument in $arguments.all.optional
       IF (PRESENT($argument)) THEN
         #if $isArray($argument)
-          CALL ftg_allocate_and_read_allocatable("$argument", $argument)
+          CALL ftg_allocate_and_read_allocatable("$argument", $argument, ftg_rperturb)
         #else
           CALL ftg_read("$argument", $argument)
         #end if
@@ -141,9 +142,9 @@ END PROGRAM ftg_${subroutine.name}_test
       #end for
       #if $needsAllocation($var)
         #if $isPointer($var)
-            CALL ftg_allocate_and_read_pointer("$var", $var)
+            CALL ftg_allocate_and_read_pointer("$var", $var, ftg_rperturb)
         #else
-            CALL ftg_allocate_and_read_allocatable("$var", $var)
+            CALL ftg_allocate_and_read_allocatable("$var", $var, ftg_rperturb)
         #end if
       #else
         CALL ftg_read("$var", $var)
@@ -187,9 +188,9 @@ END PROGRAM ftg_${subroutine.name}_test
       $writeVarNameWithFilledIndicesToString($var, "ftg_c", $mandDims, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4")
       #set $filled = $fillIndices($var, $mandDims, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4")
       #if $isPointer($var)
-        CALL ftg_allocate_and_read_pointer(ftg_c, $filled)
+        CALL ftg_allocate_and_read_pointer(ftg_c, $filled, ftg_rperturb)
       #else if $isAllocatable($var)
-        CALL ftg_allocate_and_read_allocatable(ftg_c, $filled)
+        CALL ftg_allocate_and_read_allocatable(ftg_c, $filled, ftg_rperturb)
       #else
         CALL ftg_read(ftg_c, $filled)
       #end if 

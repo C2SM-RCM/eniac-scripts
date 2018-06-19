@@ -20,7 +20,15 @@ else
 fi
 compare_cmd="/project/c14/install/${slave}/serialbox2/${sercompiler}/python/compare/compare.py"
 metadata=MetaData-ftg_${testroutine}_output_0.json
-python3 "${compare_cmd}" -w ${ftgoutputdir}/data/output/${metadata} ${ftgoutputdir}/data/output_test/${metadata} > validation_nproma_${nproma}.result || true
+# Ignore meta data errors
+compare_options+=" -w"
+# Use tolerance file if it exists
+tolerance_file="${scriptdir}/tolerances/${slave}/${compiler}/${target}/nproma_${nproma}.json"
+if [ -e  "${tolerance_file}" ]; then
+  compare_options+=" -T ${tolerance_file}"
+  run_command echo "Using tolerance file with compare.py tool" || exit 1
+fi
+python3 "${compare_cmd}" ${compare_options} ${ftgoutputdir}/data/output/${metadata} ${ftgoutputdir}/data/output_test/${metadata} > validation_nproma_${nproma}.result || true
 grep -B 5 '\[  FAILED  \].* (' validation_nproma_${nproma}.result > validation_nproma_${nproma}.failed || true
 if [ "$(wc -l <validation_nproma_${nproma}.result)" -eq 0 ]; then
   run_command echo '[  FAILED  ] compare.py failed!' > validation_nproma_${nproma}.failed || exit 1

@@ -1,9 +1,13 @@
 #!/bin/bash -e
 
-if [[ $# -ne 4 ]]; then
-  echo "USAGE: script requires 4 arguments"
-  echo "       run_standalone_test.sh slave compiler target /path/to/data/root"
+if [[ $# -lt 4 ]] || [[ $# -gt 5 ]]; then
+  echo "USAGE: script requires 4 arguments + 1 optional argument"
+  echo "       run_standalone_test.sh slave compiler target /path/to/data/root [rperturb]"
   exit 1
+fi
+
+if [[ $# -eq 5 ]]; then
+  rperturb="$5"
 fi
 
 # Script arguments
