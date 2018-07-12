@@ -1,7 +1,20 @@
+#/usr/bin/env python3
+
+from __future__ import print_function
+
+from sys import exit, stdout, stderr, version_info
+
+# Check Python version
+if version_info < (3, 4):
+    from platform import python_version
+
+    print("create_tolerance_file: error: create_tolerance_file requires at least python 3.4 (detected %s)" % python_version(),
+          file=stderr)
+    exit(1)
+
 import argparse
 import serialbox as ser
 from os import path
-from sys import exit, stdout, stderr, version_info
 import json
 
 # Default tolerance
