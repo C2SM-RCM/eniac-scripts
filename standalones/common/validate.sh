@@ -23,7 +23,7 @@ metadata=MetaData-ftg_${testroutine}_output_0.json
 # Ignore meta data errors
 compare_options+=" -w"
 # Use tolerance file if it exists
-tolerance_file="${scriptdir}/tolerances/${slave}/${compiler}/${target}/nproma_${nproma}.json"
+tolerance_file="${scriptdir}/tolerances/nproma_${nproma}.json"
 if [ -e  "${tolerance_file}" ]; then
   compare_options+=" -T ${tolerance_file}"
   run_command echo "Using tolerance file with compare.py tool" || exit 1
