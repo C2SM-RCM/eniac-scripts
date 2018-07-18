@@ -27,6 +27,7 @@ if [[ ${run_next_part} -eq 1 ]]; then
   while read -r f;do
     run_command sed -i -e "s|++FTGDATADIR++|${ftgoutputdir}|g" "$f" || exit 1
   done <${scriptdir}/ftgdatadir_files.txt
+  run_command sed -i -e "s|++FTGPERTURB++|0.0 ! or 10.0*10.0_wp**(-PRECISION(1.0_wp))|g" src/tests/${testname}.f90 || exit 1
 
 fi
 
