@@ -68,19 +68,22 @@ fi
 interactive_step "sync serialization data and prepare run"
 if [[ ${run_next_part} -eq 1 ]]; then
 
+  tmpexpdir="${workdir}/tmp_experiments"
   # Sync run data and prepare run
-  run_command rsync -aqv "${datadir}/experiments" ${workdir} || exit 1
+  if [ -h "${workdir}/experiments" ]; then
+    run_command mv "${workdir}/experiments" "${tmpexpdir}" || exit 1
+  else
+    run_command mkdir "${tmpexpdir}" || exit 1
+  fi
+  run_command rsync -aqv "${datadir}/experiments" "${workdir}" || exit 1
   run_command cp ${commondir}/submit.sh ${expdir} || exit 1
+  run_command pushd ${expdir} > /dev/null || exit 1
+  run_command rsync -aqvL ../$(basename $expdir) "${tmpexpdir}" || exit
+  run_command popd > /dev/null || exit 1
+  run_command rm -r "${workdir}/experiments" || exit 1
+  run_command mv "${tmpexpdir}" "${workdir}/experiments" || exit 1
   run_command cd ${expdir} || exit 1
-  # Copy links to files to avoid issues if files are on unavailable FS
-  run_command mkdir ../tmp_nolinks || exit 1
-  for f in *;do
-    run_command cp -Lr $f ../tmp_nolinks/ || exit
-    run_command rm -rf $f || exit 1
-    run_command mv ../tmp_nolinks/$f . || exit 1
-  done
-  run_command rmdir ../tmp_nolinks || exit 1
-  run_command ln -sf ${workdir}/build/*/bin/${testname} . || exit 1
+  run_command cp ${workdir}/build/*/bin/${testname} . || exit 1
 
 fi
 

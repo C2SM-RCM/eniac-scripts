@@ -26,6 +26,7 @@ rm -rf fortrancallgraph/
 rm -rf fortrantestgenerator/
 rm -rf eniac_a
 rm -rf eniac_b
+rm -rf tmp_experiments
 
 # Remove reference submission script
 rm -f run/dict.atm_amip_test
