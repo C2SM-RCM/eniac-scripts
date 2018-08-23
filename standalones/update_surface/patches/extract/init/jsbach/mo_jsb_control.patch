@@ -6,7 +6,7 @@
    PUBLIC :: max_no_of_models
 +  !================= START FORCE FORTRAN TEST GENERATOR (FTG) =======================!
 +
-+  PUBLIC :: is_standalone, debug
++  PUBLIC :: is_standalone
 +
 +  !================= STOP FORCE FORTRAN TEST GENERATOR (FTG) =========================!
  
