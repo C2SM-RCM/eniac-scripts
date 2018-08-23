@@ -11,6 +11,7 @@ slave="$1"
 compiler="$2"
 target="$3"
 datadir="ERROR_DATA_SHOULD_NOT_BE_NEEDED"
+expname="eniac_graupel_test"
 
 # Environment setup
 testroutine="graupel"
