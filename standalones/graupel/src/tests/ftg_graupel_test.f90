@@ -68,8 +68,6 @@ CONTAINS
     REAL(KIND=wp), DIMENSION(:), ALLOCATABLE :: prr_gsp
     REAL(KIND=wp), DIMENSION(:), ALLOCATABLE :: prs_gsp
     REAL(KIND=wp), DIMENSION(:), ALLOCATABLE :: prg_gsp
-    REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE :: tinc_lh
-    REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE :: pstoph
     REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE :: qrsflux
     LOGICAL :: l_cv
     LOGICAL :: ldiag_ttend
@@ -108,14 +106,14 @@ CONTAINS
     
     CALL ftg_graupel_init_for_replay('input')
     CALL ftg_graupel_replay_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, &
-    &  qc0, prr_gsp, prs_gsp, prg_gsp, tinc_lh, pstoph, qrsflux, l_cv, ldiag_ttend, ldiag_qtend, ddt_tend_t, ddt_tend_qv, &
+    &  qc0, prr_gsp, prs_gsp, prg_gsp, qrsflux, l_cv, ldiag_ttend, ldiag_qtend, ddt_tend_t, ddt_tend_qv, &
     &  ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, &
     &  ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, &
     &  ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
     CALL ftg_destroy_serializer()
     
     CALL graupel(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, qc0, prr_gsp, &
-    &  prs_gsp, prg_gsp, tinc_lh, pstoph, qrsflux, l_cv, ldiag_ttend, ldiag_qtend, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, &
+    &  prs_gsp, prg_gsp, qrsflux, l_cv, ldiag_ttend, ldiag_qtend, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, &
     &  ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, &
     &  ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, &
     &  ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
@@ -140,7 +138,7 @@ CONTAINS
   END SUBROUTINE ftg_graupel_init_for_replay
   
   SUBROUTINE ftg_graupel_replay_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, &
-  &  qi0, qc0, prr_gsp, prs_gsp, prg_gsp, tinc_lh, pstoph, qrsflux, l_cv, ldiag_ttend, ldiag_qtend, ddt_tend_t, ddt_tend_qv, &
+  &  qi0, qc0, prr_gsp, prs_gsp, prg_gsp, qrsflux, l_cv, ldiag_ttend, ldiag_qtend, ddt_tend_t, ddt_tend_qv, &
   &  ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, &
   &  ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, &
   &  ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
@@ -168,8 +166,6 @@ CONTAINS
     REAL(KIND=wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: prr_gsp
     REAL(KIND=wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: prs_gsp
     REAL(KIND=wp), DIMENSION(:), ALLOCATABLE, INTENT(inout) :: prg_gsp
-    REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: tinc_lh
-    REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: pstoph
     REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: qrsflux
     LOGICAL, INTENT(inout), OPTIONAL :: l_cv
     LOGICAL, INTENT(inout), OPTIONAL :: ldiag_ttend
@@ -232,8 +228,6 @@ CONTAINS
     CALL ftg_allocate_and_read_allocatable("prr_gsp", prr_gsp, ftg_rperturb)
     CALL ftg_allocate_and_read_allocatable("prs_gsp", prs_gsp, ftg_rperturb)
     CALL ftg_allocate_and_read_allocatable("prg_gsp", prg_gsp, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("tinc_lh", tinc_lh, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("pstoph", pstoph, ftg_rperturb)
     CALL ftg_allocate_and_read_allocatable("qrsflux", qrsflux, ftg_rperturb)
     
     ! OPTIONAL ARGUMENTS
