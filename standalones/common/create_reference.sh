@@ -51,7 +51,7 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Make runscript
   run_command ${workdir}/make_runscripts >& standalone_make_runscripts.log || exit 1
-  run_command sed -i -e "s/--ntasks-per-node=[0-9]*$/--ntasks-per-node=1/g" -e "s/mpi_procs_pernode=[0-9]*$/mpi_procs_pernode=1/g" run/exp.${expname}.run || exit 1
+  run_command sed -i -e "s/--ntasks-per-node=[0-9]*$/--ntasks-per-node=${mpitasks}/g" -e "s/mpi_procs_pernode=[0-9]*$/mpi_procs_pernode=${mpitasks}/g" run/exp.${expname}.run || exit 1
   run_command cp ${commondir}/submit_reference.sh ${workdir}/ || exit 1
 
 fi
