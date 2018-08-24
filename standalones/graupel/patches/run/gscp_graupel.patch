@@ -1,6 +1,6 @@
---- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-05-22 10:57:48.120866443 +0200
-+++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-05-22 10:57:15.318336000 +0200
-@@ -263,6 +263,27 @@
+--- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-08-17 11:08:53.916141324 +0200
++++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-08-17 11:08:47.572296000 +0200
+@@ -251,6 +251,27 @@
  
  !==============================================================================
  
@@ -28,35 +28,36 @@
  CONTAINS
  
  !==============================================================================
-@@ -647,6 +668,17 @@
-   fxna(ztx)   = 1.0E2_wp * EXP(0.2_wp * (t0 - ztx))
+@@ -606,6 +628,18 @@
    fxna_cooper(ztx) = 5.0E+0_wp * EXP(0.304_wp * (t0 - ztx))   ! FR: Cooper (1986) used by Greg Thompson(2008)
+ 
  
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  
 +  ftg_graupel_round = ftg_graupel_round + 1
 +  CALL ftg_graupel_capture_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, &
-+  &  qc0, prr_gsp, prs_gsp, prg_gsp, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, &
-+  &  ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, &
-+  &  ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, &
-+  &  ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
++  &  qc0, prr_gsp, prs_gsp, prg_gsp, qrsflux, l_cv, ldiag_ttend, ldiag_qtend, ddt_tend_t, ddt_tend_qv, &
++  &  ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, &
++  &  ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, &
++  &  ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
 +  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
 +
- 
  ! Define reciprocal of heat capacity of dry air (at constant pressure vs at constant volume)
  
-@@ -1687,8 +1719,502 @@
+ #ifdef __COSMO__
+@@ -1654,8 +1688,522 @@
  ! End of subroutine graupel
  !------------------------------------------------------------------------------
  
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  
-+  CALL ftg_graupel_capture_output(t, qv, qc, qi, qr, qs, qg, qnc, prr_gsp, prs_gsp, prg_gsp, &
-+  &  ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, &
-+  &  ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, &
-+  &  ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
++  CALL ftg_graupel_capture_output(t, qv, qc, qi, qr, qs, qg, qnc, prr_gsp, prs_gsp, prg_gsp, qrsflux, ddt_tend_t, &
++  &  ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, &
++  &  ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, &
++  &  ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
 +  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
 +  
@@ -105,21 +106,22 @@
 +END FUNCTION ftg_graupel_capture_input_active
 +
 +SUBROUTINE ftg_graupel_capture_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, &
-+&  qc0, prr_gsp, prs_gsp, prg_gsp, l_cv, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, &
-+&  ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, &
-+&  ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, &
-+&  ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
++&  qc0, prr_gsp, prs_gsp, prg_gsp, qrsflux, l_cv, ldiag_ttend, ldiag_qtend, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, &
++&  ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, &
++&  ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, &
++&  ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
 +  
 +  USE mtime,     ONLY: calendarType
 +  USE mo_mpi,    ONLY: get_my_mpi_all_id
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
 +  
++  USE mo_run_config, ONLY: mo_run_config__ldass_lhn => ldass_lhn
 +  USE gscp_data, ONLY: gscp_data__ccsagg => ccsagg, gscp_data__zvzxp => zvzxp, gscp_data__ccsaxp => ccsaxp, gscp_data__ccdvtp => &
 +  &  ccdvtp, gscp_data__zbev => zbev, gscp_data__zcev => zcev, gscp_data__ccsdxp => ccsdxp, gscp_data__ccslxp => ccslxp, &
-+  &  gscp_data__zcevxp => zcevxp, gscp_data__ccslam => ccslam, gscp_data__zceff_min => zceff_min, gscp_data__ccsdep => ccsdep, &
-+  &  gscp_data__ccswxp => ccswxp, gscp_data__zvz0i => zvz0i, gscp_data__ccsvel => ccsvel, gscp_data__ccsvxp => ccsvxp, &
-+  &  gscp_data__ccsrim => ccsrim, gscp_data__zvz0r => zvz0r, gscp_data__ccidep => ccidep, gscp_data__ccshi1 => ccshi1, &
-+  &  gscp_data__zbevxp => zbevxp, gscp_data__v0snow_gr => v0snow_gr, gscp_data__zconst => zconst
++  &  gscp_data__zcevxp => zcevxp, gscp_data__icesedi_exp => icesedi_exp, gscp_data__ccslam => ccslam, gscp_data__zceff_min => &
++  &  zceff_min, gscp_data__ccsdep => ccsdep, gscp_data__ccswxp => ccswxp, gscp_data__zvz0i => zvz0i, gscp_data__ccsvel => ccsvel, &
++  &  gscp_data__ccsvxp => ccsvxp, gscp_data__ccsrim => ccsrim, gscp_data__zvz0r => zvz0r, gscp_data__ccidep => ccidep, &
++  &  gscp_data__ccshi1 => ccshi1, gscp_data__zbevxp => zbevxp, gscp_data__v0snow_gr => v0snow_gr, gscp_data__zconst => zconst
 +  
 +  INTEGER, INTENT(in) :: nvec
 +  INTEGER, INTENT(in) :: ke
@@ -144,7 +146,10 @@
 +  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prr_gsp
 +  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prs_gsp
 +  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prg_gsp
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qrsflux
 +  LOGICAL, INTENT(in), OPTIONAL :: l_cv
++  LOGICAL, INTENT(in), OPTIONAL :: ldiag_ttend
++  LOGICAL, INTENT(in), OPTIONAL :: ldiag_qtend
 +  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_t
 +  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qv
 +  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qc
@@ -204,6 +209,7 @@
 +    CALL ftg_write("prr_gsp", prr_gsp, LBOUND(prr_gsp), UBOUND(prr_gsp))
 +    CALL ftg_write("prs_gsp", prs_gsp, LBOUND(prs_gsp), UBOUND(prs_gsp))
 +    CALL ftg_write("prg_gsp", prg_gsp, LBOUND(prg_gsp), UBOUND(prg_gsp))
++    CALL ftg_write("qrsflux", qrsflux, LBOUND(qrsflux), UBOUND(qrsflux))
 +    
 +    
 +    ! OPTIONAL ARGUMENTS
@@ -221,6 +227,12 @@
 +    END IF
 +    IF (PRESENT(l_cv)) THEN
 +      CALL ftg_write("l_cv", l_cv)
++    END IF
++    IF (PRESENT(ldiag_ttend)) THEN
++      CALL ftg_write("ldiag_ttend", ldiag_ttend)
++    END IF
++    IF (PRESENT(ldiag_qtend)) THEN
++      CALL ftg_write("ldiag_qtend", ldiag_qtend)
 +    END IF
 +    IF (PRESENT(ddt_tend_t)) THEN
 +      CALL ftg_write("ddt_tend_t", ddt_tend_t, LBOUND(ddt_tend_t), UBOUND(ddt_tend_t))
@@ -312,6 +324,8 @@
 +    CALL ftg_write("gscp_data__ccsvel", gscp_data__ccsvel)
 +    CALL ftg_write("gscp_data__ccsvxp", gscp_data__ccsvxp)
 +    CALL ftg_write("gscp_data__ccswxp", gscp_data__ccswxp)
++    CALL ftg_write("gscp_data__icesedi_exp", gscp_data__icesedi_exp)
++    CALL ftg_write("mo_run_config__ldass_lhn", mo_run_config__ldass_lhn)
 +    ! *** WARNING: Type not supported by serialbox ***
 +    !     message_text
 +    !     CHARACTER(132) | dimension: 0
@@ -345,21 +359,22 @@
 +
 +END FUNCTION ftg_graupel_capture_output_active
 +
-+SUBROUTINE ftg_graupel_capture_output(t, qv, qc, qi, qr, qs, qg, qnc, prr_gsp, prs_gsp, prg_gsp, &
-+&  ddt_tend_t, ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, &
-+&  ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, &
-+&  ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
++SUBROUTINE ftg_graupel_capture_output(t, qv, qc, qi, qr, qs, qg, qnc, prr_gsp, prs_gsp, prg_gsp, tinc_lh, qrsflux, ddt_tend_t, &
++&  ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, &
++&  ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, &
++&  ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
 +  
 +  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
 +  USE mo_exception, ONLY: finish
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
 +  
++  USE mo_run_config, ONLY: mo_run_config__ldass_lhn => ldass_lhn
 +  USE gscp_data, ONLY: gscp_data__ccsagg => ccsagg, gscp_data__zvzxp => zvzxp, gscp_data__ccsaxp => ccsaxp, gscp_data__ccdvtp => &
 +  &  ccdvtp, gscp_data__zbev => zbev, gscp_data__zcev => zcev, gscp_data__ccsdxp => ccsdxp, gscp_data__ccslxp => ccslxp, &
-+  &  gscp_data__zcevxp => zcevxp, gscp_data__ccslam => ccslam, gscp_data__zceff_min => zceff_min, gscp_data__ccsdep => ccsdep, &
-+  &  gscp_data__ccswxp => ccswxp, gscp_data__zvz0i => zvz0i, gscp_data__ccsvel => ccsvel, gscp_data__ccsvxp => ccsvxp, &
-+  &  gscp_data__ccsrim => ccsrim, gscp_data__zvz0r => zvz0r, gscp_data__ccidep => ccidep, gscp_data__ccshi1 => ccshi1, &
-+  &  gscp_data__zbevxp => zbevxp, gscp_data__v0snow_gr => v0snow_gr, gscp_data__zconst => zconst
++  &  gscp_data__zcevxp => zcevxp, gscp_data__icesedi_exp => icesedi_exp, gscp_data__ccslam => ccslam, gscp_data__zceff_min => &
++  &  zceff_min, gscp_data__ccsdep => ccsdep, gscp_data__ccswxp => ccswxp, gscp_data__zvz0i => zvz0i, gscp_data__ccsvel => ccsvel, &
++  &  gscp_data__ccsvxp => ccsvxp, gscp_data__ccsrim => ccsrim, gscp_data__zvz0r => zvz0r, gscp_data__ccidep => ccidep, &
++  &  gscp_data__ccshi1 => ccshi1, gscp_data__zbevxp => zbevxp, gscp_data__v0snow_gr => v0snow_gr, gscp_data__zconst => zconst
 +  
 +  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: t
 +  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qv
@@ -372,6 +387,8 @@
 +  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prr_gsp
 +  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prs_gsp
 +  REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prg_gsp
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: tinc_lh
++  REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qrsflux
 +  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_t
 +  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qv
 +  REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qc
@@ -421,6 +438,8 @@
 +    CALL ftg_write("prr_gsp", prr_gsp, LBOUND(prr_gsp), UBOUND(prr_gsp))
 +    CALL ftg_write("prs_gsp", prs_gsp, LBOUND(prs_gsp), UBOUND(prs_gsp))
 +    CALL ftg_write("prg_gsp", prg_gsp, LBOUND(prg_gsp), UBOUND(prg_gsp))
++    CALL ftg_write("tinc_lh", tinc_lh, LBOUND(tinc_lh), UBOUND(tinc_lh))
++    CALL ftg_write("qrsflux", qrsflux, LBOUND(qrsflux), UBOUND(qrsflux))
 +    
 +    
 +    ! OPTIONAL ARGUMENTS
@@ -514,6 +533,8 @@
 +    CALL ftg_write("gscp_data__ccsvel", gscp_data__ccsvel)
 +    CALL ftg_write("gscp_data__ccsvxp", gscp_data__ccsvxp)
 +    CALL ftg_write("gscp_data__ccswxp", gscp_data__ccswxp)
++    CALL ftg_write("gscp_data__icesedi_exp", gscp_data__icesedi_exp)
++    CALL ftg_write("mo_run_config__ldass_lhn", mo_run_config__ldass_lhn)
 +    ! *** WARNING: Type not supported by serialbox ***
 +    !     message_text
 +    !     CHARACTER(132) | dimension: 0
