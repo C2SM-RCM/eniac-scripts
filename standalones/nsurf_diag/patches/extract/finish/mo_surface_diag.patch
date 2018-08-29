@@ -1,6 +1,6 @@
---- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-06-15 07:35:12.000000000 +0200
-+++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-06-15 07:42:27.906814000 +0200
-@@ -611,7 +611,7 @@
+--- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-08-29 14:01:24.000000000 +0200
++++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-08-29 14:07:04.873560217 +0200
+@@ -671,7 +671,7 @@
    USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
    USE mo_mpi,            ONLY: get_my_mpi_all_id
    USE m_ser_ftg,         ONLY: ftg_set_serializer, ftg_add_serializer_metainfo, ignore_bullshit_max_dim_size, &
@@ -9,11 +9,11 @@
    
    CHARACTER(*), INTENT(IN) :: stage, dir
    
-@@ -627,6 +627,7 @@
+@@ -687,6 +687,7 @@
      !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
      !  END IF
      
-+    ignore_bullshit = .FALSE.
++    ignore_bullshit = .FALSE. 
      ignore_bullshit_max_dim_size = 100000
      ignore_bullshit_allow_negative_indices = .TRUE.
      
