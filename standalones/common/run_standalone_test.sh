@@ -75,7 +75,7 @@ if [[ ${run_next_part} -eq 1 ]]; then
   else
     run_command mkdir "${tmpexpdir}" || exit 1
   fi
-  run_command rsync -aqv "${datadir}/experiments" "${workdir}" || exit 1
+  run_command rsync -aqv --delete "${datadir}/experiments" "${workdir}" || exit 1
   run_command cp ${commondir}/submit.sh ${expdir} || exit 1
   run_command pushd ${expdir} > /dev/null || exit 1
   run_command rsync -aqvL ../$(basename $expdir) "${tmpexpdir}" || exit

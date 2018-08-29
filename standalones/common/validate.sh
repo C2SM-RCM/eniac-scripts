@@ -4,6 +4,11 @@ source ${commondir}/run_command.sh
 
 # Validate serialization data
 run_command echo "Validating standalone output ..."
+
+# Cleanup results from previous run
+rm -f validation_nproma_${nproma}.result
+rm -f validation_nproma_${nproma}.failed
+
 if [ "${slave}" = "kesch" ]; then
   module load python/3.6.2-gmvolf-17.02 || exit 1
   if [ "${compiler}" = "pgi" ]; then
