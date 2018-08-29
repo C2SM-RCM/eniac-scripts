@@ -1,5 +1,5 @@
 diff --git a/config/mh-linux b/config/mh-linux
-index d9c3306d9..8f202332f 100644
+index d9c3306d9..0f7136790 100644
 --- a/config/mh-linux
 +++ b/config/mh-linux
 @@ -45,7 +45,7 @@ case "$fortran_compiler" in
@@ -29,15 +29,28 @@ index d9c3306d9..8f202332f 100644
          config_compiler  = pgi
          compiler_version = $(pgfortran -V | awk 'NR==2{split($2,v,"."); printf("pgi%1d", v[1])}')
          CFLAGS      = $CFLAGS -DgFortran
-@@ -273,6 +273,7 @@ case "$ac_sitename" in
+@@ -267,23 +267,27 @@ case "$ac_sitename" in
+                     gcc)
+                         config_target=daint_cpu
+                         load_modules =modules craype daint-gpu PrgEnv-gnu cray-netcdf cray-hdf5
++                        FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
+                         CFLAGS      = -DgFortran -DHAVE_LIBNETCDF -DHAVE_NETCDF2 -DHAVE_NETCDF4
+                         NETCDFROOT  = ${NETCDF_DIR}
+                         HDF5ROOT    = ${HDF5_DIR}
                          LAPACKROOT    = ${CRAY_LIBSCI_PREFIX_DIR}
                          LAPACK_LIB    = -lsci_gnu
                          OTHER_LIBS  = -L/apps/daint/UES/6.0.UP02/sandbox-ws/jasper/2.0.10/GNU/5.3.0/lib -ljasper -dynamic -L/usr/lib64 -llzma
+-                        SERIALBOX2ROOT = /apps/daint/UES/6.0.UP04/sandboxes/wsawyer/serialbox2/2.4.0/GNU/5.3.0
 +                        OTHER_LIBS  = ${OTHER_LIBS} -L\$(SERIALBOX2ROOT)/lib -l:libSerialboxFortran.a -lstdc++fs -lstdc++
-                         SERIALBOX2ROOT = /apps/daint/UES/6.0.UP04/sandboxes/wsawyer/serialbox2/2.4.0/GNU/5.3.0
++                        SERIALBOX2ROOT = /project/c14/install/daint/serialbox2_v2.4.1/gnu
  			;;
                      intel)
-@@ -284,6 +285,7 @@ case "$ac_sitename" in
+                         config_target=daint_cpu
+                         load_modules = PrgEnv-intel cray-netcdf
++                        FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
+                         CFLAGS      = -std=gnu99 -march=native -DpgiFortran -DHAVE_LIBNETCDF -DHAVE_NETCDF2 -DHAVE_NETCDF4
+                         STD_FLAGS   = -g -O2 -qopt-report -fp-model source -fpp -traceback  -D__LOOP_EXCHANGE
+                         F77FLAGS    = -g -O2 -qopt-report -fp-model source -fpp -traceback  
                          FFLAGS      = -g -O2 -qopt-report -fp-model source -fpp -D__LOOP_EXCHANGE -D__MIXED_PRECISION -D__MIXED_PRECISION_2 -assume realloc_lhs
                          NETCDFROOT  = /opt/cray/pe/netcdf/4.4.1/INTEL/15.0
  			OTHER_LIBS  = -L/apps/daint/UES/6.0.UP02/sandbox-ws/jasper/2.0.10/INTEL/17.0.1.132/lib -ljasper -L/apps/daint/UES/jenkins/sandbox/easybuild/software/libxml2/2.9.3-CrayGNU-2016.03/lib -lxml2 -L/usr/lib64 -llzma -dynamic
@@ -45,7 +58,60 @@ index d9c3306d9..8f202332f 100644
                          SERIALBOX2ROOT = /apps/daint/UES/6.0.UP04/sandboxes/wsawyer/serialbox2/2.4.0/INTEL/17.0.4.196
  			;;
                      pgi)
-@@ -425,6 +427,7 @@ case "$ac_sitename" in
+@@ -293,7 +297,7 @@ case "$ac_sitename" in
+                         CFLAGS      = -DpgiFortran -DHAVE_LIBNETCDF -DHAVE_NETCDF2 -DHAVE_NETCDF4
+                         LDFLAGS     = -tp=haswell -Mnorpath
+                         NETCDFROOT  = /opt/cray/pe/netcdf/4.4.1/PGI/15.3
+-                        SERIALBOX2ROOT = /apps/daint/UES/6.0.UP04/sandboxes/wsawyer/serialbox2/2.4.0/PGI/18.4
++                        SERIALBOX2ROOT = /project/c14/install/daint/serialbox2_v2.4.1/pgi
+                         OTHER_LIBS  = \$(SERIALBOX2ROOT)/lib/libSerialboxFortran.a -L/opt/gcc/5.3.0/snos/lib64 -lstdc++fs -lstdc++
+ 			;;
+                     pgi_gpu)
+@@ -303,7 +307,7 @@ case "$ac_sitename" in
+                         CFLAGS      = -DpgiFortran -DHAVE_LIBNETCDF -DHAVE_NETCDF2 -DHAVE_NETCDF4
+                         LDFLAGS     = -ta=nvidia:cc60,cuda8.0 -Mcuda -Mnorpath
+                         NETCDFROOT  = /opt/cray/pe/netcdf/4.4.1/PGI/15.3
+-                        SERIALBOX2ROOT = /apps/daint/UES/6.0.UP04/sandboxes/wsawyer/serialbox2/2.4.0/PGI/18.4
++                        SERIALBOX2ROOT = /project/c14/install/daint/serialbox2_v2.4.1/pgi
+                         OTHER_LIBS  = \$(SERIALBOX2ROOT)/lib/libSerialboxFortran.a -L/opt/gcc/5.3.0/snos/lib64 -lstdc++fs -lstdc++
+                        ;;
+                     pgi_openacc_mc)
+@@ -320,26 +324,30 @@ case "$ac_sitename" in
+                         config_target=daint_cpu
+                         load_modules = modules craype daint-gpu PrgEnv-cray cdt/18.04 cray-netcdf cray-hdf5
+                         FFLAGS      = -D__LOOP_EXCHANGE -D__MIXED_PRECISION -D__MIXED_PRECISION_2 -Df2cFortran -e Z -em -hflex_mp=conservative -hfp1 -hadd_paren -hnoacc -O1,cache0 -r am -Ktrap=divz,ovf,inv
++                        FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
+                         CFLAGS      = -g -Df2cFortran -DHAVE_LIBNETCDF -DHAVE_NETCDF2 -DHAVE_NETCDF4 -O3 -DUSE_XML2
+                         LDFLAGS     = -Wl,--allow-multiple-definition
+                         NETCDFROOT  = ${NETCDF_DIR}
+                         HDF5ROOT    = ${HDF5_DIR}
+                         LAPACKROOT  = ${CRAY_LIBSCI_PREFIX_DIR}
+                         LAPACK_LIB  = -lsci_cray
+-                        SERIALBOX2ROOT = /apps/daint/UES/6.0.UP04/sandboxes/wsawyer/serialbox2/2.4.0/CCE/8.7.0
+-                        OTHER_LIBS  = -L/apps/daint/UES/6.0.UP02/sandbox-ws/jasper/2.0.10/CRAY/8.5.5/lib -ljasper -dynamic -L/usr/lib64 -llzma \$(SERIALBOX2ROOT)/lib/libSerialboxFortran.a
++                        SERIALBOX2ROOT = /project/c14/install/daint/serialbox2_v2.4.1/cray
++                        OTHER_LIBS  = -L/apps/daint/UES/6.0.UP02/sandbox-ws/jasper/2.0.10/CRAY/8.5.5/lib -ljasper -dynamic -L/usr/lib64 -llzma
++                        OTHER_LIBS  = ${OTHER_LIBS} \$(SERIALBOX2ROOT)/lib/libSerialboxFortran.a -L/opt/gcc/5.3.0/snos/lib64 -lstdc++fs -lstdc++
+                         ;;
+                     cray_gpu)
+                         config_target=daint_gpu
+                         load_modules = modules craype daint-gpu PrgEnv-cray cdt/18.04 cray-netcdf cray-hdf5 craype-accel-nvidia60
+                         FFLAGS      = -D__LOOP_EXCHANGE -D__MIXED_PRECISION -D__MIXED_PRECISION_2 -Df2cFortran -e Z -em -hflex_mp=intolerant -hfp0 -hacc -hnoomp -hadd_paren -hacc_model=deep_copy -O2 -h ipafrom=../../../src/shared/mo_loopindices.f90 -r am -Ktrap=divz,ovf,inv
++                        FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
+                         CFLAGS      = -g -Df2cFortran -DHAVE_LIBNETCDF -DHAVE_NETCDF4 -DHAVE_NETCDF2 -O3 -DUSE_XML2
+                         NETCDFROOT  = ${NETCDF_DIR}
+                         HDF5ROOT    = ${HDF5_DIR}
+                         LAPACKROOT  = ${CRAY_LIBSCI_PREFIX_DIR}
+                         LAPACK_LIB  = -lsci_cray
+-                        SERIALBOX2ROOT = /apps/daint/UES/6.0.UP04/sandboxes/wsawyer/serialbox2/2.4.0/CCE/8.7.0
+-                        OTHER_LIBS  = -L/apps/daint/UES/6.0.UP02/sandbox-ws/jasper/2.0.10/CRAY/8.5.5/lib -ljasper -llzma \$(SERIALBOX2ROOT)/lib/libSerialboxFortran.a
++                        SERIALBOX2ROOT = /project/c14/install/daint/serialbox2_v2.4.1/cray
++                        OTHER_LIBS  = -L/apps/daint/UES/6.0.UP02/sandbox-ws/jasper/2.0.10/CRAY/8.5.5/lib -ljasper -llzma
++                        OTHER_LIBS  = ${OTHER_LIBS} \$(SERIALBOX2ROOT)/lib/libSerialboxFortran.a -L/opt/gcc/5.3.0/snos/lib64 -lstdc++fs -lstdc++
+ 			                  ;;
+                     *)
+                         echo
+@@ -425,6 +433,7 @@ case "$ac_sitename" in
                          MODDIR      = -J
                          config_target = kesch_cpu
                          FFLAGS        = $FLANG $FWARN -DHAVE_SLOW_PASSIVE_TARGET_ONESIDED -D__LOOP_EXCHANGE -DgFortran -cpp -O2
@@ -53,7 +119,7 @@ index d9c3306d9..8f202332f 100644
                          CFLAGS        = -D_XOPEN_SOURCE=700 -DHAVE_SLOW_PASSIVE_TARGET_ONESIDED -O2 -cpp -std=c99 -DgFortran -DHAVE_LIBNETCDF -DHAVE_NETCDF2 -DHAVE_NETCDF4
                          GRIBAPIROOT    = /project/c14/install/kesch/libgrib_api/v1.20.0.2/gnu/
                          SERIALBOX2ROOT = /project/c14/install/kesch/serialbox2/gnu
-@@ -438,6 +441,7 @@ case "$ac_sitename" in
+@@ -438,6 +447,7 @@ case "$ac_sitename" in
                                  LAPACKROOT    = ${CRAY_LIBSCI_PREFIX_DIR}
                                  LAPACK_LIB    = -lsci_cray
                                  OTHER_LIBS    = -lpthread
@@ -61,11 +127,11 @@ index d9c3306d9..8f202332f 100644
                                  ;;
                              *)
                                  (>&6 echo "")
-@@ -487,12 +491,14 @@ case "$ac_sitename" in
+@@ -487,12 +497,14 @@ case "$ac_sitename" in
                          MODDIR      = -J
                          # FDEBUG        = -O0 -g -Rb -Rc -Rd -Rp #-Rs leads to ICE
                          FFLAGS        = -DHAVE_SLOW_PASSIVE_TARGET_ONESIDED -D__LOOP_EXCHANGE -D__MIXED_PRECISION -D__MIXED_PRECISION_2 -Df2cFortran -e Z -em -hadd_paren -r am -Ktrap=divz,ovf,inv
-+                        FFLAGS        = ${FFLAGS}  -I\$(SERIALBOX2ROOT)/include
++                        FFLAGS        = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
                          # CDEBUG       = -O0 -g
                          CFLAGS        = -DHAVE_SLOW_PASSIVE_TARGET_ONESIDED -Df2cFortran -DHAVE_LIBNETCDF -DHAVE_NETCDF2 -DHAVE_NETCDF4 -O3 -DUSE_XML2
                          LDFLAGS       = -Wl,--allow-multiple-definition
