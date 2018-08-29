@@ -1,5 +1,5 @@
 diff --git a/config/mh-linux b/config/mh-linux
-index d9c3306d9..2830eb12e 100644
+index d9c3306d9..8f202332f 100644
 --- a/config/mh-linux
 +++ b/config/mh-linux
 @@ -45,7 +45,7 @@ case "$fortran_compiler" in
@@ -61,7 +61,7 @@ index d9c3306d9..2830eb12e 100644
                                  ;;
                              *)
                                  (>&6 echo "")
-@@ -487,6 +491,7 @@ case "$ac_sitename" in
+@@ -487,12 +491,14 @@ case "$ac_sitename" in
                          MODDIR      = -J
                          # FDEBUG        = -O0 -g -Rb -Rc -Rd -Rp #-Rs leads to ICE
                          FFLAGS        = -DHAVE_SLOW_PASSIVE_TARGET_ONESIDED -D__LOOP_EXCHANGE -D__MIXED_PRECISION -D__MIXED_PRECISION_2 -Df2cFortran -e Z -em -hadd_paren -r am -Ktrap=divz,ovf,inv
@@ -69,3 +69,10 @@ index d9c3306d9..2830eb12e 100644
                          # CDEBUG       = -O0 -g
                          CFLAGS        = -DHAVE_SLOW_PASSIVE_TARGET_ONESIDED -Df2cFortran -DHAVE_LIBNETCDF -DHAVE_NETCDF2 -DHAVE_NETCDF4 -O3 -DUSE_XML2
                          LDFLAGS       = -Wl,--allow-multiple-definition
+                         GRIBAPIROOT    = /project/c14/install/kesch/libgrib_api/v1.20.0.2/cray/
+                         SERIALBOX2ROOT = /project/c14/install/kesch/serialbox2/cray
+                         config_tuning = $(tmp=${fortran_compiler#'cray'};tmp=${tmp#_};tmp=${tmp:-default};echo $tmp)
++                        OTHER_LIBS    = ${OTHER_LIBS} -L\$(SERIALBOX2ROOT)/lib -l:libSerialboxFortran.a -lstdc++fs -lstdc++
+                         # Generic CPU/GPU setup
+                         case "${config_tuning}" in
+                             gpu*)
