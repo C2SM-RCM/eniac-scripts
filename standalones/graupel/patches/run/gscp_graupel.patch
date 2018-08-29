@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-08-17 11:08:53.916141324 +0200
-+++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-08-17 11:08:47.572296000 +0200
+--- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-08-29 10:48:42.511063511 +0200
++++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-08-29 10:48:35.927961000 +0200
 @@ -251,6 +251,27 @@
  
  !==============================================================================
@@ -47,7 +47,7 @@
  ! Define reciprocal of heat capacity of dry air (at constant pressure vs at constant volume)
  
  #ifdef __COSMO__
-@@ -1654,8 +1688,522 @@
+@@ -1746,8 +1780,522 @@
  ! End of subroutine graupel
  !------------------------------------------------------------------------------
  
