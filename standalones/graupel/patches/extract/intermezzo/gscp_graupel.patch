@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-08-29 10:58:42.000000000 +0200
-+++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-08-29 10:58:43.206666000 +0200
+--- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-09-04 08:37:17.000000000 +0200
++++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-09-04 08:38:24.024056000 +0200
 @@ -607,18 +607,6 @@
  
    LOGICAL :: ldum
@@ -38,7 +38,7 @@
  ! Define reciprocal of heat capacity of dry air (at constant pressure vs at constant volume)
  
  #ifdef __COSMO__
-@@ -1783,7 +1783,7 @@
+@@ -1784,7 +1784,7 @@
  
    ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
    
@@ -47,7 +47,7 @@
    &  ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, &
    &  ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, &
    &  ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
-@@ -1835,7 +1835,7 @@
+@@ -1836,7 +1836,7 @@
  END FUNCTION ftg_graupel_capture_input_active
  
  SUBROUTINE ftg_graupel_capture_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, &
@@ -56,7 +56,7 @@
  &  ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, &
  &  ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, &
  &  ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
-@@ -1875,8 +1875,6 @@
+@@ -1876,8 +1876,6 @@
    REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prr_gsp
    REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prs_gsp
    REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prg_gsp
@@ -65,7 +65,7 @@
    REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qrsflux
    LOGICAL, INTENT(in), OPTIONAL :: l_cv
    LOGICAL, INTENT(in), OPTIONAL :: ldiag_ttend
-@@ -1940,8 +1938,6 @@
+@@ -1941,8 +1939,6 @@
      CALL ftg_write("prr_gsp", prr_gsp, LBOUND(prr_gsp), UBOUND(prr_gsp))
      CALL ftg_write("prs_gsp", prs_gsp, LBOUND(prs_gsp), UBOUND(prs_gsp))
      CALL ftg_write("prg_gsp", prg_gsp, LBOUND(prg_gsp), UBOUND(prg_gsp))
