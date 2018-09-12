@@ -1,5 +1,5 @@
---- a/src/configure_model/mo_echam_vdf_config.f90	2018-05-16 12:10:43.249506000 +0200
-+++ b/src/configure_model/mo_echam_vdf_config.f90	2018-05-16 12:10:41.962826000 +0200
+--- eniac_a/src/configure_model/mo_echam_vdf_config.f90	2018-09-12 14:27:13.855366000 +0200
++++ eniac_b/src/configure_model/mo_echam_vdf_config.f90	2018-09-12 14:27:01.937135000 +0200
 @@ -79,6 +79,14 @@
    !!
    TYPE(t_echam_vdf_config), TARGET :: echam_vdf_config(max_dom)
