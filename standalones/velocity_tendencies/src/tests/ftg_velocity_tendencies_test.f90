@@ -210,6 +210,7 @@ CONTAINS
     ! GLOBALS
     CALL ftg_read("mo_nonhydrostatic_config__lextra_diffu", mo_nonhydrostatic_config__lextra_diffu)
     CALL ftg_read("mo_run_config__ltimer", mo_run_config__ltimer)
+    mo_run_config__ltimer = .FALSE.
     CALL ftg_read("mo_run_config__lvert_nest", mo_run_config__lvert_nest)
     CALL ftg_read("mo_init_vgrid__nflatlev", mo_init_vgrid__nflatlev)
     CALL ftg_read("mo_parallel_config__nproma", mo_parallel_config__nproma)
