@@ -28,7 +28,6 @@ specific_patches ()
 
 # Common patches
 patch -p1 <${commondir}/patches/configure.patch
-patch -p1 <${commondir}/patches/mh-linux_ftg.patch
 
 # run specific patches
 patchdir=${scriptdir}/patches/run

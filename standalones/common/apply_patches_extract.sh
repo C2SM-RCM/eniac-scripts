@@ -31,9 +31,6 @@ specific_patches ()
 
 if [ "${timing}" == "init" ]; then
 
-  # Common patches
-  patch -p1 <${commondir}/patches/mh-linux_extract_ftg.patch
-
   patchdir=${scriptdir}/patches/extract/${timing}
   specific_patches
   exit 0

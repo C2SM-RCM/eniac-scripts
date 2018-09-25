@@ -27,7 +27,6 @@ specific_patches ()
 }
 
 # Common patches
-patch -p1 <${commondir}/patches/mh-linux_ftg.patch
 if [ -f ${commondir}/patches/${expname}_${slave}.patch ]; then
   patch -p1 < ${commondir}/patches/${expname}_${slave}.patch
 fi
