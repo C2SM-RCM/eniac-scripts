@@ -27,9 +27,7 @@ specific_patches ()
 }
 
 # Common patches
-if [ -f ${commondir}/patches/${expname}_${slave}.patch ]; then
-  patch -p1 < ${commondir}/patches/${expname}_${slave}.patch
-fi
+patch -p1 < ${commondir}/patches/${expname}_ltimer.patch
 
 # run specific patches
 patchdir=${scriptdir}/patches/reference

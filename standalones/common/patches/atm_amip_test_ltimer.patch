@@ -1,0 +1,12 @@
+diff --git a/run/exp.atm_amip_test b/run/exp.atm_amip_test
+index c70f0ab7e..47ce9853f 100644
+--- a/run/exp.atm_amip_test
++++ b/run/exp.atm_amip_test
+@@ -109,6 +109,7 @@ cat > ${atmo_namelist} << EOF
+  iforcing         = 2           ! 0: none, 1: HS, 2: ECHAM, 3: NWP
+  output           = 'nml'
+  msg_level        = 15          ! level of details report during integration 
++ ltimer           = .FALSE.
+  restart_filename = "${EXPNAME}_restart_atm_<rsttime>.nc"
+  activate_sync_timers = .TRUE.
+ /
