@@ -1,0 +1,13 @@
+diff --git a/run/exp.eniac_graupel_test b/run/exp.eniac_graupel_test
+index b095d744a..494f97102 100644
+--- a/run/exp.eniac_graupel_test
++++ b/run/exp.eniac_graupel_test
+@@ -160,7 +160,7 @@ cat > ${atmo_namelist} << EOF
+  ntracer                     =                          5         ! number of advected tracers
+  iforcing                    =                          3         ! forcing of dynamics and transport by parameterized processes
+  msg_level                   =                         10         ! detailed report during integration
+- ltimer                      =                      .TRUE.        ! timer for monitoring the runtime of specific routines
++ ltimer                      =                      .FALSE.        ! timer for monitoring the runtime of specific routines
+  timers_level                =                         10         ! performance timer granularity
+  check_uuid_gracefully       =                      .TRUE.        ! give only warnings for non-matching uuids
+  output                      =                        "nml"       ! main switch for enabling/disabling components of the model output
