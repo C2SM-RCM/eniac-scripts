@@ -16,15 +16,16 @@ PROGRAM ftg_nsurf_diag_test
   
   USE mo_echam_convect_tables, ONLY: mo_echam_convect_tables__tlucu => tlucu
   USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
+  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
   
-  
+  USE mo_model_domain, ONLY: t_patch
   
   IMPLICIT NONE
   
   CHARACTER(*), PARAMETER :: INPUT_DIR = &
-    '++FTGDATADIR++/data/input'
+  '++FTGDATADIR++/data/input'
   CHARACTER(*), PARAMETER :: OUTPUT_DIR = &
-    '++FTGDATADIR++/data/output_test'
+  '++FTGDATADIR++/data/output_test'
   LOGICAL, PARAMETER :: OUTPUT_ENABLED = .TRUE.
   LOGICAL, PARAMETER :: SERIALBOX_DEBUG = .FALSE.
   REAL, PARAMETER :: ftg_rperturb = ++FTGPERTURB++
@@ -39,6 +40,7 @@ CONTAINS
   
   SUBROUTINE ftg_test_nsurf_diag()
     
+    INTEGER :: jcs
     INTEGER :: kproma
     INTEGER :: kbdim
     INTEGER :: ksfc_type
@@ -83,13 +85,13 @@ CONTAINS
     ftg_nsurf_diag_capture_round = 1
     
     CALL ftg_nsurf_diag_init_for_replay('input')
-    CALL ftg_nsurf_diag_replay_input(kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, pocu, &
-    &  pocv, pzf, pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, pdew2_gbm, &
-    &  puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
+    CALL ftg_nsurf_diag_replay_input(jcs, kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, &
+    &  pocu, pocv, pzf, pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, &
+    &  pdew2_gbm, puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
     CALL ftg_destroy_serializer()
     
-    CALL nsurf_diag(kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, pocu, pocv, pzf, pzs, &
-    &  pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, pdew2_gbm, puas_gbm, &
+    CALL nsurf_diag(jcs, kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, pocu, pocv, pzf, &
+    &  pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, pdew2_gbm, puas_gbm, &
     &  pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
     
   END SUBROUTINE ftg_test_nsurf_diag
@@ -111,10 +113,11 @@ CONTAINS
     
   END SUBROUTINE ftg_nsurf_diag_init_for_replay
   
-  SUBROUTINE ftg_nsurf_diag_replay_input(kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, &
-  &  pocu, pocv, pzf, pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, &
+  SUBROUTINE ftg_nsurf_diag_replay_input(jcs, kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, &
+  &  pvm1, pocu, pocv, pzf, pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, &
   &  pdew2_gbm, puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
     
+    INTEGER, INTENT(inout) :: jcs
     INTEGER, INTENT(inout) :: kproma
     INTEGER, INTENT(inout) :: kbdim
     INTEGER, INTENT(inout) :: ksfc_type
@@ -165,6 +168,7 @@ CONTAINS
     CALL setCalendar(ftg_mtime_calendar)
     
     ! BASIC ARGUMENTS
+    CALL ftg_read("jcs", jcs)
     CALL ftg_read("kproma", kproma)
     CALL ftg_read("kbdim", kbdim)
     CALL ftg_read("ksfc_type", ksfc_type)
@@ -209,6 +213,35 @@ CONTAINS
     ! GLOBALS
     CALL ftg_read("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
     CALL ftg_read("mo_echam_convect_tables__tlucu", mo_echam_convect_tables__tlucu)
+    
+    ftg_c = "mo_model_domain__p_patch"
+    IF (ftg_field_exists(ftg_c)) THEN
+      ftg_bounds = ftg_get_bounds(ftg_c)
+      ALLOCATE(mo_model_domain__p_patch(ftg_bounds(1):ftg_bounds(2)))
+    ELSE
+      ALLOCATE(mo_model_domain__p_patch(0))
+    END IF
+    DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
+      WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info%glb_index'
+      CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index, ftg_rperturb)
+    END DO
+    
+    DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
+      WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center'
+      IF (ftg_field_exists(ftg_c)) THEN
+        ftg_bounds = ftg_get_bounds(ftg_c)
+        ALLOCATE(mo_model_domain__p_patch(ftg_d1)%edges%center(ftg_bounds(1):ftg_bounds(2), ftg_bounds(3):ftg_bounds(4)))
+      ELSE
+        ALLOCATE(mo_model_domain__p_patch(ftg_d1)%edges%center(0, 0))
+      END IF
+      WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lat'
+      CALL ftg_read(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lat)
+    END DO
+    
+    DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
+      WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lon'
+      CALL ftg_read(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lon)
+    END DO
     
     
     CALL ftg_destroy_savepoint()
