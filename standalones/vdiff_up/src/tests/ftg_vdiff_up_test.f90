@@ -43,6 +43,7 @@ CONTAINS
   
   SUBROUTINE ftg_test_vdiff_up()
     
+    INTEGER :: jcs
     INTEGER :: kproma
     INTEGER :: kbdim
     INTEGER :: klev
@@ -92,14 +93,14 @@ CONTAINS
     ftg_vdiff_up_capture_round = 1
     
     CALL ftg_vdiff_up_init_for_replay('input')
-    CALL ftg_vdiff_up_replay_input(kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, pcptgz, &
-    &  pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, &
-    &  pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
+    CALL ftg_vdiff_up_replay_input(jcs, kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, &
+    &  pcptgz, pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, &
+    &  pkedisp, pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
     CALL ftg_destroy_serializer()
     
-    CALL vdiff_up(kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, pcptgz, pum1, pvm1, ptm1, &
-    &  pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, pute_vdf, pvte_vdf, &
-    &  pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
+    CALL vdiff_up(jcs, kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, pcptgz, pum1, pvm1, &
+    &  ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, pute_vdf, &
+    &  pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
     
   END SUBROUTINE ftg_test_vdiff_up
   
@@ -120,10 +121,11 @@ CONTAINS
     
   END SUBROUTINE ftg_vdiff_up_init_for_replay
   
-  SUBROUTINE ftg_vdiff_up_replay_input(kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, &
+  SUBROUTINE ftg_vdiff_up_replay_input(jcs, kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, &
   &  pcptgz, pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, &
   &  pkedisp, pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
     
+    INTEGER, INTENT(inout) :: jcs
     INTEGER, INTENT(inout) :: kproma
     INTEGER, INTENT(inout) :: kbdim
     INTEGER, INTENT(inout) :: klev
@@ -179,6 +181,7 @@ CONTAINS
     CALL setCalendar(ftg_mtime_calendar)
     
     ! BASIC ARGUMENTS
+    CALL ftg_read("jcs", jcs)
     CALL ftg_read("kproma", kproma)
     CALL ftg_read("kbdim", kbdim)
     CALL ftg_read("klev", klev)
