@@ -1,6 +1,6 @@
---- eniac_a/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-05-31 09:49:33.000000000 +0200
-+++ eniac_b/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-05-31 09:57:15.646894000 +0200
-@@ -415,8 +415,10 @@
+--- eniac_a/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-15 13:20:20.000000000 +0200
++++ eniac_b/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-15 13:20:25.394185000 +0200
+@@ -501,8 +501,10 @@
    &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx &
    &  => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
    &  mo_vdiff_solver__iu => iu
@@ -10,10 +10,10 @@
 +#ifdef __SPLINE_TEST__
 +  USE mo_convect_tables, ONLY: mo_convect_tables__za => za, mo_convect_tables__ua => ua, mo_convect_tables__dua => dua
 +#endif
+   USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
    USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
    
-   INTEGER, INTENT(in) :: jg
-@@ -593,7 +595,9 @@
+@@ -684,7 +686,9 @@
      
      
      ! GLOBALS
@@ -23,7 +23,7 @@
      IF (ALLOCATED(mo_vdiff_solver__ibtm_mtrx)) THEN
        CALL ftg_write("mo_vdiff_solver__ibtm_mtrx", mo_vdiff_solver__ibtm_mtrx, LBOUND(mo_vdiff_solver__ibtm_mtrx), UBOUND( &
        &  mo_vdiff_solver__ibtm_mtrx))
-@@ -624,8 +628,10 @@
+@@ -715,8 +719,10 @@
      CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
      CALL ftg_write("mo_convect_tables__tlucu", mo_convect_tables__tlucu, LBOUND(mo_convect_tables__tlucu), UBOUND( &
      &  mo_convect_tables__tlucu))
@@ -34,7 +34,7 @@
      CALL ftg_register_only("mo_echam_vdf_config__echam_vdf_config", "TYPE(t_echam_vdf_config)", LBOUND( &
      &  mo_echam_vdf_config__echam_vdf_config), UBOUND(mo_echam_vdf_config__echam_vdf_config))
      CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%c_e", mo_echam_vdf_config__echam_vdf_config%c_e, LBOUND( &
-@@ -685,8 +691,10 @@
+@@ -819,8 +825,10 @@
    &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx &
    &  => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
    &  mo_vdiff_solver__iu => iu
@@ -44,10 +44,10 @@
 +#ifdef __SPLINE_TEST__
 +  USE mo_convect_tables, ONLY: mo_convect_tables__za => za, mo_convect_tables__ua => ua, mo_convect_tables__dua => dua
 +#endif
+   USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
    USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
    
-   REAL(wp), DIMENSION(:), INTENT(in) :: pustar
-@@ -771,7 +779,9 @@
+@@ -906,7 +914,9 @@
      
      
      ! GLOBALS
@@ -57,7 +57,7 @@
      IF (ALLOCATED(mo_vdiff_solver__ibtm_mtrx)) THEN
        CALL ftg_write("mo_vdiff_solver__ibtm_mtrx", mo_vdiff_solver__ibtm_mtrx, LBOUND(mo_vdiff_solver__ibtm_mtrx), UBOUND( &
        &  mo_vdiff_solver__ibtm_mtrx))
-@@ -802,8 +812,10 @@
+@@ -937,8 +947,10 @@
      CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
      CALL ftg_write("mo_convect_tables__tlucu", mo_convect_tables__tlucu, LBOUND(mo_convect_tables__tlucu), UBOUND( &
      &  mo_convect_tables__tlucu))
