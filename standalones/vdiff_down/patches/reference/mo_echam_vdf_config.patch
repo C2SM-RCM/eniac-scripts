@@ -1,0 +1,17 @@
+--- eniac_a/src/configure_model/mo_echam_vdf_config.f90	2018-10-17 14:09:10.155238000 +0200
++++ eniac_b/src/configure_model/mo_echam_vdf_config.f90	2018-10-17 14:09:03.030243000 +0200
+@@ -79,6 +79,14 @@
+   !!
+   TYPE(t_echam_vdf_config), TARGET :: echam_vdf_config(max_dom)
+   
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  PUBLIC :: t_echam_vdf_config
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ CONTAINS
+ 
+   !----
