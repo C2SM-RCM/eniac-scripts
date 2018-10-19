@@ -13,4 +13,6 @@ fi
 if [ "${slave}" = "daint" ]; then
   opts+=" --constraint=gpu"
 fi
+set -x
 srun ${opts} ./${testname} || exit 0
+set +x

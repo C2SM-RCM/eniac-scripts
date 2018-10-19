@@ -12,23 +12,24 @@ specific_patches ()
 {
   # Extraction patches
   if [ -d ${patchdir} ]; then
+    shopt -s nullglob
     for f in ${patchdir}/*.patch; do
       patch -p1 <${f}
     done
+    shopt -u nullglob
 
     # Extraction patches for JSBACH
     if [ -d ${patchdir}/jsbach ]; then
+      shopt -s nullglob
       for f in ${patchdir}/jsbach/*.patch; do
         patch -p1 <$f
       done
+      shopt -u nullglob
     fi
   fi
 }
 
 if [ "${timing}" == "init" ]; then
-
-  # Common patches
-  patch -p1 <${commondir}/patches/mh-linux_extract_ftg.patch
 
   patchdir=${scriptdir}/patches/extract/${timing}
   specific_patches

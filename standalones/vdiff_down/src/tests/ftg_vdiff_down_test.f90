@@ -25,9 +25,11 @@ PROGRAM ftg_vdiff_down_test
 #ifdef __SPLINE_TEST__
   USE mo_convect_tables, ONLY: mo_convect_tables__za => za, mo_convect_tables__ua => ua, mo_convect_tables__dua => dua
 #endif
+  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
   USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
   
   USE mo_echam_vdf_config, ONLY: t_echam_vdf_config
+  USE mo_model_domain, ONLY: t_patch
   
   IMPLICIT NONE
   
@@ -50,6 +52,8 @@ CONTAINS
   SUBROUTINE ftg_test_vdiff_down()
     
     INTEGER :: jg
+    INTEGER :: jb
+    INTEGER :: jcs
     INTEGER :: kproma
     INTEGER :: kbdim
     INTEGER :: klev
@@ -130,19 +134,20 @@ CONTAINS
     ftg_vdiff_down_capture_round = 1
     
     CALL ftg_vdiff_down_init_for_replay('input')
-    CALL ftg_vdiff_down_replay_input(jg, kproma, kbdim, klev, klevm1, klevp1, ktrac, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, &
+    CALL ftg_vdiff_down_replay_input(jg, jb, jcs, kproma, kbdim, klev, klevm1, klevp1, ktrac, ksfc_type, idx_wtr, idx_ice, &
+    &  idx_lnd, pdtime, pcoriol, pzf, pzh, pfrc, ptsfc_tile, pocu, pocv, ppsfc, pum1, pvm1, ptm1, pqm1, pxlm1, pxim1, pxm1, pxtm1, &
+    &  pmair, pmref, paphm1, papm1, ptvm1, paclc, pxt_emis, pthvvar, pxvar, pz0m_tile, ptottem1, pustar, pwstar, pwstar_tile, &
+    &  pqsat_tile, phdtcbl, pri, pri_tile, pmixlen, pcfm, pcfm_tile, pcfh, pcfh_tile, pcfv, pcftotte, pcfthv, aa, aa_btm, bb, &
+    &  bb_btm, pfactor_sfc, pcpt_tile, pcptgz, pzthvvar, pthvsig, pztottevn, pch_tile, pbn_tile, pbhn_tile, pbm_tile, pbh_tile, &
+    &  pcsat, pcair, paz0lh)
+    CALL ftg_destroy_serializer()
+    
+    CALL vdiff_down(jg, jb, jcs, kproma, kbdim, klev, klevm1, klevp1, ktrac, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, &
     &  pcoriol, pzf, pzh, pfrc, ptsfc_tile, pocu, pocv, ppsfc, pum1, pvm1, ptm1, pqm1, pxlm1, pxim1, pxm1, pxtm1, pmair, pmref, &
     &  paphm1, papm1, ptvm1, paclc, pxt_emis, pthvvar, pxvar, pz0m_tile, ptottem1, pustar, pwstar, pwstar_tile, pqsat_tile, &
     &  phdtcbl, pri, pri_tile, pmixlen, pcfm, pcfm_tile, pcfh, pcfh_tile, pcfv, pcftotte, pcfthv, aa, aa_btm, bb, bb_btm, &
     &  pfactor_sfc, pcpt_tile, pcptgz, pzthvvar, pthvsig, pztottevn, pch_tile, pbn_tile, pbhn_tile, pbm_tile, pbh_tile, pcsat, &
     &  pcair, paz0lh)
-    CALL ftg_destroy_serializer()
-    
-    CALL vdiff_down(jg, kproma, kbdim, klev, klevm1, klevp1, ktrac, ksfc_type, idx_wtr, idx_ice, idx_lnd, pdtime, pcoriol, pzf, &
-    &  pzh, pfrc, ptsfc_tile, pocu, pocv, ppsfc, pum1, pvm1, ptm1, pqm1, pxlm1, pxim1, pxm1, pxtm1, pmair, pmref, paphm1, papm1, &
-    &  ptvm1, paclc, pxt_emis, pthvvar, pxvar, pz0m_tile, ptottem1, pustar, pwstar, pwstar_tile, pqsat_tile, phdtcbl, pri, &
-    &  pri_tile, pmixlen, pcfm, pcfm_tile, pcfh, pcfh_tile, pcfv, pcftotte, pcfthv, aa, aa_btm, bb, bb_btm, pfactor_sfc, &
-    &  pcpt_tile, pcptgz, pzthvvar, pthvsig, pztottevn, pch_tile, pbn_tile, pbhn_tile, pbm_tile, pbh_tile, pcsat, pcair, paz0lh)
     
   END SUBROUTINE ftg_test_vdiff_down
   
@@ -163,14 +168,16 @@ CONTAINS
     
   END SUBROUTINE ftg_vdiff_down_init_for_replay
   
-  SUBROUTINE ftg_vdiff_down_replay_input(jg, kproma, kbdim, klev, klevm1, klevp1, ktrac, ksfc_type, idx_wtr, idx_ice, idx_lnd, &
-  &  pdtime, pcoriol, pzf, pzh, pfrc, ptsfc_tile, pocu, pocv, ppsfc, pum1, pvm1, ptm1, pqm1, pxlm1, pxim1, pxm1, pxtm1, pmair, &
-  &  pmref, paphm1, papm1, ptvm1, paclc, pxt_emis, pthvvar, pxvar, pz0m_tile, ptottem1, pustar, pwstar, pwstar_tile, pqsat_tile, &
-  &  phdtcbl, pri, pri_tile, pmixlen, pcfm, pcfm_tile, pcfh, pcfh_tile, pcfv, pcftotte, pcfthv, aa, aa_btm, bb, bb_btm, &
-  &  pfactor_sfc, pcpt_tile, pcptgz, pzthvvar, pthvsig, pztottevn, pch_tile, pbn_tile, pbhn_tile, pbm_tile, pbh_tile, pcsat, &
-  &  pcair, paz0lh)
+  SUBROUTINE ftg_vdiff_down_replay_input(jg, jb, jcs, kproma, kbdim, klev, klevm1, klevp1, ktrac, ksfc_type, idx_wtr, idx_ice, &
+  &  idx_lnd, pdtime, pcoriol, pzf, pzh, pfrc, ptsfc_tile, pocu, pocv, ppsfc, pum1, pvm1, ptm1, pqm1, pxlm1, pxim1, pxm1, pxtm1, &
+  &  pmair, pmref, paphm1, papm1, ptvm1, paclc, pxt_emis, pthvvar, pxvar, pz0m_tile, ptottem1, pustar, pwstar, pwstar_tile, &
+  &  pqsat_tile, phdtcbl, pri, pri_tile, pmixlen, pcfm, pcfm_tile, pcfh, pcfh_tile, pcfv, pcftotte, pcfthv, aa, aa_btm, bb, &
+  &  bb_btm, pfactor_sfc, pcpt_tile, pcptgz, pzthvvar, pthvsig, pztottevn, pch_tile, pbn_tile, pbhn_tile, pbm_tile, pbh_tile, &
+  &  pcsat, pcair, paz0lh)
     
     INTEGER, INTENT(inout) :: jg
+    INTEGER, INTENT(inout) :: jb
+    INTEGER, INTENT(inout) :: jcs
     INTEGER, INTENT(inout) :: kproma
     INTEGER, INTENT(inout) :: kbdim
     INTEGER, INTENT(inout) :: klev
@@ -258,6 +265,8 @@ CONTAINS
     
     ! BASIC ARGUMENTS
     CALL ftg_read("jg", jg)
+    CALL ftg_read("jb", jb)
+    CALL ftg_read("jcs", jcs)
     CALL ftg_read("kproma", kproma)
     CALL ftg_read("kbdim", kbdim)
     CALL ftg_read("klev", klev)
@@ -380,6 +389,35 @@ CONTAINS
     CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux)
     CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%pr0", mo_echam_vdf_config__echam_vdf_config%pr0)
     CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%wmc", mo_echam_vdf_config__echam_vdf_config%wmc)
+    
+    ftg_c = "mo_model_domain__p_patch"
+    IF (ftg_field_exists(ftg_c)) THEN
+      ftg_bounds = ftg_get_bounds(ftg_c)
+      ALLOCATE(mo_model_domain__p_patch(ftg_bounds(1):ftg_bounds(2)))
+    ELSE
+      ALLOCATE(mo_model_domain__p_patch(0))
+    END IF
+    DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
+      WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info%glb_index'
+      CALL ftg_allocate_and_read_allocatable(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index, ftg_rperturb)
+    END DO
+    
+    DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
+      WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center'
+      IF (ftg_field_exists(ftg_c)) THEN
+        ftg_bounds = ftg_get_bounds(ftg_c)
+        ALLOCATE(mo_model_domain__p_patch(ftg_d1)%edges%center(ftg_bounds(1):ftg_bounds(2), ftg_bounds(3):ftg_bounds(4)))
+      ELSE
+        ALLOCATE(mo_model_domain__p_patch(ftg_d1)%edges%center(0, 0))
+      END IF
+      WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lat'
+      CALL ftg_read(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lat)
+    END DO
+    
+    DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
+      WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lon'
+      CALL ftg_read(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lon)
+    END DO
     
     
     CALL ftg_destroy_savepoint()

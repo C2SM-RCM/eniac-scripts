@@ -20,9 +20,6 @@ commondir="${workdir}/eniac-scripts/standalones/common"
 source ${commondir}/base_env.sh
 source ${commondir}/run_command.sh
 
-# Apply patches for standalone
-run_command patch -p1 <${commondir}/patches/mh-linux_ftg.patch || exit 1
-
 if [ "${compiler}" == "all" ]; then
   compiler_list="gcc cray pgi cray_gpu pgi_gpu"
 else
@@ -37,6 +34,3 @@ for c in ${compiler_list}; do
   run_command cp build_command build_command.${slave}.${c} || exit 1
   run_command make distclean >& /dev/null || exit 1
 done
-
-# Revert patch
-run_command patch -R -p1 <${commondir}/patches/mh-linux_ftg.patch || exit 1

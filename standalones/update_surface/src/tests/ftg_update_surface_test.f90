@@ -31,7 +31,7 @@ PROGRAM ftg_update_surface_test
   USE mo_parallel_config, ONLY: mo_parallel_config__nproma => nproma
   USE mo_timer, ONLY: mo_timer__timer_ice_fast => timer_ice_fast, mo_timer__timer_jsbach => timer_jsbach
   USE mo_read_netcdf_distributed, ONLY: mo_read_netcdf_distributed__basic_data => basic_data, t_basic_distrib_read_data
-  USE mo_jsb_control, ONLY: mo_jsb_control__l_timer => l_timer, mo_jsb_control__debug => debug, mo_jsb_control__is_standalone => &
+  USE mo_jsb_control, ONLY: mo_jsb_control__l_timer => l_timer, mo_jsb_control__is_standalone => &
   &  is_standalone
   USE mo_surface, ONLY: lsfc_heat_flux, lsfc_mom_flux
   USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
@@ -531,7 +531,6 @@ CONTAINS
     
     ! GLOBALS
     CALL ftg_read("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
-    CALL ftg_read("mo_jsb_control__debug", mo_jsb_control__debug)
     CALL ftg_read("mo_psrad_orbit__declination", mo_psrad_orbit__declination)
     CALL ftg_read("mo_sea_ice_nml__hci_layer", mo_sea_ice_nml__hci_layer)
     CALL ftg_read("mo_sea_ice_nml__i_ice_albedo", mo_sea_ice_nml__i_ice_albedo)

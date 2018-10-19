@@ -11,4 +11,4 @@ fi
 if [ "${slave}" = "daint" ]; then
   opts+=" --constraint=gpu"
 fi
-sbatch ${opts} exp.atm_amip_test.run
+sbatch ${opts} exp.${expname}.run

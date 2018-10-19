@@ -1,0 +1,377 @@
+--- eniac_a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-10-17 12:47:36.969149000 +0200
++++ eniac_b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-10-17 12:47:30.875526000 +0200
+@@ -28,6 +28,27 @@
+   PRIVATE
+   PUBLIC :: vdiff_up
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  LOGICAL :: ftg_vdiff_up_capture_input_enabled = .TRUE.
++  LOGICAL :: ftg_vdiff_up_capture_output_enabled = .TRUE.
++  INTEGER :: ftg_vdiff_up_capture_round = 1
++  INTEGER :: ftg_vdiff_up_round = 0
++  CHARACTER(len=1024) :: ftg_vdiff_up_input_dir = &
++  '++FTGDATADIR++/data/input'
++  CHARACTER(len=1024) :: ftg_vdiff_up_output_dir = &
++  '++FTGDATADIR++/data/output'
++  
++  PUBLIC :: ftg_vdiff_up_capture_input_enabled, ftg_vdiff_up_capture_output_enabled, ftg_vdiff_up_capture_round, &
++  &  ftg_vdiff_up_input_dir, ftg_vdiff_up_output_dir
++  
++  
++  
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ CONTAINS
+   !>
+   !!
+@@ -116,6 +137,17 @@
+     REAL(wp),INTENT(OUT) :: psh_vdiff (kbdim)      ! sens. heat flux
+     REAL(wp),INTENT(OUT) :: pqv_vdiff (kbdim)      ! qv flux
+ 
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  ftg_vdiff_up_round = ftg_vdiff_up_round + 1
++  CALL ftg_vdiff_up_capture_input(jcs, kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, &
++  &  pcptgz, pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, &
++  &  pkedisp, pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
++
+ 
+     !-----------------------------------------------------------------------
+     ! 6. Obtain solution of the tri-diagonal system by back-substitution.
+@@ -142,7 +174,328 @@
+     ! Note: computation of additional diagnostics, e.g., surface sensible heat flux,
+     !       wind stress, 10m wind, 2m temperature etc., has not been implemented yet.
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  CALL ftg_vdiff_up_capture_output(bb, pxvar, pz0m_tile, pkedisp, pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, &
++  &  pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+   END SUBROUTINE vdiff_up
++
++! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++
++SUBROUTINE ftg_vdiff_up_init_for_capture(stage, dir)
++  
++  USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
++  USE mo_mpi,            ONLY: get_my_mpi_all_id
++  USE m_ser_ftg,         ONLY: ftg_set_serializer, ftg_add_serializer_metainfo, ignore_bullshit_max_dim_size, &
++  &  ignore_bullshit_allow_negative_indices, ignore_bullshit
++  
++  CHARACTER(*), INTENT(IN) :: stage, dir
++  
++  CHARACTER(len=MAX_CHAR_LENGTH) :: basename, mkdirerr
++  
++  WRITE (basename,'(a,a,a,i0)') 'ftg_vdiff_up_', TRIM(stage), '_', get_my_mpi_all_id()
++  
++  WRITE (0,*) 'FTG INIT vdiff_up '//TRIM(basename), get_my_mpi_all_id()
++  
++  mkdirerr = ''
++  !  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
++  !  IF (TRIM(mkdirerr) /= '') THEN
++    !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
++    !  END IF
++    
++    ignore_bullshit = .FALSE.
++    ignore_bullshit_max_dim_size = 100000
++    ignore_bullshit_allow_negative_indices = .TRUE.
++    
++    CALL ftg_set_serializer(TRIM(dir), TRIM(basename), 'w')
++    CALL ftg_add_serializer_metainfo('subroutine', 'vdiff_up')
++    CALL ftg_add_serializer_metainfo('stage', stage)
++    CALL ftg_add_serializer_metainfo('mpi_all_id', get_my_mpi_all_id())
++    
++  END SUBROUTINE ftg_vdiff_up_init_for_capture
++  
++  LOGICAL FUNCTION ftg_vdiff_up_capture_input_active()
++  
++  ftg_vdiff_up_capture_input_active =       &
++  ftg_vdiff_up_capture_input_enabled .AND.  &
++  ftg_vdiff_up_round .EQ. ftg_vdiff_up_capture_round
++  
++END FUNCTION ftg_vdiff_up_capture_input_active
++
++SUBROUTINE ftg_vdiff_up_capture_input(jcs, kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, &
++&  pcptgz, pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, &
++&  pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
++  
++  USE mtime,     ONLY: calendarType
++  USE mo_mpi,    ONLY: get_my_mpi_all_id
++  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  
++  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ixl => ixl, mo_vdiff_solver__ixi => ixi, &
++  &  mo_vdiff_solver__nmatrix => nmatrix, mo_vdiff_solver__itotte => itotte, mo_vdiff_solver__matrix_idx => matrix_idx, &
++  &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
++  &  mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iu => iu, mo_vdiff_solver__ixv => &
++  &  ixv, mo_vdiff_solver__ih => ih
++  USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
++  
++  INTEGER, INTENT(in) :: jcs
++  INTEGER, INTENT(in) :: kproma
++  INTEGER, INTENT(in) :: kbdim
++  INTEGER, INTENT(in) :: klev
++  INTEGER, INTENT(in) :: klevm1
++  INTEGER, INTENT(in) :: ktrac
++  INTEGER, INTENT(in) :: ksfc_type
++  INTEGER, INTENT(in) :: idx_wtr
++  REAL(wp), INTENT(in) :: pdtime
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pfrc
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pcfm_tile
++  REAL(wp), DIMENSION(:,:,:,:), INTENT(in) :: aa
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pcptgz
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pum1
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pvm1
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: ptm1
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pmair
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pmref
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pqm1
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pxlm1
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pxim1
++  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: pxtm1
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pgeom1
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pztottevn
++  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: bb
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pzthvvar
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pxvar
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pz0m_tile
++  REAL(wp), DIMENSION(:), INTENT(in) :: pkedisp
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pute_vdf
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pvte_vdf
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pq_vdf
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pqte_vdf
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pxlte_vdf
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pxite_vdf
++  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: pxtte_vdf
++  REAL(wp), DIMENSION(:), INTENT(in) :: pz0m
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pthvvar
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: ptotte
++  REAL(wp), DIMENSION(:), INTENT(in) :: psh_vdiff
++  REAL(wp), DIMENSION(:), INTENT(in) :: pqv_vdiff
++  
++  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
++  CHARACTER(len=256) :: ftg_c
++  
++  IF (ftg_vdiff_up_capture_input_active()) THEN
++    
++    CALL ftg_vdiff_up_init_for_capture('input', ftg_vdiff_up_input_dir)
++    CALL ftg_set_savepoint('input')
++    
++    WRITE (0,*) 'FTG ROUND vdiff_up ', ftg_vdiff_up_round, get_my_mpi_all_id()
++    WRITE (0,*) 'FTG WRITE INPUT DATA vdiff_up', get_my_mpi_all_id()
++    
++    ! MTIME CALENDAR TYPE --> Remove this line if mtime is not used
++    CALL ftg_write("ftg_mtime_calendar", calendarType())
++    
++    ! BASIC ARGUMENTS
++    CALL ftg_write("jcs", jcs)
++    CALL ftg_write("kproma", kproma)
++    CALL ftg_write("kbdim", kbdim)
++    CALL ftg_write("klev", klev)
++    CALL ftg_write("klevm1", klevm1)
++    CALL ftg_write("ktrac", ktrac)
++    CALL ftg_write("ksfc_type", ksfc_type)
++    CALL ftg_write("idx_wtr", idx_wtr)
++    CALL ftg_write("pdtime", pdtime)
++    CALL ftg_write("pfrc", pfrc, LBOUND(pfrc), UBOUND(pfrc))
++    CALL ftg_write("pcfm_tile", pcfm_tile, LBOUND(pcfm_tile), UBOUND(pcfm_tile))
++    CALL ftg_write("aa", aa, LBOUND(aa), UBOUND(aa))
++    CALL ftg_write("pcptgz", pcptgz, LBOUND(pcptgz), UBOUND(pcptgz))
++    CALL ftg_write("pum1", pum1, LBOUND(pum1), UBOUND(pum1))
++    CALL ftg_write("pvm1", pvm1, LBOUND(pvm1), UBOUND(pvm1))
++    CALL ftg_write("ptm1", ptm1, LBOUND(ptm1), UBOUND(ptm1))
++    CALL ftg_write("pmair", pmair, LBOUND(pmair), UBOUND(pmair))
++    CALL ftg_write("pmref", pmref, LBOUND(pmref), UBOUND(pmref))
++    CALL ftg_write("pqm1", pqm1, LBOUND(pqm1), UBOUND(pqm1))
++    CALL ftg_write("pxlm1", pxlm1, LBOUND(pxlm1), UBOUND(pxlm1))
++    CALL ftg_write("pxim1", pxim1, LBOUND(pxim1), UBOUND(pxim1))
++    CALL ftg_write("pxtm1", pxtm1, LBOUND(pxtm1), UBOUND(pxtm1))
++    CALL ftg_write("pgeom1", pgeom1, LBOUND(pgeom1), UBOUND(pgeom1))
++    CALL ftg_write("pztottevn", pztottevn, LBOUND(pztottevn), UBOUND(pztottevn))
++    CALL ftg_write("bb", bb, LBOUND(bb), UBOUND(bb))
++    CALL ftg_write("pzthvvar", pzthvvar, LBOUND(pzthvvar), UBOUND(pzthvvar))
++    CALL ftg_write("pxvar", pxvar, LBOUND(pxvar), UBOUND(pxvar))
++    CALL ftg_write("pz0m_tile", pz0m_tile, LBOUND(pz0m_tile), UBOUND(pz0m_tile))
++    CALL ftg_write("pkedisp", pkedisp, LBOUND(pkedisp), UBOUND(pkedisp))
++    CALL ftg_write("pute_vdf", pute_vdf, LBOUND(pute_vdf), UBOUND(pute_vdf))
++    CALL ftg_write("pvte_vdf", pvte_vdf, LBOUND(pvte_vdf), UBOUND(pvte_vdf))
++    CALL ftg_write("pq_vdf", pq_vdf, LBOUND(pq_vdf), UBOUND(pq_vdf))
++    CALL ftg_write("pqte_vdf", pqte_vdf, LBOUND(pqte_vdf), UBOUND(pqte_vdf))
++    CALL ftg_write("pxlte_vdf", pxlte_vdf, LBOUND(pxlte_vdf), UBOUND(pxlte_vdf))
++    CALL ftg_write("pxite_vdf", pxite_vdf, LBOUND(pxite_vdf), UBOUND(pxite_vdf))
++    CALL ftg_write("pxtte_vdf", pxtte_vdf, LBOUND(pxtte_vdf), UBOUND(pxtte_vdf))
++    CALL ftg_write("pz0m", pz0m, LBOUND(pz0m), UBOUND(pz0m))
++    CALL ftg_write("pthvvar", pthvvar, LBOUND(pthvvar), UBOUND(pthvvar))
++    CALL ftg_write("ptotte", ptotte, LBOUND(ptotte), UBOUND(ptotte))
++    CALL ftg_write("psh_vdiff", psh_vdiff, LBOUND(psh_vdiff), UBOUND(psh_vdiff))
++    CALL ftg_write("pqv_vdiff", pqv_vdiff, LBOUND(pqv_vdiff), UBOUND(pqv_vdiff))
++    
++    
++    ! OPTIONAL ARGUMENTS
++    
++    ! TYPE MEMBERS
++    
++    
++    ! GLOBALS
++    IF (ALLOCATED(mo_vdiff_solver__ibtm_var)) THEN
++      CALL ftg_write("mo_vdiff_solver__ibtm_var", mo_vdiff_solver__ibtm_var, LBOUND(mo_vdiff_solver__ibtm_var), UBOUND( &
++      &  mo_vdiff_solver__ibtm_var))
++    END IF
++    CALL ftg_write("mo_vdiff_solver__ih", mo_vdiff_solver__ih)
++    CALL ftg_write("mo_vdiff_solver__iqv", mo_vdiff_solver__iqv)
++    CALL ftg_write("mo_vdiff_solver__ithv", mo_vdiff_solver__ithv)
++    CALL ftg_write("mo_echam_vdiff_params__itop", mo_echam_vdiff_params__itop)
++    CALL ftg_write("mo_vdiff_solver__itotte", mo_vdiff_solver__itotte)
++    CALL ftg_write("mo_vdiff_solver__itrc_start", mo_vdiff_solver__itrc_start)
++    CALL ftg_write("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
++    CALL ftg_write("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
++    CALL ftg_write("mo_vdiff_solver__ixi", mo_vdiff_solver__ixi)
++    CALL ftg_write("mo_vdiff_solver__ixl", mo_vdiff_solver__ixl)
++    CALL ftg_write("mo_vdiff_solver__ixv", mo_vdiff_solver__ixv)
++    IF (ALLOCATED(mo_vdiff_solver__matrix_idx)) THEN
++      CALL ftg_write("mo_vdiff_solver__matrix_idx", mo_vdiff_solver__matrix_idx, LBOUND(mo_vdiff_solver__matrix_idx), UBOUND( &
++      &  mo_vdiff_solver__matrix_idx))
++    END IF
++    CALL ftg_write("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
++    CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
++    
++    
++    CALL ftg_write("ftg_vdiff_up_round", ftg_vdiff_up_round)
++    
++    CALL ftg_destroy_savepoint()
++    WRITE (0,*) 'FTG FINALIZE INPUT DATA vdiff_up', get_my_mpi_all_id()
++    CALL ftg_destroy_serializer()
++    
++  END IF
++  
++END SUBROUTINE ftg_vdiff_up_capture_input
++
++LOGICAL FUNCTION ftg_vdiff_up_capture_output_active()
++
++ftg_vdiff_up_capture_output_active =       &
++ftg_vdiff_up_capture_output_enabled .AND.  &
++ftg_vdiff_up_round .EQ. ftg_vdiff_up_capture_round
++
++END FUNCTION ftg_vdiff_up_capture_output_active
++
++SUBROUTINE ftg_vdiff_up_capture_output(bb, pxvar, pz0m_tile, pkedisp, pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, &
++&  pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
++  
++  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
++  USE mo_exception, ONLY: finish
++  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  
++  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ixl => ixl, mo_vdiff_solver__ixi => ixi, &
++  &  mo_vdiff_solver__nmatrix => nmatrix, mo_vdiff_solver__itotte => itotte, mo_vdiff_solver__matrix_idx => matrix_idx, &
++  &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
++  &  mo_vdiff_solver__nvar_vdiff => nvar_vdiff, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iu => iu, mo_vdiff_solver__ixv => &
++  &  ixv, mo_vdiff_solver__ih => ih
++  USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
++  
++  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: bb
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pxvar
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pz0m_tile
++  REAL(wp), DIMENSION(:), INTENT(in) :: pkedisp
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pute_vdf
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pvte_vdf
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pq_vdf
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pqte_vdf
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pxlte_vdf
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pxite_vdf
++  REAL(wp), DIMENSION(:,:,:), INTENT(in) :: pxtte_vdf
++  REAL(wp), DIMENSION(:), INTENT(in) :: pz0m
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pthvvar
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: ptotte
++  REAL(wp), DIMENSION(:), INTENT(in) :: psh_vdiff
++  REAL(wp), DIMENSION(:), INTENT(in) :: pqv_vdiff
++  
++  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
++  CHARACTER(len=256) :: ftg_c
++  
++  IF (ftg_vdiff_up_capture_output_active()) THEN
++    
++    CALL ftg_vdiff_up_init_for_capture('output', ftg_vdiff_up_output_dir)
++    CALL ftg_set_savepoint('output')
++    
++    WRITE (0,*) 'FTG ROUND vdiff_up ', ftg_vdiff_up_round, get_my_mpi_all_id()
++    WRITE (0,*) 'FTG WRITE output DATA vdiff_up', get_my_mpi_all_id()
++    
++    
++    ! BASIC ARGUMENTS
++    CALL ftg_write("bb", bb, LBOUND(bb), UBOUND(bb))
++    CALL ftg_write("pxvar", pxvar, LBOUND(pxvar), UBOUND(pxvar))
++    CALL ftg_write("pz0m_tile", pz0m_tile, LBOUND(pz0m_tile), UBOUND(pz0m_tile))
++    CALL ftg_write("pkedisp", pkedisp, LBOUND(pkedisp), UBOUND(pkedisp))
++    CALL ftg_write("pute_vdf", pute_vdf, LBOUND(pute_vdf), UBOUND(pute_vdf))
++    CALL ftg_write("pvte_vdf", pvte_vdf, LBOUND(pvte_vdf), UBOUND(pvte_vdf))
++    CALL ftg_write("pq_vdf", pq_vdf, LBOUND(pq_vdf), UBOUND(pq_vdf))
++    CALL ftg_write("pqte_vdf", pqte_vdf, LBOUND(pqte_vdf), UBOUND(pqte_vdf))
++    CALL ftg_write("pxlte_vdf", pxlte_vdf, LBOUND(pxlte_vdf), UBOUND(pxlte_vdf))
++    CALL ftg_write("pxite_vdf", pxite_vdf, LBOUND(pxite_vdf), UBOUND(pxite_vdf))
++    CALL ftg_write("pxtte_vdf", pxtte_vdf, LBOUND(pxtte_vdf), UBOUND(pxtte_vdf))
++    CALL ftg_write("pz0m", pz0m, LBOUND(pz0m), UBOUND(pz0m))
++    CALL ftg_write("pthvvar", pthvvar, LBOUND(pthvvar), UBOUND(pthvvar))
++    CALL ftg_write("ptotte", ptotte, LBOUND(ptotte), UBOUND(ptotte))
++    CALL ftg_write("psh_vdiff", psh_vdiff, LBOUND(psh_vdiff), UBOUND(psh_vdiff))
++    CALL ftg_write("pqv_vdiff", pqv_vdiff, LBOUND(pqv_vdiff), UBOUND(pqv_vdiff))
++    
++    
++    ! OPTIONAL ARGUMENTS
++    
++    ! TYPE MEMBERS
++    
++    
++    ! GLOBALS
++    IF (ALLOCATED(mo_vdiff_solver__ibtm_var)) THEN
++      CALL ftg_write("mo_vdiff_solver__ibtm_var", mo_vdiff_solver__ibtm_var, LBOUND(mo_vdiff_solver__ibtm_var), UBOUND( &
++      &  mo_vdiff_solver__ibtm_var))
++    END IF
++    CALL ftg_write("mo_vdiff_solver__ih", mo_vdiff_solver__ih)
++    CALL ftg_write("mo_vdiff_solver__iqv", mo_vdiff_solver__iqv)
++    CALL ftg_write("mo_vdiff_solver__ithv", mo_vdiff_solver__ithv)
++    CALL ftg_write("mo_echam_vdiff_params__itop", mo_echam_vdiff_params__itop)
++    CALL ftg_write("mo_vdiff_solver__itotte", mo_vdiff_solver__itotte)
++    CALL ftg_write("mo_vdiff_solver__itrc_start", mo_vdiff_solver__itrc_start)
++    CALL ftg_write("mo_vdiff_solver__iu", mo_vdiff_solver__iu)
++    CALL ftg_write("mo_vdiff_solver__iv", mo_vdiff_solver__iv)
++    CALL ftg_write("mo_vdiff_solver__ixi", mo_vdiff_solver__ixi)
++    CALL ftg_write("mo_vdiff_solver__ixl", mo_vdiff_solver__ixl)
++    CALL ftg_write("mo_vdiff_solver__ixv", mo_vdiff_solver__ixv)
++    IF (ALLOCATED(mo_vdiff_solver__matrix_idx)) THEN
++      CALL ftg_write("mo_vdiff_solver__matrix_idx", mo_vdiff_solver__matrix_idx, LBOUND(mo_vdiff_solver__matrix_idx), UBOUND( &
++      &  mo_vdiff_solver__matrix_idx))
++    END IF
++    CALL ftg_write("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
++    CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
++    
++    
++    CALL ftg_write("ftg_vdiff_up_round", ftg_vdiff_up_round)
++    
++    CALL ftg_destroy_savepoint()
++    WRITE (0,*) 'FTG FINALIZE output DATA vdiff_up', get_my_mpi_all_id()
++    CALL ftg_destroy_serializer()
++    
++    CALL work_mpi_barrier()
++    !      CALL finish('FTG EXIT', 'Output captured: vdiff_up', 0)
++    
++  END IF
++  
++END SUBROUTINE ftg_vdiff_up_capture_output
++
++! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++
++
+   !-------------
+ 
+ END MODULE mo_vdiff_upward_sweep

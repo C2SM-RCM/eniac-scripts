@@ -1,0 +1,403 @@
+--- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-10-16 11:52:29.943294214 +0200
++++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-10-16 11:52:24.445173000 +0200
+@@ -27,6 +27,27 @@
+   PRIVATE
+   PUBLIC :: wind_stress, surface_fluxes, nsurf_diag
+ 
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  LOGICAL :: ftg_nsurf_diag_capture_input_enabled = .TRUE.
++  LOGICAL :: ftg_nsurf_diag_capture_output_enabled = .TRUE.
++  INTEGER :: ftg_nsurf_diag_capture_round = 1
++  INTEGER :: ftg_nsurf_diag_round = 0
++  CHARACTER(len=1024) :: ftg_nsurf_diag_input_dir = &
++  '++FTGDATADIR++/data/input'
++  CHARACTER(len=1024) :: ftg_nsurf_diag_output_dir = &
++  '++FTGDATADIR++/data/output'
++  
++  PUBLIC :: ftg_nsurf_diag_capture_input_enabled, ftg_nsurf_diag_capture_output_enabled, ftg_nsurf_diag_capture_round, &
++  &  ftg_nsurf_diag_input_dir, ftg_nsurf_diag_output_dir
++  
++  
++  
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+ CONTAINS
+   !>
+   !!
+@@ -423,6 +444,17 @@
+ #ifdef HAVE_FC_ATTRIBUTE_CONTIGUOUS
+     CONTIGUOUS :: pbtile
+ #endif
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  ftg_nsurf_diag_round = ftg_nsurf_diag_round + 1
++  CALL ftg_nsurf_diag_capture_input(jcs, kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, &
++  &  pocu, pocv, pzf, pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, &
++  &  pdew2_gbm, puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+     !CONSTANTS
+     zhuv          =  10._wp ! 10m
+     zhtq          =   2._wp !  2m
+@@ -563,7 +595,354 @@
+         ptasmin  (jl) = MIN(ptasmin(jl),ptas_gbm(jl))
+     ENDDO
+     
++
++  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  
++  CALL ftg_nsurf_diag_capture_output(psfcWind_gbm, ptas_gbm, pdew2_gbm, puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, &
++  &  ptas_tile, pdew2_tile, puas_tile, pvas_tile)
++  
++  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++  
++
+   END SUBROUTINE nsurf_diag
++
++! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++
++SUBROUTINE ftg_nsurf_diag_init_for_capture(stage, dir)
++  
++  USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
++  USE mo_mpi,            ONLY: get_my_mpi_all_id
++  USE m_ser_ftg,         ONLY: ftg_set_serializer, ftg_add_serializer_metainfo, ignore_bullshit_max_dim_size, &
++  &  ignore_bullshit_allow_negative_indices, ignore_bullshit
++  
++  CHARACTER(*), INTENT(IN) :: stage, dir
++  
++  CHARACTER(len=MAX_CHAR_LENGTH) :: basename, mkdirerr
++  
++  WRITE (basename,'(a,a,a,i0)') 'ftg_nsurf_diag_', TRIM(stage), '_', get_my_mpi_all_id()
++  
++  WRITE (0,*) 'FTG INIT nsurf_diag '//TRIM(basename), get_my_mpi_all_id()
++  
++  mkdirerr = ''
++  !  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
++  !  IF (TRIM(mkdirerr) /= '') THEN
++    !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
++    !  END IF
++    
++    ignore_bullshit = .FALSE. 
++    ignore_bullshit_max_dim_size = 100000
++    ignore_bullshit_allow_negative_indices = .TRUE.
++    
++    CALL ftg_set_serializer(TRIM(dir), TRIM(basename), 'w')
++    CALL ftg_add_serializer_metainfo('subroutine', 'nsurf_diag')
++    CALL ftg_add_serializer_metainfo('stage', stage)
++    CALL ftg_add_serializer_metainfo('mpi_all_id', get_my_mpi_all_id())
++    
++  END SUBROUTINE ftg_nsurf_diag_init_for_capture
++  
++  LOGICAL FUNCTION ftg_nsurf_diag_capture_input_active()
++  
++  ftg_nsurf_diag_capture_input_active =       &
++  ftg_nsurf_diag_capture_input_enabled .AND.  &
++  ftg_nsurf_diag_round .EQ. ftg_nsurf_diag_capture_round
++  
++END FUNCTION ftg_nsurf_diag_capture_input_active
++
++SUBROUTINE ftg_nsurf_diag_capture_input(jcs, kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, &
++&  pocu, pocv, pzf, pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, pdew2_gbm, &
++&  puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
++  
++  USE mtime,     ONLY: calendarType
++  USE mo_mpi,    ONLY: get_my_mpi_all_id
++  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  
++  USE mo_echam_convect_tables, ONLY: mo_echam_convect_tables__tlucu => tlucu
++  USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
++  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
++  
++  INTEGER, INTENT(in) :: jcs
++  INTEGER, INTENT(in) :: kproma
++  INTEGER, INTENT(in) :: kbdim
++  INTEGER, INTENT(in) :: ksfc_type
++  INTEGER, INTENT(in) :: idx_lnd
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pfrc
++  REAL(wp), DIMENSION(:), INTENT(in) :: pqm1
++  REAL(wp), DIMENSION(:), INTENT(in) :: ptm1
++  REAL(wp), DIMENSION(:), INTENT(in) :: papm1
++  REAL(wp), DIMENSION(:), INTENT(in) :: paphm1
++  REAL(wp), DIMENSION(:), INTENT(in) :: pxm1
++  REAL(wp), DIMENSION(:), INTENT(in) :: pum1
++  REAL(wp), DIMENSION(:), INTENT(in) :: pvm1
++  REAL(wp), DIMENSION(:), INTENT(in) :: pocu
++  REAL(wp), DIMENSION(:), INTENT(in) :: pocv
++  REAL(wp), DIMENSION(:), INTENT(in) :: pzf
++  REAL(wp), DIMENSION(:), INTENT(in) :: pzs
++  REAL(wp), DIMENSION(:), INTENT(in) :: pcptgz
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pcpt_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pbn_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pbhn_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pbh_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pbm_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pri_tile
++  REAL(wp), DIMENSION(:), INTENT(in) :: psfcWind_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: ptas_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: pdew2_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: puas_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: pvas_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: ptasmax
++  REAL(wp), DIMENSION(:), INTENT(in) :: ptasmin
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: psfcWind_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: ptas_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pdew2_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: puas_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pvas_tile
++  
++  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
++  CHARACTER(len=256) :: ftg_c
++  
++  IF (ftg_nsurf_diag_capture_input_active()) THEN
++    
++    CALL ftg_nsurf_diag_init_for_capture('input', ftg_nsurf_diag_input_dir)
++    CALL ftg_set_savepoint('input')
++    
++    WRITE (0,*) 'FTG ROUND nsurf_diag ', ftg_nsurf_diag_round, get_my_mpi_all_id()
++    WRITE (0,*) 'FTG WRITE INPUT DATA nsurf_diag', get_my_mpi_all_id()
++    
++    ! MTIME CALENDAR TYPE --> Remove this line if mtime is not used
++    CALL ftg_write("ftg_mtime_calendar", calendarType())
++    
++    ! BASIC ARGUMENTS
++    CALL ftg_write("jcs", jcs)
++    CALL ftg_write("kproma", kproma)
++    CALL ftg_write("kbdim", kbdim)
++    CALL ftg_write("ksfc_type", ksfc_type)
++    CALL ftg_write("idx_lnd", idx_lnd)
++    CALL ftg_write("pfrc", pfrc, LBOUND(pfrc), UBOUND(pfrc))
++    CALL ftg_write("pqm1", pqm1, LBOUND(pqm1), UBOUND(pqm1))
++    CALL ftg_write("ptm1", ptm1, LBOUND(ptm1), UBOUND(ptm1))
++    CALL ftg_write("papm1", papm1, LBOUND(papm1), UBOUND(papm1))
++    CALL ftg_write("paphm1", paphm1, LBOUND(paphm1), UBOUND(paphm1))
++    CALL ftg_write("pxm1", pxm1, LBOUND(pxm1), UBOUND(pxm1))
++    CALL ftg_write("pum1", pum1, LBOUND(pum1), UBOUND(pum1))
++    CALL ftg_write("pvm1", pvm1, LBOUND(pvm1), UBOUND(pvm1))
++    CALL ftg_write("pocu", pocu, LBOUND(pocu), UBOUND(pocu))
++    CALL ftg_write("pocv", pocv, LBOUND(pocv), UBOUND(pocv))
++    CALL ftg_write("pzf", pzf, LBOUND(pzf), UBOUND(pzf))
++    CALL ftg_write("pzs", pzs, LBOUND(pzs), UBOUND(pzs))
++    CALL ftg_write("pcptgz", pcptgz, LBOUND(pcptgz), UBOUND(pcptgz))
++    CALL ftg_write("pcpt_tile", pcpt_tile, LBOUND(pcpt_tile), UBOUND(pcpt_tile))
++    CALL ftg_write("pbn_tile", pbn_tile, LBOUND(pbn_tile), UBOUND(pbn_tile))
++    CALL ftg_write("pbhn_tile", pbhn_tile, LBOUND(pbhn_tile), UBOUND(pbhn_tile))
++    CALL ftg_write("pbh_tile", pbh_tile, LBOUND(pbh_tile), UBOUND(pbh_tile))
++    CALL ftg_write("pbm_tile", pbm_tile, LBOUND(pbm_tile), UBOUND(pbm_tile))
++    CALL ftg_write("pri_tile", pri_tile, LBOUND(pri_tile), UBOUND(pri_tile))
++    CALL ftg_write("psfcWind_gbm", psfcWind_gbm, LBOUND(psfcWind_gbm), UBOUND(psfcWind_gbm))
++    CALL ftg_write("ptas_gbm", ptas_gbm, LBOUND(ptas_gbm), UBOUND(ptas_gbm))
++    CALL ftg_write("pdew2_gbm", pdew2_gbm, LBOUND(pdew2_gbm), UBOUND(pdew2_gbm))
++    CALL ftg_write("puas_gbm", puas_gbm, LBOUND(puas_gbm), UBOUND(puas_gbm))
++    CALL ftg_write("pvas_gbm", pvas_gbm, LBOUND(pvas_gbm), UBOUND(pvas_gbm))
++    CALL ftg_write("ptasmax", ptasmax, LBOUND(ptasmax), UBOUND(ptasmax))
++    CALL ftg_write("ptasmin", ptasmin, LBOUND(ptasmin), UBOUND(ptasmin))
++    CALL ftg_write("psfcWind_tile", psfcWind_tile, LBOUND(psfcWind_tile), UBOUND(psfcWind_tile))
++    CALL ftg_write("ptas_tile", ptas_tile, LBOUND(ptas_tile), UBOUND(ptas_tile))
++    CALL ftg_write("pdew2_tile", pdew2_tile, LBOUND(pdew2_tile), UBOUND(pdew2_tile))
++    CALL ftg_write("puas_tile", puas_tile, LBOUND(puas_tile), UBOUND(puas_tile))
++    CALL ftg_write("pvas_tile", pvas_tile, LBOUND(pvas_tile), UBOUND(pvas_tile))
++    
++    
++    ! OPTIONAL ARGUMENTS
++    
++    ! TYPE MEMBERS
++    
++    
++    ! GLOBALS
++    CALL ftg_write("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
++    CALL ftg_write("mo_echam_convect_tables__tlucu", mo_echam_convect_tables__tlucu, LBOUND(mo_echam_convect_tables__tlucu), &
++    &  UBOUND(mo_echam_convect_tables__tlucu))
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      ftg_c = "mo_model_domain__p_patch"
++      CALL ftg_register_only(ftg_c, "TYPE(t_patch)", LBOUND(mo_model_domain__p_patch), UBOUND(mo_model_domain__p_patch))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_cells)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_domain_decomp_info)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info%glb_index'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index, LBOUND(mo_model_domain__p_patch( &
++          &  ftg_d1)%cells%decomp_info%glb_index), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index))
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_edges)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center'
++          CALL ftg_register_only(ftg_c, "TYPE(t_geographical_coordinates)", LBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center), &
++          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center))
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lat'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lat, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
++          &  center%lat), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lat))
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lon'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lon, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
++          &  center%lon), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lon))
++        END IF
++      END DO
++    END IF
++    
++    
++    CALL ftg_write("ftg_nsurf_diag_round", ftg_nsurf_diag_round)
++    
++    CALL ftg_destroy_savepoint()
++    WRITE (0,*) 'FTG FINALIZE INPUT DATA nsurf_diag', get_my_mpi_all_id()
++    CALL ftg_destroy_serializer()
++    
++  END IF
++  
++END SUBROUTINE ftg_nsurf_diag_capture_input
++
++LOGICAL FUNCTION ftg_nsurf_diag_capture_output_active()
++
++ftg_nsurf_diag_capture_output_active =       &
++ftg_nsurf_diag_capture_output_enabled .AND.  &
++ftg_nsurf_diag_round .EQ. ftg_nsurf_diag_capture_round
++
++END FUNCTION ftg_nsurf_diag_capture_output_active
++
++SUBROUTINE ftg_nsurf_diag_capture_output(psfcWind_gbm, ptas_gbm, pdew2_gbm, puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, &
++&  ptas_tile, pdew2_tile, puas_tile, pvas_tile)
++  
++  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
++  USE mo_exception, ONLY: finish
++  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  
++  USE mo_echam_convect_tables, ONLY: mo_echam_convect_tables__tlucu => tlucu
++  USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
++  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
++  
++  REAL(wp), DIMENSION(:), INTENT(in) :: psfcWind_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: ptas_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: pdew2_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: puas_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: pvas_gbm
++  REAL(wp), DIMENSION(:), INTENT(in) :: ptasmax
++  REAL(wp), DIMENSION(:), INTENT(in) :: ptasmin
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: psfcWind_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: ptas_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pdew2_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: puas_tile
++  REAL(wp), DIMENSION(:,:), INTENT(in) :: pvas_tile
++  
++  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
++  CHARACTER(len=256) :: ftg_c
++  
++  IF (ftg_nsurf_diag_capture_output_active()) THEN
++    
++    CALL ftg_nsurf_diag_init_for_capture('output', ftg_nsurf_diag_output_dir)
++    CALL ftg_set_savepoint('output')
++    
++    WRITE (0,*) 'FTG ROUND nsurf_diag ', ftg_nsurf_diag_round, get_my_mpi_all_id()
++    WRITE (0,*) 'FTG WRITE output DATA nsurf_diag', get_my_mpi_all_id()
++    
++    
++    ! BASIC ARGUMENTS
++    CALL ftg_write("psfcWind_gbm", psfcWind_gbm, LBOUND(psfcWind_gbm), UBOUND(psfcWind_gbm))
++    CALL ftg_write("ptas_gbm", ptas_gbm, LBOUND(ptas_gbm), UBOUND(ptas_gbm))
++    CALL ftg_write("pdew2_gbm", pdew2_gbm, LBOUND(pdew2_gbm), UBOUND(pdew2_gbm))
++    CALL ftg_write("puas_gbm", puas_gbm, LBOUND(puas_gbm), UBOUND(puas_gbm))
++    CALL ftg_write("pvas_gbm", pvas_gbm, LBOUND(pvas_gbm), UBOUND(pvas_gbm))
++    CALL ftg_write("ptasmax", ptasmax, LBOUND(ptasmax), UBOUND(ptasmax))
++    CALL ftg_write("ptasmin", ptasmin, LBOUND(ptasmin), UBOUND(ptasmin))
++    CALL ftg_write("psfcWind_tile", psfcWind_tile, LBOUND(psfcWind_tile), UBOUND(psfcWind_tile))
++    CALL ftg_write("ptas_tile", ptas_tile, LBOUND(ptas_tile), UBOUND(ptas_tile))
++    CALL ftg_write("pdew2_tile", pdew2_tile, LBOUND(pdew2_tile), UBOUND(pdew2_tile))
++    CALL ftg_write("puas_tile", puas_tile, LBOUND(puas_tile), UBOUND(puas_tile))
++    CALL ftg_write("pvas_tile", pvas_tile, LBOUND(pvas_tile), UBOUND(pvas_tile))
++    
++    
++    ! OPTIONAL ARGUMENTS
++    
++    ! TYPE MEMBERS
++    
++    
++    ! GLOBALS
++    CALL ftg_write("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
++    CALL ftg_write("mo_echam_convect_tables__tlucu", mo_echam_convect_tables__tlucu, LBOUND(mo_echam_convect_tables__tlucu), &
++    &  UBOUND(mo_echam_convect_tables__tlucu))
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      ftg_c = "mo_model_domain__p_patch"
++      CALL ftg_register_only(ftg_c, "TYPE(t_patch)", LBOUND(mo_model_domain__p_patch), UBOUND(mo_model_domain__p_patch))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_cells)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_domain_decomp_info)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info%glb_index'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index, LBOUND(mo_model_domain__p_patch( &
++          &  ftg_d1)%cells%decomp_info%glb_index), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index))
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_edges)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center'
++          CALL ftg_register_only(ftg_c, "TYPE(t_geographical_coordinates)", LBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center), &
++          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center))
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lat'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lat, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
++          &  center%lat), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lat))
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lon'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lon, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
++          &  center%lon), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lon))
++        END IF
++      END DO
++    END IF
++    
++    
++    CALL ftg_write("ftg_nsurf_diag_round", ftg_nsurf_diag_round)
++    
++    CALL ftg_destroy_savepoint()
++    WRITE (0,*) 'FTG FINALIZE output DATA nsurf_diag', get_my_mpi_all_id()
++    CALL ftg_destroy_serializer()
++    
++    CALL work_mpi_barrier()
++    !      CALL finish('FTG EXIT', 'Output captured: nsurf_diag', 0)
++    
++  END IF
++  
++END SUBROUTINE ftg_nsurf_diag_capture_output
++
++! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++
++
+   !-------------
+ 
+ END MODULE mo_surface_diag

@@ -1,5 +1,5 @@
---- eniac_a/src/tests/ftg_vdiff_down_test.f90	2018-06-15 10:22:03.000000000 +0200
-+++ eniac_b/src/tests/ftg_vdiff_down_test.f90	2018-06-15 10:24:35.736960795 +0200
+--- eniac_a/src/tests/ftg_vdiff_down_test.f90	2018-10-15 13:25:22.000000000 +0200
++++ eniac_b/src/tests/ftg_vdiff_down_test.f90	2018-10-15 13:26:56.465864828 +0200
 @@ -21,8 +21,10 @@
    &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx &
    &  => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
@@ -10,10 +10,10 @@
 +#ifdef __SPLINE_TEST__
 +  USE mo_convect_tables, ONLY: mo_convect_tables__za => za, mo_convect_tables__ua => ua, mo_convect_tables__dua => dua
 +#endif
+   USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
    USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
    
-   USE mo_echam_vdf_config, ONLY: t_echam_vdf_config
-@@ -340,7 +342,9 @@
+@@ -349,7 +351,9 @@
      
      
      ! GLOBALS
@@ -23,7 +23,7 @@
      CALL ftg_allocate_and_read_allocatable("mo_vdiff_solver__ibtm_mtrx", mo_vdiff_solver__ibtm_mtrx, ftg_rperturb)
      CALL ftg_allocate_and_read_allocatable("mo_vdiff_solver__ibtm_var", mo_vdiff_solver__ibtm_var, ftg_rperturb)
      CALL ftg_read("mo_vdiff_solver__ih", mo_vdiff_solver__ih)
-@@ -361,8 +365,10 @@
+@@ -370,8 +374,10 @@
      CALL ftg_read("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
      CALL ftg_read("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
      CALL ftg_read("mo_convect_tables__tlucu", mo_convect_tables__tlucu)

@@ -1,12 +1,12 @@
 --- eniac_a/externals/jsbach/src/base/mo_jsb_control.f90	2018-05-25 09:17:08.000000000 +0200
 +++ eniac_b/externals/jsbach/src/base/mo_jsb_control.f90	2018-05-25 09:21:52.727417000 +0200
-@@ -26,6 +26,11 @@
+@@ -28,6 +28,11 @@
    PUBLIC :: t_jsb_model_nml, jsb_models_nml, get_no_of_models
-   PUBLIC :: timer_aggregate, timer_integrate, timer_process_task, timer_process_msg, l_timer
+   PUBLIC :: timer_jsbach, timer_aggregate, timer_integrate, timer_process_task, timer_process_msg
    PUBLIC :: max_no_of_models
 +  !================= START FORCE FORTRAN TEST GENERATOR (FTG) =======================!
 +
-+  PUBLIC :: is_standalone, debug
++  PUBLIC :: is_standalone, debug_level, timer_level
 +
 +  !================= STOP FORCE FORTRAN TEST GENERATOR (FTG) =========================!
  

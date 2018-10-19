@@ -1,7 +1,7 @@
---- eniac_a/src/atm_dyn_iconam/mo_solve_nonhydro.f90	2018-06-15 12:01:11.527671857 +0200
-+++ eniac_b/src/atm_dyn_iconam/mo_solve_nonhydro.f90	2018-06-15 11:51:33.335312000 +0200
-@@ -104,6 +104,27 @@
- #endif
+--- eniac_a/src/atm_dyn_iconam/mo_solve_nonhydro.f90	2018-09-25 11:29:16.915881558 +0200
++++ eniac_b/src/atm_dyn_iconam/mo_solve_nonhydro.f90	2018-09-25 11:29:09.699005000 +0200
+@@ -96,6 +96,27 @@
+   LOGICAL, PARAMETER ::  acc_validate = .TRUE.    ! Only .TRUE. during unit testing
  #endif
  
 +
@@ -28,7 +28,7 @@
    CONTAINS
  
  
-@@ -261,6 +282,16 @@
+@@ -238,6 +259,16 @@
        ! for igradp_method = 3
        iplev(:), ipeidx(:), ipeblk(:)
  
@@ -45,14 +45,14 @@
      !-------------------------------------------------------------------
      IF (use_dycore_barrier) THEN
        CALL timer_start(timer_barrier)
-@@ -2825,6 +2856,1719 @@
- #endif
-     IF (ltimer) CALL timer_stop(timer_solve_nh)
+@@ -2849,8 +2880,1707 @@
+ 
+ !$ACC END DATA
  
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  
-+  CALL ftg_solve_nh_capture_output(p_nh, prep_adv)
++  CALL ftg_solve_nh_capture_output(p_nh, p_patch, prep_adv)
 +  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
 +  
@@ -108,57 +108,55 @@
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
 +  
 +  USE mo_dynamics_config, ONLY: mo_dynamics_config__idiv_method => idiv_method
-+  USE mo_run_config, ONLY: mo_run_config__timers_level => timers_level, mo_run_config__ltimer => ltimer, mo_run_config__lvert_nest &
++  USE mo_run_config, ONLY: mo_run_config__ltimer => ltimer, mo_run_config__timers_level => timers_level, mo_run_config__lvert_nest &
 +  &  => lvert_nest
 +  USE mo_initicon_config, ONLY: mo_initicon_config__is_iau_active => is_iau_active, mo_initicon_config__iau_wgt_dyn => iau_wgt_dyn
++  USE mo_interpol_config, ONLY: mo_interpol_config__lsq_high_ord => lsq_high_ord, mo_interpol_config__lsq_high_set => &
++  &  lsq_high_set, mo_interpol_config__nudge_max_coeff => nudge_max_coeff, t_lsq_set
 +  USE mo_sync, ONLY: mo_sync__log_unit => log_unit, mo_sync__do_sync_checks => do_sync_checks
 +  USE mo_init_vgrid, ONLY: mo_init_vgrid__nflatlev => nflatlev
-+  USE mo_vertical_coord_table, ONLY: mo_vertical_coord_table__vct_a => vct_a
-+  USE mo_interpol_config, ONLY: mo_interpol_config__lsq_high_set => lsq_high_set, mo_interpol_config__nudge_max_coeff => &
-+  &  nudge_max_coeff, mo_interpol_config__lsq_high_ord => lsq_high_ord, t_lsq_set
-+  USE mo_nonhydrostatic_config, ONLY: mo_nonhydrostatic_config__divdamp_type => divdamp_type, &
-+  &  mo_nonhydrostatic_config__veladv_offctr => veladv_offctr, mo_nonhydrostatic_config__l_open_ubc => l_open_ubc, &
-+  &  mo_nonhydrostatic_config__ndyn_substeps_var => ndyn_substeps_var, mo_nonhydrostatic_config__itime_scheme => itime_scheme, &
-+  &  mo_nonhydrostatic_config__kstart_moist => kstart_moist, mo_nonhydrostatic_config__kstart_dd3d => kstart_dd3d, &
++  USE mo_nonhydrostatic_config, ONLY: mo_nonhydrostatic_config__lextra_diffu => lextra_diffu, &
++  &  mo_nonhydrostatic_config__divdamp_type => divdamp_type, mo_nonhydrostatic_config__rayleigh_type => rayleigh_type, &
++  &  mo_nonhydrostatic_config__veladv_offctr => veladv_offctr, mo_nonhydrostatic_config__kstart_moist => kstart_moist, &
++  &  mo_nonhydrostatic_config__kstart_dd3d => kstart_dd3d, mo_nonhydrostatic_config__ndyn_substeps_var => ndyn_substeps_var, &
 +  &  mo_nonhydrostatic_config__divdamp_order => divdamp_order, mo_nonhydrostatic_config__divdamp_fac_o2 => divdamp_fac_o2, &
-+  &  mo_nonhydrostatic_config__rhotheta_offctr => rhotheta_offctr, mo_nonhydrostatic_config__iadv_rhotheta => iadv_rhotheta, &
-+  &  mo_nonhydrostatic_config__lextra_diffu => lextra_diffu, mo_nonhydrostatic_config__rayleigh_type => rayleigh_type, &
 +  &  mo_nonhydrostatic_config__lhdiff_rcf => lhdiff_rcf, mo_nonhydrostatic_config__igradp_method => igradp_method, &
-+  &  mo_nonhydrostatic_config__divdamp_fac => divdamp_fac
-+  USE mo_timer, ONLY: mo_timer__timer_exch_data_wait => timer_exch_data_wait, mo_timer__timer_icon_comm_wait => &
-+  &  timer_icon_comm_wait, mo_timer__timer_icon_comm_fillrecv => timer_icon_comm_fillrecv, mo_timer__timer_icon_comm_fillsend => &
-+  &  timer_icon_comm_fillsend, mo_timer__timer_solve_nh_vnupd => timer_solve_nh_vnupd, mo_timer__timer_icon_comm_ircv => &
-+  &  timer_icon_comm_ircv, mo_timer__timer_icon_comm_sync => timer_icon_comm_sync, mo_timer__timer_icon_comm_barrier_2 => &
-+  &  timer_icon_comm_barrier_2, mo_timer__timer_solve_nh_cellcomp => timer_solve_nh_cellcomp, mo_timer__timer_exch_data => &
-+  &  timer_exch_data, mo_timer__timer_back_traj => timer_back_traj, mo_timer__timer_solve_nh_exch => timer_solve_nh_exch, &
-+  &  mo_timer__timer_solve_nh => timer_solve_nh, mo_timer__timer_intp => timer_intp, mo_timer__timer_barrier => timer_barrier, &
-+  &  mo_timer__timer_solve_nh_edgecomp => timer_solve_nh_edgecomp, mo_timer__timer_solve_nh_veltend => timer_solve_nh_veltend, &
-+  &  mo_timer__timer_solve_nh_vimpl => timer_solve_nh_vimpl
-+  USE mo_advection_config, ONLY: mo_advection_config__zeta => zeta, mo_advection_config__advection_config => advection_config, &
-+  &  mo_advection_config__eta => eta, mo_advection_config__wgt_zeta => wgt_zeta, mo_advection_config__shape_func => shape_func, &
-+  &  mo_advection_config__wgt_eta => wgt_eta, t_advection_config
-+  USE mo_icon_comm_lib, ONLY: mo_icon_comm_lib__recv_procs_buffer => recv_procs_buffer, mo_icon_comm_lib__send_buffer => &
-+  &  send_buffer, mo_icon_comm_lib__this_is_mpi_sequential => this_is_mpi_sequential, mo_icon_comm_lib__comm_variable => &
-+  &  comm_variable, mo_icon_comm_lib__active_comm_variables => active_comm_variables, mo_icon_comm_lib__log_file_id => &
-+  &  log_file_id, mo_icon_comm_lib__comm_lib_is_initialized => comm_lib_is_initialized, mo_icon_comm_lib__send_procs_buffer => &
-+  &  send_procs_buffer, mo_icon_comm_lib__recv_buffer => recv_buffer, mo_icon_comm_lib__max_send_buffer_size => &
-+  &  max_send_buffer_size, mo_icon_comm_lib__active_recv_buffers => active_recv_buffers, mo_icon_comm_lib__active_send_buffers => &
-+  &  active_send_buffers, mo_icon_comm_lib__buffer_comm_status => buffer_comm_status, mo_icon_comm_lib__my_work_communicator => &
-+  &  my_work_communicator, mo_icon_comm_lib__max_active_comm_variables => max_active_comm_variables, &
-+  &  mo_icon_comm_lib__grid_comm_pattern_list => grid_comm_pattern_list, t_comm_process_buffer, t_comm_variable_real, &
-+  &  t_grid_comm_pattern
++  &  mo_nonhydrostatic_config__itime_scheme => itime_scheme, mo_nonhydrostatic_config__divdamp_fac => divdamp_fac, &
++  &  mo_nonhydrostatic_config__rhotheta_offctr => rhotheta_offctr, mo_nonhydrostatic_config__l_open_ubc => l_open_ubc, &
++  &  mo_nonhydrostatic_config__iadv_rhotheta => iadv_rhotheta
++  USE mo_timer, ONLY: mo_timer__timer_solve_nh_cellcomp => timer_solve_nh_cellcomp, mo_timer__timer_solve_nh => timer_solve_nh, &
++  &  mo_timer__timer_solve_nh_vimpl => timer_solve_nh_vimpl, mo_timer__timer_icon_comm_wait => timer_icon_comm_wait, &
++  &  mo_timer__timer_icon_comm_fillrecv => timer_icon_comm_fillrecv, mo_timer__timer_solve_nh_edgecomp => timer_solve_nh_edgecomp, &
++  &  mo_timer__timer_solve_nh_veltend => timer_solve_nh_veltend, mo_timer__timer_icon_comm_fillsend => timer_icon_comm_fillsend, &
++  &  mo_timer__timer_solve_nh_vnupd => timer_solve_nh_vnupd, mo_timer__timer_icon_comm_ircv => timer_icon_comm_ircv, &
++  &  mo_timer__timer_back_traj => timer_back_traj, mo_timer__timer_barrier => timer_barrier, mo_timer__timer_solve_nh_exch => &
++  &  timer_solve_nh_exch, mo_timer__timer_icon_comm_sync => timer_icon_comm_sync, mo_timer__timer_icon_comm_barrier_2 => &
++  &  timer_icon_comm_barrier_2, mo_timer__timer_intp => timer_intp
++  USE mo_vertical_coord_table, ONLY: mo_vertical_coord_table__vct_a => vct_a
++  USE mo_advection_config, ONLY: mo_advection_config__zeta => zeta, mo_advection_config__wgt_zeta => wgt_zeta, &
++  &  mo_advection_config__eta => eta, mo_advection_config__advection_config => advection_config, mo_advection_config__wgt_eta => &
++  &  wgt_eta, mo_advection_config__shape_func => shape_func, t_advection_config
++  USE mo_icon_comm_lib, ONLY: mo_icon_comm_lib__active_send_buffers => active_send_buffers, mo_icon_comm_lib__comm_variable => &
++  &  comm_variable, mo_icon_comm_lib__log_file_id => log_file_id, mo_icon_comm_lib__my_work_communicator => my_work_communicator, &
++  &  mo_icon_comm_lib__comm_lib_is_initialized => comm_lib_is_initialized, mo_icon_comm_lib__max_send_buffer_size => &
++  &  max_send_buffer_size, mo_icon_comm_lib__recv_buffer => recv_buffer, mo_icon_comm_lib__send_procs_buffer => send_procs_buffer, &
++  &  mo_icon_comm_lib__this_is_mpi_sequential => this_is_mpi_sequential, mo_icon_comm_lib__active_comm_variables => &
++  &  active_comm_variables, mo_icon_comm_lib__send_buffer => send_buffer, mo_icon_comm_lib__max_active_comm_variables => &
++  &  max_active_comm_variables, mo_icon_comm_lib__buffer_comm_status => buffer_comm_status, &
++  &  mo_icon_comm_lib__grid_comm_pattern_list => grid_comm_pattern_list, mo_icon_comm_lib__recv_procs_buffer => recv_procs_buffer, &
++  &  mo_icon_comm_lib__active_recv_buffers => active_recv_buffers, t_comm_process_buffer, t_comm_variable_real, t_grid_comm_pattern
 +  USE mo_vertical_grid, ONLY: mo_vertical_grid__nflat_gradp => nflat_gradp, mo_vertical_grid__nrdmax => nrdmax
-+  USE mo_parallel_config, ONLY: mo_parallel_config__icon_comm_debug => icon_comm_debug, mo_parallel_config__n_ghost_rows => &
-+  &  n_ghost_rows, mo_parallel_config__iorder_sendrecv => iorder_sendrecv, mo_parallel_config__sync_barrier_mode => &
-+  &  sync_barrier_mode, mo_parallel_config__p_test_run => p_test_run, mo_parallel_config__nproma => nproma, &
-+  &  mo_parallel_config__max_mpi_message_size => max_mpi_message_size, mo_parallel_config__max_no_of_comm_variables => &
-+  &  max_no_of_comm_variables, mo_parallel_config__itype_comm => itype_comm, mo_parallel_config__use_dycore_barrier => &
-+  &  use_dycore_barrier, mo_parallel_config__icon_comm_method => icon_comm_method, mo_parallel_config__l_log_checks => &
-+  &  l_log_checks, mo_parallel_config__itype_exch_barrier => itype_exch_barrier, mo_parallel_config__use_icon_comm => use_icon_comm
++  USE mo_parallel_config, ONLY: mo_parallel_config__max_no_of_comm_variables => max_no_of_comm_variables, &
++  &  mo_parallel_config__itype_comm => itype_comm, mo_parallel_config__use_icon_comm => use_icon_comm, &
++  &  mo_parallel_config__sync_barrier_mode => sync_barrier_mode, mo_parallel_config__nproma => nproma, &
++  &  mo_parallel_config__icon_comm_method => icon_comm_method, mo_parallel_config__icon_comm_debug => icon_comm_debug, &
++  &  mo_parallel_config__l_log_checks => l_log_checks, mo_parallel_config__n_ghost_rows => n_ghost_rows, &
++  &  mo_parallel_config__use_dycore_barrier => use_dycore_barrier, mo_parallel_config__max_mpi_message_size => &
++  &  max_mpi_message_size, mo_parallel_config__p_test_run => p_test_run
 +  USE mo_grid_config, ONLY: mo_grid_config__l_limited_area => l_limited_area
 +  USE mo_gridref_config, ONLY: mo_gridref_config__grf_intmethod_e => grf_intmethod_e
-+  USE mo_advection_utils, ONLY: mo_advection_utils__ptr_delp_mc_new => ptr_delp_mc_new, mo_advection_utils__ptr_delp_mc_now => &
-+  &  ptr_delp_mc_now
++  USE mo_advection_utils, ONLY: mo_advection_utils__ptr_delp_mc_now => ptr_delp_mc_now, mo_advection_utils__ptr_delp_mc_new => &
++  &  ptr_delp_mc_new
 +  
 +  TYPE(t_nh_state), INTENT(in) :: p_nh
 +  TYPE(t_patch), INTENT(in) :: p_patch
@@ -411,134 +409,6 @@
 +    &  cells%start_block))
 +    CALL ftg_write("p_patch%cells%start_index", p_patch%cells%start_index, LBOUND(p_patch%cells%start_index), UBOUND(p_patch% &
 +    &  cells%start_index))
-+    CALL ftg_register_only("p_patch%comm_pat_c", "TYPE(t_comm_pattern)")
-+    CALL ftg_write("p_patch%comm_pat_c%n_pnts", p_patch%comm_pat_c%n_pnts)
-+    CALL ftg_write("p_patch%comm_pat_c%n_recv", p_patch%comm_pat_c%n_recv)
-+    CALL ftg_write("p_patch%comm_pat_c%n_send", p_patch%comm_pat_c%n_send)
-+    CALL ftg_write("p_patch%comm_pat_c%np_recv", p_patch%comm_pat_c%np_recv)
-+    CALL ftg_write("p_patch%comm_pat_c%np_send", p_patch%comm_pat_c%np_send)
-+    CALL ftg_write("p_patch%comm_pat_c%pelist_recv", p_patch%comm_pat_c%pelist_recv, LBOUND(p_patch%comm_pat_c%pelist_recv), &
-+    &  UBOUND(p_patch%comm_pat_c%pelist_recv))
-+    CALL ftg_write("p_patch%comm_pat_c%pelist_send", p_patch%comm_pat_c%pelist_send, LBOUND(p_patch%comm_pat_c%pelist_send), &
-+    &  UBOUND(p_patch%comm_pat_c%pelist_send))
-+    CALL ftg_write("p_patch%comm_pat_c%recv_count", p_patch%comm_pat_c%recv_count, LBOUND(p_patch%comm_pat_c%recv_count), UBOUND( &
-+    &  p_patch%comm_pat_c%recv_count))
-+    CALL ftg_write("p_patch%comm_pat_c%recv_dst_blk", p_patch%comm_pat_c%recv_dst_blk, LBOUND(p_patch%comm_pat_c%recv_dst_blk), &
-+    &  UBOUND(p_patch%comm_pat_c%recv_dst_blk))
-+    CALL ftg_write("p_patch%comm_pat_c%recv_dst_idx", p_patch%comm_pat_c%recv_dst_idx, LBOUND(p_patch%comm_pat_c%recv_dst_idx), &
-+    &  UBOUND(p_patch%comm_pat_c%recv_dst_idx))
-+    CALL ftg_write("p_patch%comm_pat_c%recv_limits", p_patch%comm_pat_c%recv_limits, LBOUND(p_patch%comm_pat_c%recv_limits), &
-+    &  UBOUND(p_patch%comm_pat_c%recv_limits))
-+    CALL ftg_write("p_patch%comm_pat_c%recv_src", p_patch%comm_pat_c%recv_src, LBOUND(p_patch%comm_pat_c%recv_src), UBOUND( &
-+    &  p_patch%comm_pat_c%recv_src))
-+    CALL ftg_write("p_patch%comm_pat_c%recv_startidx", p_patch%comm_pat_c%recv_startidx, LBOUND(p_patch%comm_pat_c%recv_startidx), &
-+    &  UBOUND(p_patch%comm_pat_c%recv_startidx))
-+    CALL ftg_write("p_patch%comm_pat_c%send_count", p_patch%comm_pat_c%send_count, LBOUND(p_patch%comm_pat_c%send_count), UBOUND( &
-+    &  p_patch%comm_pat_c%send_count))
-+    CALL ftg_write("p_patch%comm_pat_c%send_limits", p_patch%comm_pat_c%send_limits, LBOUND(p_patch%comm_pat_c%send_limits), &
-+    &  UBOUND(p_patch%comm_pat_c%send_limits))
-+    CALL ftg_write("p_patch%comm_pat_c%send_src_blk", p_patch%comm_pat_c%send_src_blk, LBOUND(p_patch%comm_pat_c%send_src_blk), &
-+    &  UBOUND(p_patch%comm_pat_c%send_src_blk))
-+    CALL ftg_write("p_patch%comm_pat_c%send_src_idx", p_patch%comm_pat_c%send_src_idx, LBOUND(p_patch%comm_pat_c%send_src_idx), &
-+    &  UBOUND(p_patch%comm_pat_c%send_src_idx))
-+    CALL ftg_write("p_patch%comm_pat_c%send_startidx", p_patch%comm_pat_c%send_startidx, LBOUND(p_patch%comm_pat_c%send_startidx), &
-+    &  UBOUND(p_patch%comm_pat_c%send_startidx))
-+    CALL ftg_register_only("p_patch%comm_pat_c1", "TYPE(t_comm_pattern)")
-+    CALL ftg_write("p_patch%comm_pat_c1%n_pnts", p_patch%comm_pat_c1%n_pnts)
-+    CALL ftg_write("p_patch%comm_pat_c1%n_recv", p_patch%comm_pat_c1%n_recv)
-+    CALL ftg_write("p_patch%comm_pat_c1%n_send", p_patch%comm_pat_c1%n_send)
-+    CALL ftg_write("p_patch%comm_pat_c1%np_recv", p_patch%comm_pat_c1%np_recv)
-+    CALL ftg_write("p_patch%comm_pat_c1%np_send", p_patch%comm_pat_c1%np_send)
-+    CALL ftg_write("p_patch%comm_pat_c1%pelist_recv", p_patch%comm_pat_c1%pelist_recv, LBOUND(p_patch%comm_pat_c1%pelist_recv), &
-+    &  UBOUND(p_patch%comm_pat_c1%pelist_recv))
-+    CALL ftg_write("p_patch%comm_pat_c1%pelist_send", p_patch%comm_pat_c1%pelist_send, LBOUND(p_patch%comm_pat_c1%pelist_send), &
-+    &  UBOUND(p_patch%comm_pat_c1%pelist_send))
-+    CALL ftg_write("p_patch%comm_pat_c1%recv_count", p_patch%comm_pat_c1%recv_count, LBOUND(p_patch%comm_pat_c1%recv_count), &
-+    &  UBOUND(p_patch%comm_pat_c1%recv_count))
-+    CALL ftg_write("p_patch%comm_pat_c1%recv_dst_blk", p_patch%comm_pat_c1%recv_dst_blk, LBOUND(p_patch%comm_pat_c1%recv_dst_blk), &
-+    &  UBOUND(p_patch%comm_pat_c1%recv_dst_blk))
-+    CALL ftg_write("p_patch%comm_pat_c1%recv_dst_idx", p_patch%comm_pat_c1%recv_dst_idx, LBOUND(p_patch%comm_pat_c1%recv_dst_idx), &
-+    &  UBOUND(p_patch%comm_pat_c1%recv_dst_idx))
-+    CALL ftg_write("p_patch%comm_pat_c1%recv_limits", p_patch%comm_pat_c1%recv_limits, LBOUND(p_patch%comm_pat_c1%recv_limits), &
-+    &  UBOUND(p_patch%comm_pat_c1%recv_limits))
-+    CALL ftg_write("p_patch%comm_pat_c1%recv_src", p_patch%comm_pat_c1%recv_src, LBOUND(p_patch%comm_pat_c1%recv_src), UBOUND( &
-+    &  p_patch%comm_pat_c1%recv_src))
-+    CALL ftg_write("p_patch%comm_pat_c1%recv_startidx", p_patch%comm_pat_c1%recv_startidx, LBOUND(p_patch%comm_pat_c1% &
-+    &  recv_startidx), UBOUND(p_patch%comm_pat_c1%recv_startidx))
-+    CALL ftg_write("p_patch%comm_pat_c1%send_count", p_patch%comm_pat_c1%send_count, LBOUND(p_patch%comm_pat_c1%send_count), &
-+    &  UBOUND(p_patch%comm_pat_c1%send_count))
-+    CALL ftg_write("p_patch%comm_pat_c1%send_limits", p_patch%comm_pat_c1%send_limits, LBOUND(p_patch%comm_pat_c1%send_limits), &
-+    &  UBOUND(p_patch%comm_pat_c1%send_limits))
-+    CALL ftg_write("p_patch%comm_pat_c1%send_src_blk", p_patch%comm_pat_c1%send_src_blk, LBOUND(p_patch%comm_pat_c1%send_src_blk), &
-+    &  UBOUND(p_patch%comm_pat_c1%send_src_blk))
-+    CALL ftg_write("p_patch%comm_pat_c1%send_src_idx", p_patch%comm_pat_c1%send_src_idx, LBOUND(p_patch%comm_pat_c1%send_src_idx), &
-+    &  UBOUND(p_patch%comm_pat_c1%send_src_idx))
-+    CALL ftg_write("p_patch%comm_pat_c1%send_startidx", p_patch%comm_pat_c1%send_startidx, LBOUND(p_patch%comm_pat_c1% &
-+    &  send_startidx), UBOUND(p_patch%comm_pat_c1%send_startidx))
-+    CALL ftg_register_only("p_patch%comm_pat_e", "TYPE(t_comm_pattern)")
-+    CALL ftg_write("p_patch%comm_pat_e%n_pnts", p_patch%comm_pat_e%n_pnts)
-+    CALL ftg_write("p_patch%comm_pat_e%n_recv", p_patch%comm_pat_e%n_recv)
-+    CALL ftg_write("p_patch%comm_pat_e%n_send", p_patch%comm_pat_e%n_send)
-+    CALL ftg_write("p_patch%comm_pat_e%np_recv", p_patch%comm_pat_e%np_recv)
-+    CALL ftg_write("p_patch%comm_pat_e%np_send", p_patch%comm_pat_e%np_send)
-+    CALL ftg_write("p_patch%comm_pat_e%pelist_recv", p_patch%comm_pat_e%pelist_recv, LBOUND(p_patch%comm_pat_e%pelist_recv), &
-+    &  UBOUND(p_patch%comm_pat_e%pelist_recv))
-+    CALL ftg_write("p_patch%comm_pat_e%pelist_send", p_patch%comm_pat_e%pelist_send, LBOUND(p_patch%comm_pat_e%pelist_send), &
-+    &  UBOUND(p_patch%comm_pat_e%pelist_send))
-+    CALL ftg_write("p_patch%comm_pat_e%recv_count", p_patch%comm_pat_e%recv_count, LBOUND(p_patch%comm_pat_e%recv_count), UBOUND( &
-+    &  p_patch%comm_pat_e%recv_count))
-+    CALL ftg_write("p_patch%comm_pat_e%recv_dst_blk", p_patch%comm_pat_e%recv_dst_blk, LBOUND(p_patch%comm_pat_e%recv_dst_blk), &
-+    &  UBOUND(p_patch%comm_pat_e%recv_dst_blk))
-+    CALL ftg_write("p_patch%comm_pat_e%recv_dst_idx", p_patch%comm_pat_e%recv_dst_idx, LBOUND(p_patch%comm_pat_e%recv_dst_idx), &
-+    &  UBOUND(p_patch%comm_pat_e%recv_dst_idx))
-+    CALL ftg_write("p_patch%comm_pat_e%recv_limits", p_patch%comm_pat_e%recv_limits, LBOUND(p_patch%comm_pat_e%recv_limits), &
-+    &  UBOUND(p_patch%comm_pat_e%recv_limits))
-+    CALL ftg_write("p_patch%comm_pat_e%recv_src", p_patch%comm_pat_e%recv_src, LBOUND(p_patch%comm_pat_e%recv_src), UBOUND( &
-+    &  p_patch%comm_pat_e%recv_src))
-+    CALL ftg_write("p_patch%comm_pat_e%recv_startidx", p_patch%comm_pat_e%recv_startidx, LBOUND(p_patch%comm_pat_e%recv_startidx), &
-+    &  UBOUND(p_patch%comm_pat_e%recv_startidx))
-+    CALL ftg_write("p_patch%comm_pat_e%send_count", p_patch%comm_pat_e%send_count, LBOUND(p_patch%comm_pat_e%send_count), UBOUND( &
-+    &  p_patch%comm_pat_e%send_count))
-+    CALL ftg_write("p_patch%comm_pat_e%send_limits", p_patch%comm_pat_e%send_limits, LBOUND(p_patch%comm_pat_e%send_limits), &
-+    &  UBOUND(p_patch%comm_pat_e%send_limits))
-+    CALL ftg_write("p_patch%comm_pat_e%send_src_blk", p_patch%comm_pat_e%send_src_blk, LBOUND(p_patch%comm_pat_e%send_src_blk), &
-+    &  UBOUND(p_patch%comm_pat_e%send_src_blk))
-+    CALL ftg_write("p_patch%comm_pat_e%send_src_idx", p_patch%comm_pat_e%send_src_idx, LBOUND(p_patch%comm_pat_e%send_src_idx), &
-+    &  UBOUND(p_patch%comm_pat_e%send_src_idx))
-+    CALL ftg_write("p_patch%comm_pat_e%send_startidx", p_patch%comm_pat_e%send_startidx, LBOUND(p_patch%comm_pat_e%send_startidx), &
-+    &  UBOUND(p_patch%comm_pat_e%send_startidx))
-+    CALL ftg_register_only("p_patch%comm_pat_v", "TYPE(t_comm_pattern)")
-+    CALL ftg_write("p_patch%comm_pat_v%n_pnts", p_patch%comm_pat_v%n_pnts)
-+    CALL ftg_write("p_patch%comm_pat_v%n_recv", p_patch%comm_pat_v%n_recv)
-+    CALL ftg_write("p_patch%comm_pat_v%n_send", p_patch%comm_pat_v%n_send)
-+    CALL ftg_write("p_patch%comm_pat_v%np_recv", p_patch%comm_pat_v%np_recv)
-+    CALL ftg_write("p_patch%comm_pat_v%np_send", p_patch%comm_pat_v%np_send)
-+    CALL ftg_write("p_patch%comm_pat_v%pelist_recv", p_patch%comm_pat_v%pelist_recv, LBOUND(p_patch%comm_pat_v%pelist_recv), &
-+    &  UBOUND(p_patch%comm_pat_v%pelist_recv))
-+    CALL ftg_write("p_patch%comm_pat_v%pelist_send", p_patch%comm_pat_v%pelist_send, LBOUND(p_patch%comm_pat_v%pelist_send), &
-+    &  UBOUND(p_patch%comm_pat_v%pelist_send))
-+    CALL ftg_write("p_patch%comm_pat_v%recv_count", p_patch%comm_pat_v%recv_count, LBOUND(p_patch%comm_pat_v%recv_count), UBOUND( &
-+    &  p_patch%comm_pat_v%recv_count))
-+    CALL ftg_write("p_patch%comm_pat_v%recv_dst_blk", p_patch%comm_pat_v%recv_dst_blk, LBOUND(p_patch%comm_pat_v%recv_dst_blk), &
-+    &  UBOUND(p_patch%comm_pat_v%recv_dst_blk))
-+    CALL ftg_write("p_patch%comm_pat_v%recv_dst_idx", p_patch%comm_pat_v%recv_dst_idx, LBOUND(p_patch%comm_pat_v%recv_dst_idx), &
-+    &  UBOUND(p_patch%comm_pat_v%recv_dst_idx))
-+    CALL ftg_write("p_patch%comm_pat_v%recv_limits", p_patch%comm_pat_v%recv_limits, LBOUND(p_patch%comm_pat_v%recv_limits), &
-+    &  UBOUND(p_patch%comm_pat_v%recv_limits))
-+    CALL ftg_write("p_patch%comm_pat_v%recv_src", p_patch%comm_pat_v%recv_src, LBOUND(p_patch%comm_pat_v%recv_src), UBOUND( &
-+    &  p_patch%comm_pat_v%recv_src))
-+    CALL ftg_write("p_patch%comm_pat_v%recv_startidx", p_patch%comm_pat_v%recv_startidx, LBOUND(p_patch%comm_pat_v%recv_startidx), &
-+    &  UBOUND(p_patch%comm_pat_v%recv_startidx))
-+    CALL ftg_write("p_patch%comm_pat_v%send_count", p_patch%comm_pat_v%send_count, LBOUND(p_patch%comm_pat_v%send_count), UBOUND( &
-+    &  p_patch%comm_pat_v%send_count))
-+    CALL ftg_write("p_patch%comm_pat_v%send_limits", p_patch%comm_pat_v%send_limits, LBOUND(p_patch%comm_pat_v%send_limits), &
-+    &  UBOUND(p_patch%comm_pat_v%send_limits))
-+    CALL ftg_write("p_patch%comm_pat_v%send_src_blk", p_patch%comm_pat_v%send_src_blk, LBOUND(p_patch%comm_pat_v%send_src_blk), &
-+    &  UBOUND(p_patch%comm_pat_v%send_src_blk))
-+    CALL ftg_write("p_patch%comm_pat_v%send_src_idx", p_patch%comm_pat_v%send_src_idx, LBOUND(p_patch%comm_pat_v%send_src_idx), &
-+    &  UBOUND(p_patch%comm_pat_v%send_src_idx))
-+    CALL ftg_write("p_patch%comm_pat_v%send_startidx", p_patch%comm_pat_v%send_startidx, LBOUND(p_patch%comm_pat_v%send_startidx), &
-+    &  UBOUND(p_patch%comm_pat_v%send_startidx))
 +    CALL ftg_register_only("p_patch%edges", "TYPE(t_grid_edges)")
 +    CALL ftg_write("p_patch%edges%area_edge", p_patch%edges%area_edge, LBOUND(p_patch%edges%area_edge), UBOUND(p_patch%edges% &
 +    &  area_edge))
@@ -679,11 +549,9 @@
 +    CALL ftg_write("mo_parallel_config__icon_comm_method", mo_parallel_config__icon_comm_method)
 +    CALL ftg_write("mo_dynamics_config__idiv_method", mo_dynamics_config__idiv_method)
 +    CALL ftg_write("mo_nonhydrostatic_config__igradp_method", mo_nonhydrostatic_config__igradp_method)
-+    CALL ftg_write("mo_parallel_config__iorder_sendrecv", mo_parallel_config__iorder_sendrecv)
 +    CALL ftg_write("mo_initicon_config__is_iau_active", mo_initicon_config__is_iau_active)
 +    CALL ftg_write("mo_nonhydrostatic_config__itime_scheme", mo_nonhydrostatic_config__itime_scheme)
 +    CALL ftg_write("mo_parallel_config__itype_comm", mo_parallel_config__itype_comm)
-+    CALL ftg_write("mo_parallel_config__itype_exch_barrier", mo_parallel_config__itype_exch_barrier)
 +    CALL ftg_write("mo_nonhydrostatic_config__kstart_dd3d", mo_nonhydrostatic_config__kstart_dd3d, LBOUND( &
 +    &  mo_nonhydrostatic_config__kstart_dd3d), UBOUND(mo_nonhydrostatic_config__kstart_dd3d))
 +    CALL ftg_write("mo_nonhydrostatic_config__kstart_moist", mo_nonhydrostatic_config__kstart_moist, LBOUND( &
@@ -739,8 +607,6 @@
 +    CALL ftg_write("mo_icon_comm_lib__this_is_mpi_sequential", mo_icon_comm_lib__this_is_mpi_sequential)
 +    CALL ftg_write("mo_timer__timer_back_traj", mo_timer__timer_back_traj)
 +    CALL ftg_write("mo_timer__timer_barrier", mo_timer__timer_barrier)
-+    CALL ftg_write("mo_timer__timer_exch_data", mo_timer__timer_exch_data)
-+    CALL ftg_write("mo_timer__timer_exch_data_wait", mo_timer__timer_exch_data_wait)
 +    CALL ftg_write("mo_timer__timer_icon_comm_barrier_2", mo_timer__timer_icon_comm_barrier_2)
 +    CALL ftg_write("mo_timer__timer_icon_comm_fillrecv", mo_timer__timer_icon_comm_fillrecv)
 +    CALL ftg_write("mo_timer__timer_icon_comm_fillsend", mo_timer__timer_icon_comm_fillsend)
@@ -1087,66 +953,65 @@
 +
 +END FUNCTION ftg_solve_nh_capture_output_active
 +
-+SUBROUTINE ftg_solve_nh_capture_output(p_nh, prep_adv)
++SUBROUTINE ftg_solve_nh_capture_output(p_nh, p_patch, prep_adv)
 +  
 +  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
 +  USE mo_exception, ONLY: finish
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
 +  
 +  USE mo_dynamics_config, ONLY: mo_dynamics_config__idiv_method => idiv_method
-+  USE mo_run_config, ONLY: mo_run_config__timers_level => timers_level, mo_run_config__ltimer => ltimer, mo_run_config__lvert_nest &
++  USE mo_run_config, ONLY: mo_run_config__ltimer => ltimer, mo_run_config__timers_level => timers_level, mo_run_config__lvert_nest &
 +  &  => lvert_nest
 +  USE mo_initicon_config, ONLY: mo_initicon_config__is_iau_active => is_iau_active, mo_initicon_config__iau_wgt_dyn => iau_wgt_dyn
++  USE mo_interpol_config, ONLY: mo_interpol_config__lsq_high_ord => lsq_high_ord, mo_interpol_config__lsq_high_set => &
++  &  lsq_high_set, mo_interpol_config__nudge_max_coeff => nudge_max_coeff, t_lsq_set
 +  USE mo_sync, ONLY: mo_sync__log_unit => log_unit, mo_sync__do_sync_checks => do_sync_checks
 +  USE mo_init_vgrid, ONLY: mo_init_vgrid__nflatlev => nflatlev
-+  USE mo_vertical_coord_table, ONLY: mo_vertical_coord_table__vct_a => vct_a
-+  USE mo_interpol_config, ONLY: mo_interpol_config__lsq_high_set => lsq_high_set, mo_interpol_config__nudge_max_coeff => &
-+  &  nudge_max_coeff, mo_interpol_config__lsq_high_ord => lsq_high_ord, t_lsq_set
-+  USE mo_nonhydrostatic_config, ONLY: mo_nonhydrostatic_config__divdamp_type => divdamp_type, &
-+  &  mo_nonhydrostatic_config__veladv_offctr => veladv_offctr, mo_nonhydrostatic_config__l_open_ubc => l_open_ubc, &
-+  &  mo_nonhydrostatic_config__ndyn_substeps_var => ndyn_substeps_var, mo_nonhydrostatic_config__itime_scheme => itime_scheme, &
-+  &  mo_nonhydrostatic_config__kstart_moist => kstart_moist, mo_nonhydrostatic_config__kstart_dd3d => kstart_dd3d, &
++  USE mo_nonhydrostatic_config, ONLY: mo_nonhydrostatic_config__lextra_diffu => lextra_diffu, &
++  &  mo_nonhydrostatic_config__divdamp_type => divdamp_type, mo_nonhydrostatic_config__rayleigh_type => rayleigh_type, &
++  &  mo_nonhydrostatic_config__veladv_offctr => veladv_offctr, mo_nonhydrostatic_config__kstart_moist => kstart_moist, &
++  &  mo_nonhydrostatic_config__kstart_dd3d => kstart_dd3d, mo_nonhydrostatic_config__ndyn_substeps_var => ndyn_substeps_var, &
 +  &  mo_nonhydrostatic_config__divdamp_order => divdamp_order, mo_nonhydrostatic_config__divdamp_fac_o2 => divdamp_fac_o2, &
-+  &  mo_nonhydrostatic_config__rhotheta_offctr => rhotheta_offctr, mo_nonhydrostatic_config__iadv_rhotheta => iadv_rhotheta, &
-+  &  mo_nonhydrostatic_config__lextra_diffu => lextra_diffu, mo_nonhydrostatic_config__rayleigh_type => rayleigh_type, &
 +  &  mo_nonhydrostatic_config__lhdiff_rcf => lhdiff_rcf, mo_nonhydrostatic_config__igradp_method => igradp_method, &
-+  &  mo_nonhydrostatic_config__divdamp_fac => divdamp_fac
-+  USE mo_timer, ONLY: mo_timer__timer_exch_data_wait => timer_exch_data_wait, mo_timer__timer_icon_comm_wait => &
-+  &  timer_icon_comm_wait, mo_timer__timer_icon_comm_fillrecv => timer_icon_comm_fillrecv, mo_timer__timer_icon_comm_fillsend => &
-+  &  timer_icon_comm_fillsend, mo_timer__timer_solve_nh_vnupd => timer_solve_nh_vnupd, mo_timer__timer_icon_comm_ircv => &
-+  &  timer_icon_comm_ircv, mo_timer__timer_icon_comm_sync => timer_icon_comm_sync, mo_timer__timer_icon_comm_barrier_2 => &
-+  &  timer_icon_comm_barrier_2, mo_timer__timer_solve_nh_cellcomp => timer_solve_nh_cellcomp, mo_timer__timer_exch_data => &
-+  &  timer_exch_data, mo_timer__timer_back_traj => timer_back_traj, mo_timer__timer_solve_nh_exch => timer_solve_nh_exch, &
-+  &  mo_timer__timer_solve_nh => timer_solve_nh, mo_timer__timer_intp => timer_intp, mo_timer__timer_barrier => timer_barrier, &
-+  &  mo_timer__timer_solve_nh_edgecomp => timer_solve_nh_edgecomp, mo_timer__timer_solve_nh_veltend => timer_solve_nh_veltend, &
-+  &  mo_timer__timer_solve_nh_vimpl => timer_solve_nh_vimpl
-+  USE mo_advection_config, ONLY: mo_advection_config__zeta => zeta, mo_advection_config__advection_config => advection_config, &
-+  &  mo_advection_config__eta => eta, mo_advection_config__wgt_zeta => wgt_zeta, mo_advection_config__shape_func => shape_func, &
-+  &  mo_advection_config__wgt_eta => wgt_eta, t_advection_config
-+  USE mo_icon_comm_lib, ONLY: mo_icon_comm_lib__recv_procs_buffer => recv_procs_buffer, mo_icon_comm_lib__send_buffer => &
-+  &  send_buffer, mo_icon_comm_lib__this_is_mpi_sequential => this_is_mpi_sequential, mo_icon_comm_lib__comm_variable => &
-+  &  comm_variable, mo_icon_comm_lib__active_comm_variables => active_comm_variables, mo_icon_comm_lib__log_file_id => &
-+  &  log_file_id, mo_icon_comm_lib__comm_lib_is_initialized => comm_lib_is_initialized, mo_icon_comm_lib__send_procs_buffer => &
-+  &  send_procs_buffer, mo_icon_comm_lib__recv_buffer => recv_buffer, mo_icon_comm_lib__max_send_buffer_size => &
-+  &  max_send_buffer_size, mo_icon_comm_lib__active_recv_buffers => active_recv_buffers, mo_icon_comm_lib__active_send_buffers => &
-+  &  active_send_buffers, mo_icon_comm_lib__buffer_comm_status => buffer_comm_status, mo_icon_comm_lib__my_work_communicator => &
-+  &  my_work_communicator, mo_icon_comm_lib__max_active_comm_variables => max_active_comm_variables, &
-+  &  mo_icon_comm_lib__grid_comm_pattern_list => grid_comm_pattern_list, t_comm_process_buffer, t_comm_variable_real, &
-+  &  t_grid_comm_pattern
++  &  mo_nonhydrostatic_config__itime_scheme => itime_scheme, mo_nonhydrostatic_config__divdamp_fac => divdamp_fac, &
++  &  mo_nonhydrostatic_config__rhotheta_offctr => rhotheta_offctr, mo_nonhydrostatic_config__l_open_ubc => l_open_ubc, &
++  &  mo_nonhydrostatic_config__iadv_rhotheta => iadv_rhotheta
++  USE mo_timer, ONLY: mo_timer__timer_solve_nh_cellcomp => timer_solve_nh_cellcomp, mo_timer__timer_solve_nh => timer_solve_nh, &
++  &  mo_timer__timer_solve_nh_vimpl => timer_solve_nh_vimpl, mo_timer__timer_icon_comm_wait => timer_icon_comm_wait, &
++  &  mo_timer__timer_icon_comm_fillrecv => timer_icon_comm_fillrecv, mo_timer__timer_solve_nh_edgecomp => timer_solve_nh_edgecomp, &
++  &  mo_timer__timer_solve_nh_veltend => timer_solve_nh_veltend, mo_timer__timer_icon_comm_fillsend => timer_icon_comm_fillsend, &
++  &  mo_timer__timer_solve_nh_vnupd => timer_solve_nh_vnupd, mo_timer__timer_icon_comm_ircv => timer_icon_comm_ircv, &
++  &  mo_timer__timer_back_traj => timer_back_traj, mo_timer__timer_barrier => timer_barrier, mo_timer__timer_solve_nh_exch => &
++  &  timer_solve_nh_exch, mo_timer__timer_icon_comm_sync => timer_icon_comm_sync, mo_timer__timer_icon_comm_barrier_2 => &
++  &  timer_icon_comm_barrier_2, mo_timer__timer_intp => timer_intp
++  USE mo_vertical_coord_table, ONLY: mo_vertical_coord_table__vct_a => vct_a
++  USE mo_advection_config, ONLY: mo_advection_config__zeta => zeta, mo_advection_config__wgt_zeta => wgt_zeta, &
++  &  mo_advection_config__eta => eta, mo_advection_config__advection_config => advection_config, mo_advection_config__wgt_eta => &
++  &  wgt_eta, mo_advection_config__shape_func => shape_func, t_advection_config
++  USE mo_icon_comm_lib, ONLY: mo_icon_comm_lib__active_send_buffers => active_send_buffers, mo_icon_comm_lib__comm_variable => &
++  &  comm_variable, mo_icon_comm_lib__log_file_id => log_file_id, mo_icon_comm_lib__my_work_communicator => my_work_communicator, &
++  &  mo_icon_comm_lib__comm_lib_is_initialized => comm_lib_is_initialized, mo_icon_comm_lib__max_send_buffer_size => &
++  &  max_send_buffer_size, mo_icon_comm_lib__recv_buffer => recv_buffer, mo_icon_comm_lib__send_procs_buffer => send_procs_buffer, &
++  &  mo_icon_comm_lib__this_is_mpi_sequential => this_is_mpi_sequential, mo_icon_comm_lib__active_comm_variables => &
++  &  active_comm_variables, mo_icon_comm_lib__send_buffer => send_buffer, mo_icon_comm_lib__max_active_comm_variables => &
++  &  max_active_comm_variables, mo_icon_comm_lib__buffer_comm_status => buffer_comm_status, &
++  &  mo_icon_comm_lib__grid_comm_pattern_list => grid_comm_pattern_list, mo_icon_comm_lib__recv_procs_buffer => recv_procs_buffer, &
++  &  mo_icon_comm_lib__active_recv_buffers => active_recv_buffers, t_comm_process_buffer, t_comm_variable_real, t_grid_comm_pattern
 +  USE mo_vertical_grid, ONLY: mo_vertical_grid__nflat_gradp => nflat_gradp, mo_vertical_grid__nrdmax => nrdmax
-+  USE mo_parallel_config, ONLY: mo_parallel_config__icon_comm_debug => icon_comm_debug, mo_parallel_config__n_ghost_rows => &
-+  &  n_ghost_rows, mo_parallel_config__iorder_sendrecv => iorder_sendrecv, mo_parallel_config__sync_barrier_mode => &
-+  &  sync_barrier_mode, mo_parallel_config__p_test_run => p_test_run, mo_parallel_config__nproma => nproma, &
-+  &  mo_parallel_config__max_mpi_message_size => max_mpi_message_size, mo_parallel_config__max_no_of_comm_variables => &
-+  &  max_no_of_comm_variables, mo_parallel_config__itype_comm => itype_comm, mo_parallel_config__use_dycore_barrier => &
-+  &  use_dycore_barrier, mo_parallel_config__icon_comm_method => icon_comm_method, mo_parallel_config__l_log_checks => &
-+  &  l_log_checks, mo_parallel_config__itype_exch_barrier => itype_exch_barrier, mo_parallel_config__use_icon_comm => use_icon_comm
++  USE mo_parallel_config, ONLY: mo_parallel_config__max_no_of_comm_variables => max_no_of_comm_variables, &
++  &  mo_parallel_config__itype_comm => itype_comm, mo_parallel_config__use_icon_comm => use_icon_comm, &
++  &  mo_parallel_config__sync_barrier_mode => sync_barrier_mode, mo_parallel_config__nproma => nproma, &
++  &  mo_parallel_config__icon_comm_method => icon_comm_method, mo_parallel_config__icon_comm_debug => icon_comm_debug, &
++  &  mo_parallel_config__l_log_checks => l_log_checks, mo_parallel_config__n_ghost_rows => n_ghost_rows, &
++  &  mo_parallel_config__use_dycore_barrier => use_dycore_barrier, mo_parallel_config__max_mpi_message_size => &
++  &  max_mpi_message_size, mo_parallel_config__p_test_run => p_test_run
 +  USE mo_grid_config, ONLY: mo_grid_config__l_limited_area => l_limited_area
 +  USE mo_gridref_config, ONLY: mo_gridref_config__grf_intmethod_e => grf_intmethod_e
-+  USE mo_advection_utils, ONLY: mo_advection_utils__ptr_delp_mc_new => ptr_delp_mc_new, mo_advection_utils__ptr_delp_mc_now => &
-+  &  ptr_delp_mc_now
++  USE mo_advection_utils, ONLY: mo_advection_utils__ptr_delp_mc_now => ptr_delp_mc_now, mo_advection_utils__ptr_delp_mc_new => &
++  &  ptr_delp_mc_new
 +  
 +  TYPE(t_nh_state), INTENT(in) :: p_nh
++  TYPE(t_patch), INTENT(in) :: p_patch
 +  TYPE(t_prepare_adv), INTENT(in) :: prep_adv
 +  
 +  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
@@ -1331,6 +1196,131 @@
 +    CALL ftg_register_only("p_nh%ref", "TYPE(t_nh_ref)")
 +    CALL ftg_write("p_nh%ref%vn_ref", p_nh%ref%vn_ref, LBOUND(p_nh%ref%vn_ref), UBOUND(p_nh%ref%vn_ref))
 +    CALL ftg_write("p_nh%ref%w_ref", p_nh%ref%w_ref, LBOUND(p_nh%ref%w_ref), UBOUND(p_nh%ref%w_ref))
++    CALL ftg_register_only("p_patch", "TYPE(t_patch)")
++    CALL ftg_write("p_patch%id", p_patch%id)
++    CALL ftg_write("p_patch%n_childdom", p_patch%n_childdom)
++    CALL ftg_write("p_patch%n_patch_cells", p_patch%n_patch_cells)
++    CALL ftg_write("p_patch%n_patch_cells_g", p_patch%n_patch_cells_g)
++    CALL ftg_write("p_patch%n_patch_edges", p_patch%n_patch_edges)
++    CALL ftg_write("p_patch%n_patch_edges_g", p_patch%n_patch_edges_g)
++    CALL ftg_write("p_patch%n_patch_verts", p_patch%n_patch_verts)
++    CALL ftg_write("p_patch%n_patch_verts_g", p_patch%n_patch_verts_g)
++    CALL ftg_write("p_patch%nblks_c", p_patch%nblks_c)
++    CALL ftg_write("p_patch%nblks_e", p_patch%nblks_e)
++    CALL ftg_write("p_patch%nblks_v", p_patch%nblks_v)
++    CALL ftg_write("p_patch%nlev", p_patch%nlev)
++    CALL ftg_write("p_patch%nlevp1", p_patch%nlevp1)
++    CALL ftg_write("p_patch%nshift", p_patch%nshift)
++    CALL ftg_write("p_patch%nshift_child", p_patch%nshift_child)
++    CALL ftg_write("p_patch%nshift_total", p_patch%nshift_total)
++    CALL ftg_write("p_patch%sync_cells_not_owned", p_patch%sync_cells_not_owned)
++    CALL ftg_write("p_patch%sync_edges_not_owned", p_patch%sync_edges_not_owned)
++    CALL ftg_register_only("p_patch%cells", "TYPE(t_grid_cells)")
++    CALL ftg_write("p_patch%cells%area", p_patch%cells%area, LBOUND(p_patch%cells%area), UBOUND(p_patch%cells%area))
++    CALL ftg_write("p_patch%cells%edge_blk", p_patch%cells%edge_blk, LBOUND(p_patch%cells%edge_blk), UBOUND(p_patch%cells%edge_blk))
++    CALL ftg_write("p_patch%cells%edge_idx", p_patch%cells%edge_idx, LBOUND(p_patch%cells%edge_idx), UBOUND(p_patch%cells%edge_idx))
++    CALL ftg_write("p_patch%cells%end_blk", p_patch%cells%end_blk, LBOUND(p_patch%cells%end_blk), UBOUND(p_patch%cells%end_blk))
++    CALL ftg_write("p_patch%cells%end_block", p_patch%cells%end_block, LBOUND(p_patch%cells%end_block), UBOUND(p_patch%cells% &
++    &  end_block))
++    CALL ftg_write("p_patch%cells%end_index", p_patch%cells%end_index, LBOUND(p_patch%cells%end_index), UBOUND(p_patch%cells% &
++    &  end_index))
++    CALL ftg_write("p_patch%cells%neighbor_blk", p_patch%cells%neighbor_blk, LBOUND(p_patch%cells%neighbor_blk), UBOUND(p_patch% &
++    &  cells%neighbor_blk))
++    CALL ftg_write("p_patch%cells%neighbor_idx", p_patch%cells%neighbor_idx, LBOUND(p_patch%cells%neighbor_idx), UBOUND(p_patch% &
++    &  cells%neighbor_idx))
++    CALL ftg_write("p_patch%cells%refin_ctrl", p_patch%cells%refin_ctrl, LBOUND(p_patch%cells%refin_ctrl), UBOUND(p_patch%cells% &
++    &  refin_ctrl))
++    CALL ftg_write("p_patch%cells%start_blk", p_patch%cells%start_blk, LBOUND(p_patch%cells%start_blk), UBOUND(p_patch%cells% &
++    &  start_blk))
++    CALL ftg_write("p_patch%cells%start_block", p_patch%cells%start_block, LBOUND(p_patch%cells%start_block), UBOUND(p_patch% &
++    &  cells%start_block))
++    CALL ftg_write("p_patch%cells%start_index", p_patch%cells%start_index, LBOUND(p_patch%cells%start_index), UBOUND(p_patch% &
++    &  cells%start_index))
++    CALL ftg_register_only("p_patch%edges", "TYPE(t_grid_edges)")
++    CALL ftg_write("p_patch%edges%area_edge", p_patch%edges%area_edge, LBOUND(p_patch%edges%area_edge), UBOUND(p_patch%edges% &
++    &  area_edge))
++    CALL ftg_write("p_patch%edges%cell_blk", p_patch%edges%cell_blk, LBOUND(p_patch%edges%cell_blk), UBOUND(p_patch%edges%cell_blk))
++    CALL ftg_write("p_patch%edges%cell_idx", p_patch%edges%cell_idx, LBOUND(p_patch%edges%cell_idx), UBOUND(p_patch%edges%cell_idx))
++    CALL ftg_write("p_patch%edges%edge_cell_length", p_patch%edges%edge_cell_length, LBOUND(p_patch%edges%edge_cell_length), &
++    &  UBOUND(p_patch%edges%edge_cell_length))
++    CALL ftg_write("p_patch%edges%end_blk", p_patch%edges%end_blk, LBOUND(p_patch%edges%end_blk), UBOUND(p_patch%edges%end_blk))
++    CALL ftg_write("p_patch%edges%end_block", p_patch%edges%end_block, LBOUND(p_patch%edges%end_block), UBOUND(p_patch%edges% &
++    &  end_block))
++    CALL ftg_write("p_patch%edges%end_index", p_patch%edges%end_index, LBOUND(p_patch%edges%end_index), UBOUND(p_patch%edges% &
++    &  end_index))
++    CALL ftg_write("p_patch%edges%f_e", p_patch%edges%f_e, LBOUND(p_patch%edges%f_e), UBOUND(p_patch%edges%f_e))
++    CALL ftg_write("p_patch%edges%inv_dual_edge_length", p_patch%edges%inv_dual_edge_length, LBOUND(p_patch%edges% &
++    &  inv_dual_edge_length), UBOUND(p_patch%edges%inv_dual_edge_length))
++    CALL ftg_write("p_patch%edges%inv_primal_edge_length", p_patch%edges%inv_primal_edge_length, LBOUND(p_patch%edges% &
++    &  inv_primal_edge_length), UBOUND(p_patch%edges%inv_primal_edge_length))
++    CALL ftg_write("p_patch%edges%quad_blk", p_patch%edges%quad_blk, LBOUND(p_patch%edges%quad_blk), UBOUND(p_patch%edges%quad_blk))
++    CALL ftg_write("p_patch%edges%quad_idx", p_patch%edges%quad_idx, LBOUND(p_patch%edges%quad_idx), UBOUND(p_patch%edges%quad_idx))
++    CALL ftg_write("p_patch%edges%refin_ctrl", p_patch%edges%refin_ctrl, LBOUND(p_patch%edges%refin_ctrl), UBOUND(p_patch%edges% &
++    &  refin_ctrl))
++    CALL ftg_write("p_patch%edges%start_blk", p_patch%edges%start_blk, LBOUND(p_patch%edges%start_blk), UBOUND(p_patch%edges% &
++    &  start_blk))
++    CALL ftg_write("p_patch%edges%start_block", p_patch%edges%start_block, LBOUND(p_patch%edges%start_block), UBOUND(p_patch% &
++    &  edges%start_block))
++    CALL ftg_write("p_patch%edges%start_index", p_patch%edges%start_index, LBOUND(p_patch%edges%start_index), UBOUND(p_patch% &
++    &  edges%start_index))
++    CALL ftg_write("p_patch%edges%tangent_orientation", p_patch%edges%tangent_orientation, LBOUND(p_patch%edges% &
++    &  tangent_orientation), UBOUND(p_patch%edges%tangent_orientation))
++    CALL ftg_write("p_patch%edges%vertex_blk", p_patch%edges%vertex_blk, LBOUND(p_patch%edges%vertex_blk), UBOUND(p_patch%edges% &
++    &  vertex_blk))
++    CALL ftg_write("p_patch%edges%vertex_idx", p_patch%edges%vertex_idx, LBOUND(p_patch%edges%vertex_idx), UBOUND(p_patch%edges% &
++    &  vertex_idx))
++    CALL ftg_register_only("p_patch%geometry_info", "TYPE(t_grid_geometry_info)")
++    CALL ftg_write("p_patch%geometry_info%cell_type", p_patch%geometry_info%cell_type)
++    CALL ftg_write("p_patch%geometry_info%mean_cell_area", p_patch%geometry_info%mean_cell_area)
++    CALL ftg_register_only("p_patch%verts", "TYPE(t_grid_vertices)")
++    CALL ftg_write("p_patch%verts%cell_blk", p_patch%verts%cell_blk, LBOUND(p_patch%verts%cell_blk), UBOUND(p_patch%verts%cell_blk))
++    CALL ftg_write("p_patch%verts%cell_idx", p_patch%verts%cell_idx, LBOUND(p_patch%verts%cell_idx), UBOUND(p_patch%verts%cell_idx))
++    CALL ftg_write("p_patch%verts%edge_blk", p_patch%verts%edge_blk, LBOUND(p_patch%verts%edge_blk), UBOUND(p_patch%verts%edge_blk))
++    CALL ftg_write("p_patch%verts%edge_idx", p_patch%verts%edge_idx, LBOUND(p_patch%verts%edge_idx), UBOUND(p_patch%verts%edge_idx))
++    CALL ftg_write("p_patch%verts%end_blk", p_patch%verts%end_blk, LBOUND(p_patch%verts%end_blk), UBOUND(p_patch%verts%end_blk))
++    CALL ftg_write("p_patch%verts%end_block", p_patch%verts%end_block, LBOUND(p_patch%verts%end_block), UBOUND(p_patch%verts% &
++    &  end_block))
++    CALL ftg_write("p_patch%verts%end_index", p_patch%verts%end_index, LBOUND(p_patch%verts%end_index), UBOUND(p_patch%verts% &
++    &  end_index))
++    CALL ftg_write("p_patch%verts%start_blk", p_patch%verts%start_blk, LBOUND(p_patch%verts%start_blk), UBOUND(p_patch%verts% &
++    &  start_blk))
++    CALL ftg_write("p_patch%verts%start_block", p_patch%verts%start_block, LBOUND(p_patch%verts%start_block), UBOUND(p_patch% &
++    &  verts%start_block))
++    CALL ftg_write("p_patch%verts%start_index", p_patch%verts%start_index, LBOUND(p_patch%verts%start_index), UBOUND(p_patch% &
++    &  verts%start_index))
++    CALL ftg_register_only("p_patch%cells%decomp_info", "TYPE(t_grid_domain_decomp_info)")
++    CALL ftg_write("p_patch%cells%decomp_info%decomp_domain", p_patch%cells%decomp_info%decomp_domain, LBOUND(p_patch%cells% &
++    &  decomp_info%decomp_domain), UBOUND(p_patch%cells%decomp_info%decomp_domain))
++    CALL ftg_write("p_patch%cells%decomp_info%glb_index", p_patch%cells%decomp_info%glb_index, LBOUND(p_patch%cells%decomp_info% &
++    &  glb_index), UBOUND(p_patch%cells%decomp_info%glb_index))
++    CALL ftg_write("p_patch%cells%decomp_info%owner_mask", p_patch%cells%decomp_info%owner_mask, LBOUND(p_patch%cells%decomp_info% &
++    &  owner_mask), UBOUND(p_patch%cells%decomp_info%owner_mask))
++    CALL ftg_register_only("p_patch%edges%decomp_info", "TYPE(t_grid_domain_decomp_info)")
++    CALL ftg_write("p_patch%edges%decomp_info%decomp_domain", p_patch%edges%decomp_info%decomp_domain, LBOUND(p_patch%edges% &
++    &  decomp_info%decomp_domain), UBOUND(p_patch%edges%decomp_info%decomp_domain))
++    CALL ftg_write("p_patch%edges%decomp_info%glb_index", p_patch%edges%decomp_info%glb_index, LBOUND(p_patch%edges%decomp_info% &
++    &  glb_index), UBOUND(p_patch%edges%decomp_info%glb_index))
++    IF (ALLOCATED(p_patch%edges%dual_normal_cell)) THEN
++      CALL ftg_register_only("p_patch%edges%dual_normal_cell", "TYPE(t_tangent_vectors)", LBOUND(p_patch%edges%dual_normal_cell), &
++      &  UBOUND(p_patch%edges%dual_normal_cell))
++    END IF
++    CALL ftg_write("p_patch%edges%dual_normal_cell%v1", p_patch%edges%dual_normal_cell%v1, LBOUND(p_patch%edges%dual_normal_cell% &
++    &  v1), UBOUND(p_patch%edges%dual_normal_cell%v1))
++    CALL ftg_write("p_patch%edges%dual_normal_cell%v2", p_patch%edges%dual_normal_cell%v2, LBOUND(p_patch%edges%dual_normal_cell% &
++    &  v2), UBOUND(p_patch%edges%dual_normal_cell%v2))
++    IF (ALLOCATED(p_patch%edges%primal_normal_cell)) THEN
++      CALL ftg_register_only("p_patch%edges%primal_normal_cell", "TYPE(t_tangent_vectors)", LBOUND(p_patch%edges% &
++      &  primal_normal_cell), UBOUND(p_patch%edges%primal_normal_cell))
++    END IF
++    CALL ftg_write("p_patch%edges%primal_normal_cell%v1", p_patch%edges%primal_normal_cell%v1, LBOUND(p_patch%edges% &
++    &  primal_normal_cell%v1), UBOUND(p_patch%edges%primal_normal_cell%v1))
++    CALL ftg_write("p_patch%edges%primal_normal_cell%v2", p_patch%edges%primal_normal_cell%v2, LBOUND(p_patch%edges% &
++    &  primal_normal_cell%v2), UBOUND(p_patch%edges%primal_normal_cell%v2))
++    CALL ftg_register_only("p_patch%verts%decomp_info", "TYPE(t_grid_domain_decomp_info)")
++    CALL ftg_write("p_patch%verts%decomp_info%decomp_domain", p_patch%verts%decomp_info%decomp_domain, LBOUND(p_patch%verts% &
++    &  decomp_info%decomp_domain), UBOUND(p_patch%verts%decomp_info%decomp_domain))
++    CALL ftg_write("p_patch%verts%decomp_info%glb_index", p_patch%verts%decomp_info%glb_index, LBOUND(p_patch%verts%decomp_info% &
++    &  glb_index), UBOUND(p_patch%verts%decomp_info%glb_index))
 +    CALL ftg_register_only("prep_adv", "TYPE(t_prepare_adv)")
 +    CALL ftg_write("prep_adv%mass_flx_ic", prep_adv%mass_flx_ic, LBOUND(prep_adv%mass_flx_ic), UBOUND(prep_adv%mass_flx_ic))
 +    CALL ftg_write("prep_adv%mass_flx_me", prep_adv%mass_flx_me, LBOUND(prep_adv%mass_flx_me), UBOUND(prep_adv%mass_flx_me))
@@ -1357,11 +1347,9 @@
 +    CALL ftg_write("mo_parallel_config__icon_comm_method", mo_parallel_config__icon_comm_method)
 +    CALL ftg_write("mo_dynamics_config__idiv_method", mo_dynamics_config__idiv_method)
 +    CALL ftg_write("mo_nonhydrostatic_config__igradp_method", mo_nonhydrostatic_config__igradp_method)
-+    CALL ftg_write("mo_parallel_config__iorder_sendrecv", mo_parallel_config__iorder_sendrecv)
 +    CALL ftg_write("mo_initicon_config__is_iau_active", mo_initicon_config__is_iau_active)
 +    CALL ftg_write("mo_nonhydrostatic_config__itime_scheme", mo_nonhydrostatic_config__itime_scheme)
 +    CALL ftg_write("mo_parallel_config__itype_comm", mo_parallel_config__itype_comm)
-+    CALL ftg_write("mo_parallel_config__itype_exch_barrier", mo_parallel_config__itype_exch_barrier)
 +    CALL ftg_write("mo_nonhydrostatic_config__kstart_dd3d", mo_nonhydrostatic_config__kstart_dd3d, LBOUND( &
 +    &  mo_nonhydrostatic_config__kstart_dd3d), UBOUND(mo_nonhydrostatic_config__kstart_dd3d))
 +    CALL ftg_write("mo_nonhydrostatic_config__kstart_moist", mo_nonhydrostatic_config__kstart_moist, LBOUND( &
@@ -1417,8 +1405,6 @@
 +    CALL ftg_write("mo_icon_comm_lib__this_is_mpi_sequential", mo_icon_comm_lib__this_is_mpi_sequential)
 +    CALL ftg_write("mo_timer__timer_back_traj", mo_timer__timer_back_traj)
 +    CALL ftg_write("mo_timer__timer_barrier", mo_timer__timer_barrier)
-+    CALL ftg_write("mo_timer__timer_exch_data", mo_timer__timer_exch_data)
-+    CALL ftg_write("mo_timer__timer_exch_data_wait", mo_timer__timer_exch_data_wait)
 +    CALL ftg_write("mo_timer__timer_icon_comm_barrier_2", mo_timer__timer_icon_comm_barrier_2)
 +    CALL ftg_write("mo_timer__timer_icon_comm_fillrecv", mo_timer__timer_icon_comm_fillrecv)
 +    CALL ftg_write("mo_timer__timer_icon_comm_fillsend", mo_timer__timer_icon_comm_fillsend)
@@ -1764,4 +1750,6 @@
 +
 +
 +
- END MODULE mo_solve_nonhydro
+ #ifdef _OPENACC
+      SUBROUTINE h2d_solve_nonhydro( nnow, jstep, jg, idiv_method, grf_intmethod_e, lprep_adv, l_vert_nested, is_iau_active, p_nh, prep_adv )
+ 

@@ -1,0 +1,60 @@
+diff --git a/run/exp.eniac_graupel_test b/run/exp.eniac_graupel_test
+index b095d744a..8c817935f 100644
+--- a/run/exp.eniac_graupel_test
++++ b/run/exp.eniac_graupel_test
+@@ -160,7 +160,7 @@ cat > ${atmo_namelist} << EOF
+  ntracer                     =                          5         ! number of advected tracers
+  iforcing                    =                          3         ! forcing of dynamics and transport by parameterized processes
+  msg_level                   =                         10         ! detailed report during integration
+- ltimer                      =                      .TRUE.        ! timer for monitoring the runtime of specific routines
++ ltimer                      =                      .FALSE.        ! timer for monitoring the runtime of specific routines
+  timers_level                =                         10         ! performance timer granularity
+  check_uuid_gracefully       =                      .TRUE.        ! give only warnings for non-matching uuids
+  output                      =                        "nml"       ! main switch for enabling/disabling components of the model output
+@@ -323,26 +323,26 @@ cat > ${atmo_namelist} << EOF
+  tune_minsnowfrac            =                        0.3
+ /
+ 
+-! output_nml: specifies an output stream --------------------------------------
+-&output_nml
+- filetype                    =                          4         ! output format: 2=GRIB2, 4=NETCDFv2
+- dom                         =                          1         ! write domain 1 only
+- output_bounds               =        0., 10000000., 3600.        ! start, end, increment
+- steps_per_file              =                          10         ! number of steps per file
+- mode                        =                          1         ! 1: forecast mode (relative t-axis), 2: climate mode (absolute t-axis)
+- include_last                =                     .FALSE.
+- output_filename             =                    'NWP_LAM'
+- filename_format             = '<output_filename>_DOM<physdom>_<datetime2>_<jfile>' ! file name base
+- output_grid                =                      .TRUE.
+- remap                       =                          1         ! 1: remap to lat-lon grid
+- north_pole                  =                   -170.,40.        ! definition of north_pole for rotated lat-lon grid
+- reg_lon_def                 =              -7.0,0.1,7.0
+- reg_lat_def                 =              -6.5,0.1,6.5
+- ml_varlist='u', 'v', 'w', 'temp', 'qv', 'qc','qi','qr','qs','clcl','clcm','clch', 
+-'group:precip_vars', 'group:additional_precip_vars','tqv','tqc','tqi','group:land_vars','freshsnow','albdif',
+-'rh_2m','u_10m','v_10m','sp_10m','ASODIFD_S','ASODIFU_S','ASODIRD_S','ALHFL_S','ASHFL_S','ASOB_S','ASOB_T',
+- 'ATHB_S','ATHB_T','tmax_2m','tmin_2m','t_2m','pres_sfc','pres_msl','gust10','z_mc'
+-/
++!! output_nml: specifies an output stream --------------------------------------
++!&output_nml
++! filetype                    =                          4         ! output format: 2=GRIB2, 4=NETCDFv2
++! dom                         =                          1         ! write domain 1 only
++! output_bounds               =        0., 10000000., 3600.        ! start, end, increment
++! steps_per_file              =                          10         ! number of steps per file
++! mode                        =                          1         ! 1: forecast mode (relative t-axis), 2: climate mode (absolute t-axis)
++! include_last                =                     .FALSE.
++! output_filename             =                    'NWP_LAM'
++! filename_format             = '<output_filename>_DOM<physdom>_<datetime2>_<jfile>' ! file name base
++! output_grid                =                      .TRUE.
++! remap                       =                          1         ! 1: remap to lat-lon grid
++! north_pole                  =                   -170.,40.        ! definition of north_pole for rotated lat-lon grid
++! reg_lon_def                 =              -7.0,0.1,7.0
++! reg_lat_def                 =              -6.5,0.1,6.5
++! ml_varlist='u', 'v', 'w', 'temp', 'qv', 'qc','qi','qr','qs','clcl','clcm','clch', 
++!'group:precip_vars', 'group:additional_precip_vars','tqv','tqc','tqi','group:land_vars','freshsnow','albdif',
++!'rh_2m','u_10m','v_10m','sp_10m','ASODIFD_S','ASODIFU_S','ASODIRD_S','ALHFL_S','ASHFL_S','ASOB_S','ASOB_T',
++! 'ATHB_S','ATHB_T','tmax_2m','tmin_2m','t_2m','pres_sfc','pres_msl','gust10','z_mc'
++!/
+ 
+ ! radiation_nml: radiation scheme ---------------------------------------------
+ &radiation_nml

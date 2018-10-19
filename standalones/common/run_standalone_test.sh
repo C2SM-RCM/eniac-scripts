@@ -54,7 +54,7 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Configure build
   run_command echo "Configuring standalone ..." || exit 1
-  run_command ./configure --with-fortran="${compiler_target}" >& standalone_configure.log || exit 1
+  run_command ./configure --with-fortran="${compiler_target}_standalone" >& standalone_configure.log || exit 1
   # Tune configuration for standalone
   ${commondir}/tune_configuration.sh
 
@@ -75,7 +75,7 @@ if [[ ${run_next_part} -eq 1 ]]; then
   else
     run_command mkdir "${tmpexpdir}" || exit 1
   fi
-  run_command rsync -aqv "${datadir}/experiments" "${workdir}" || exit 1
+  run_command rsync -aqv --delete "${datadir}/experiments" "${workdir}" || exit 1
   run_command cp ${commondir}/submit.sh ${expdir} || exit 1
   run_command pushd ${expdir} > /dev/null || exit 1
   run_command rsync -aqvL ../$(basename $expdir) "${tmpexpdir}" || exit

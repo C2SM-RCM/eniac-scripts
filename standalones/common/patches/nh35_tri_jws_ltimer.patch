@@ -1,0 +1,13 @@
+diff --git a/run/exp.nh35_tri_jws b/run/exp.nh35_tri_jws
+index 6da5ae51a..40b29dd73 100644
+--- a/run/exp.nh35_tri_jws
++++ b/run/exp.nh35_tri_jws
+@@ -84,7 +84,7 @@ cat > ${atmo_namelist} << EOF
+  ntracer          = 0                ! no tracers
+  msg_level        = 10               ! detailed report during integration
+  output           ="nml",
+- ltimer           = .TRUE.
++ ltimer           = .FALSE.
+  timers_level     = 10
+  activate_sync_timers = .TRUE.
+  profiling_output = 3

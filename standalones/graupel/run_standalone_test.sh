@@ -15,6 +15,8 @@ slave="$1"
 compiler="$2"
 target="$3"
 datadir="$4"
+expname="eniac_graupel_test"
+mpitasks=2
 
 # Environment setup
 testroutine="graupel"

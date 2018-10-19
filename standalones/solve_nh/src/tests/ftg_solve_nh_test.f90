@@ -15,57 +15,55 @@ PROGRAM ftg_solve_nh_test
   &  ftg_allocate_and_read_allocatable
   
   USE mo_dynamics_config, ONLY: mo_dynamics_config__idiv_method => idiv_method
-  USE mo_run_config, ONLY: mo_run_config__timers_level => timers_level, mo_run_config__ltimer => ltimer, mo_run_config__lvert_nest &
+  USE mo_run_config, ONLY: mo_run_config__ltimer => ltimer, mo_run_config__timers_level => timers_level, mo_run_config__lvert_nest &
   &  => lvert_nest
   USE mo_initicon_config, ONLY: mo_initicon_config__is_iau_active => is_iau_active, mo_initicon_config__iau_wgt_dyn => iau_wgt_dyn
+  USE mo_interpol_config, ONLY: mo_interpol_config__lsq_high_ord => lsq_high_ord, mo_interpol_config__lsq_high_set => &
+  &  lsq_high_set, mo_interpol_config__nudge_max_coeff => nudge_max_coeff, t_lsq_set
   USE mo_sync, ONLY: mo_sync__log_unit => log_unit, mo_sync__do_sync_checks => do_sync_checks
   USE mo_init_vgrid, ONLY: mo_init_vgrid__nflatlev => nflatlev
-  USE mo_vertical_coord_table, ONLY: mo_vertical_coord_table__vct_a => vct_a
-  USE mo_interpol_config, ONLY: mo_interpol_config__lsq_high_set => lsq_high_set, mo_interpol_config__nudge_max_coeff => &
-  &  nudge_max_coeff, mo_interpol_config__lsq_high_ord => lsq_high_ord, t_lsq_set
-  USE mo_nonhydrostatic_config, ONLY: mo_nonhydrostatic_config__divdamp_type => divdamp_type, &
-  &  mo_nonhydrostatic_config__veladv_offctr => veladv_offctr, mo_nonhydrostatic_config__l_open_ubc => l_open_ubc, &
-  &  mo_nonhydrostatic_config__ndyn_substeps_var => ndyn_substeps_var, mo_nonhydrostatic_config__itime_scheme => itime_scheme, &
-  &  mo_nonhydrostatic_config__kstart_moist => kstart_moist, mo_nonhydrostatic_config__kstart_dd3d => kstart_dd3d, &
+  USE mo_nonhydrostatic_config, ONLY: mo_nonhydrostatic_config__lextra_diffu => lextra_diffu, &
+  &  mo_nonhydrostatic_config__divdamp_type => divdamp_type, mo_nonhydrostatic_config__rayleigh_type => rayleigh_type, &
+  &  mo_nonhydrostatic_config__veladv_offctr => veladv_offctr, mo_nonhydrostatic_config__kstart_moist => kstart_moist, &
+  &  mo_nonhydrostatic_config__kstart_dd3d => kstart_dd3d, mo_nonhydrostatic_config__ndyn_substeps_var => ndyn_substeps_var, &
   &  mo_nonhydrostatic_config__divdamp_order => divdamp_order, mo_nonhydrostatic_config__divdamp_fac_o2 => divdamp_fac_o2, &
-  &  mo_nonhydrostatic_config__rhotheta_offctr => rhotheta_offctr, mo_nonhydrostatic_config__iadv_rhotheta => iadv_rhotheta, &
-  &  mo_nonhydrostatic_config__lextra_diffu => lextra_diffu, mo_nonhydrostatic_config__rayleigh_type => rayleigh_type, &
   &  mo_nonhydrostatic_config__lhdiff_rcf => lhdiff_rcf, mo_nonhydrostatic_config__igradp_method => igradp_method, &
-  &  mo_nonhydrostatic_config__divdamp_fac => divdamp_fac
-  USE mo_timer, ONLY: mo_timer__timer_exch_data_wait => timer_exch_data_wait, mo_timer__timer_icon_comm_wait => &
-  &  timer_icon_comm_wait, mo_timer__timer_icon_comm_fillrecv => timer_icon_comm_fillrecv, mo_timer__timer_icon_comm_fillsend => &
-  &  timer_icon_comm_fillsend, mo_timer__timer_solve_nh_vnupd => timer_solve_nh_vnupd, mo_timer__timer_icon_comm_ircv => &
-  &  timer_icon_comm_ircv, mo_timer__timer_icon_comm_sync => timer_icon_comm_sync, mo_timer__timer_icon_comm_barrier_2 => &
-  &  timer_icon_comm_barrier_2, mo_timer__timer_solve_nh_cellcomp => timer_solve_nh_cellcomp, mo_timer__timer_exch_data => &
-  &  timer_exch_data, mo_timer__timer_back_traj => timer_back_traj, mo_timer__timer_solve_nh_exch => timer_solve_nh_exch, &
-  &  mo_timer__timer_solve_nh => timer_solve_nh, mo_timer__timer_intp => timer_intp, mo_timer__timer_barrier => timer_barrier, &
-  &  mo_timer__timer_solve_nh_edgecomp => timer_solve_nh_edgecomp, mo_timer__timer_solve_nh_veltend => timer_solve_nh_veltend, &
-  &  mo_timer__timer_solve_nh_vimpl => timer_solve_nh_vimpl
-  USE mo_advection_config, ONLY: mo_advection_config__zeta => zeta, mo_advection_config__advection_config => advection_config, &
-  &  mo_advection_config__eta => eta, mo_advection_config__wgt_zeta => wgt_zeta, mo_advection_config__shape_func => shape_func, &
-  &  mo_advection_config__wgt_eta => wgt_eta, t_advection_config
-  USE mo_icon_comm_lib, ONLY: mo_icon_comm_lib__recv_procs_buffer => recv_procs_buffer, mo_icon_comm_lib__send_buffer => &
-  &  send_buffer, mo_icon_comm_lib__this_is_mpi_sequential => this_is_mpi_sequential, mo_icon_comm_lib__comm_variable => &
-  &  comm_variable, mo_icon_comm_lib__active_comm_variables => active_comm_variables, mo_icon_comm_lib__log_file_id => &
-  &  log_file_id, mo_icon_comm_lib__comm_lib_is_initialized => comm_lib_is_initialized, mo_icon_comm_lib__send_procs_buffer => &
-  &  send_procs_buffer, mo_icon_comm_lib__recv_buffer => recv_buffer, mo_icon_comm_lib__max_send_buffer_size => &
-  &  max_send_buffer_size, mo_icon_comm_lib__active_recv_buffers => active_recv_buffers, mo_icon_comm_lib__active_send_buffers => &
-  &  active_send_buffers, mo_icon_comm_lib__buffer_comm_status => buffer_comm_status, mo_icon_comm_lib__my_work_communicator => &
-  &  my_work_communicator, mo_icon_comm_lib__max_active_comm_variables => max_active_comm_variables, &
-  &  mo_icon_comm_lib__grid_comm_pattern_list => grid_comm_pattern_list, t_comm_process_buffer, t_comm_variable_real, &
-  &  t_grid_comm_pattern
+  &  mo_nonhydrostatic_config__itime_scheme => itime_scheme, mo_nonhydrostatic_config__divdamp_fac => divdamp_fac, &
+  &  mo_nonhydrostatic_config__rhotheta_offctr => rhotheta_offctr, mo_nonhydrostatic_config__l_open_ubc => l_open_ubc, &
+  &  mo_nonhydrostatic_config__iadv_rhotheta => iadv_rhotheta
+  USE mo_timer, ONLY: mo_timer__timer_solve_nh_cellcomp => timer_solve_nh_cellcomp, mo_timer__timer_solve_nh => timer_solve_nh, &
+  &  mo_timer__timer_solve_nh_vimpl => timer_solve_nh_vimpl, mo_timer__timer_icon_comm_wait => timer_icon_comm_wait, &
+  &  mo_timer__timer_icon_comm_fillrecv => timer_icon_comm_fillrecv, mo_timer__timer_solve_nh_edgecomp => timer_solve_nh_edgecomp, &
+  &  mo_timer__timer_solve_nh_veltend => timer_solve_nh_veltend, mo_timer__timer_icon_comm_fillsend => timer_icon_comm_fillsend, &
+  &  mo_timer__timer_solve_nh_vnupd => timer_solve_nh_vnupd, mo_timer__timer_icon_comm_ircv => timer_icon_comm_ircv, &
+  &  mo_timer__timer_back_traj => timer_back_traj, mo_timer__timer_barrier => timer_barrier, mo_timer__timer_solve_nh_exch => &
+  &  timer_solve_nh_exch, mo_timer__timer_icon_comm_sync => timer_icon_comm_sync, mo_timer__timer_icon_comm_barrier_2 => &
+  &  timer_icon_comm_barrier_2, mo_timer__timer_intp => timer_intp
+  USE mo_vertical_coord_table, ONLY: mo_vertical_coord_table__vct_a => vct_a
+  USE mo_advection_config, ONLY: mo_advection_config__zeta => zeta, mo_advection_config__wgt_zeta => wgt_zeta, &
+  &  mo_advection_config__eta => eta, mo_advection_config__advection_config => advection_config, mo_advection_config__wgt_eta => &
+  &  wgt_eta, mo_advection_config__shape_func => shape_func, t_advection_config
+  USE mo_icon_comm_lib, ONLY: mo_icon_comm_lib__active_send_buffers => active_send_buffers, mo_icon_comm_lib__comm_variable => &
+  &  comm_variable, mo_icon_comm_lib__log_file_id => log_file_id, mo_icon_comm_lib__my_work_communicator => my_work_communicator, &
+  &  mo_icon_comm_lib__comm_lib_is_initialized => comm_lib_is_initialized, mo_icon_comm_lib__max_send_buffer_size => &
+  &  max_send_buffer_size, mo_icon_comm_lib__recv_buffer => recv_buffer, mo_icon_comm_lib__send_procs_buffer => send_procs_buffer, &
+  &  mo_icon_comm_lib__this_is_mpi_sequential => this_is_mpi_sequential, mo_icon_comm_lib__active_comm_variables => &
+  &  active_comm_variables, mo_icon_comm_lib__send_buffer => send_buffer, mo_icon_comm_lib__max_active_comm_variables => &
+  &  max_active_comm_variables, mo_icon_comm_lib__buffer_comm_status => buffer_comm_status, &
+  &  mo_icon_comm_lib__grid_comm_pattern_list => grid_comm_pattern_list, mo_icon_comm_lib__recv_procs_buffer => recv_procs_buffer, &
+  &  mo_icon_comm_lib__active_recv_buffers => active_recv_buffers, t_comm_process_buffer, t_comm_variable_real, t_grid_comm_pattern
   USE mo_vertical_grid, ONLY: mo_vertical_grid__nflat_gradp => nflat_gradp, mo_vertical_grid__nrdmax => nrdmax
-  USE mo_parallel_config, ONLY: mo_parallel_config__icon_comm_debug => icon_comm_debug, mo_parallel_config__n_ghost_rows => &
-  &  n_ghost_rows, mo_parallel_config__iorder_sendrecv => iorder_sendrecv, mo_parallel_config__sync_barrier_mode => &
-  &  sync_barrier_mode, mo_parallel_config__p_test_run => p_test_run, mo_parallel_config__nproma => nproma, &
-  &  mo_parallel_config__max_mpi_message_size => max_mpi_message_size, mo_parallel_config__max_no_of_comm_variables => &
-  &  max_no_of_comm_variables, mo_parallel_config__itype_comm => itype_comm, mo_parallel_config__use_dycore_barrier => &
-  &  use_dycore_barrier, mo_parallel_config__icon_comm_method => icon_comm_method, mo_parallel_config__l_log_checks => &
-  &  l_log_checks, mo_parallel_config__itype_exch_barrier => itype_exch_barrier, mo_parallel_config__use_icon_comm => use_icon_comm
+  USE mo_parallel_config, ONLY: mo_parallel_config__max_no_of_comm_variables => max_no_of_comm_variables, &
+  &  mo_parallel_config__itype_comm => itype_comm, mo_parallel_config__use_icon_comm => use_icon_comm, &
+  &  mo_parallel_config__sync_barrier_mode => sync_barrier_mode, mo_parallel_config__nproma => nproma, &
+  &  mo_parallel_config__icon_comm_method => icon_comm_method, mo_parallel_config__icon_comm_debug => icon_comm_debug, &
+  &  mo_parallel_config__l_log_checks => l_log_checks, mo_parallel_config__n_ghost_rows => n_ghost_rows, &
+  &  mo_parallel_config__use_dycore_barrier => use_dycore_barrier, mo_parallel_config__max_mpi_message_size => &
+  &  max_mpi_message_size, mo_parallel_config__p_test_run => p_test_run
   USE mo_grid_config, ONLY: mo_grid_config__l_limited_area => l_limited_area
   USE mo_gridref_config, ONLY: mo_gridref_config__grf_intmethod_e => grf_intmethod_e
-  USE mo_advection_utils, ONLY: mo_advection_utils__ptr_delp_mc_new => ptr_delp_mc_new, mo_advection_utils__ptr_delp_mc_now => &
-  &  ptr_delp_mc_now
+  USE mo_advection_utils, ONLY: mo_advection_utils__ptr_delp_mc_now => ptr_delp_mc_now, mo_advection_utils__ptr_delp_mc_new => &
+  &  ptr_delp_mc_new
   
   USE mo_interpol_config, ONLY: t_lsq_set
   USE mo_nh_prepadv_types, ONLY: t_prepare_adv
@@ -335,78 +333,6 @@ CONTAINS
     CALL ftg_allocate_and_read_allocatable("p_patch%cells%start_blk", p_patch%cells%start_blk, ftg_rperturb)
     CALL ftg_allocate_and_read_allocatable("p_patch%cells%start_block", p_patch%cells%start_block, ftg_rperturb)
     CALL ftg_allocate_and_read_allocatable("p_patch%cells%start_index", p_patch%cells%start_index, ftg_rperturb)
-    CALL ftg_read("p_patch%comm_pat_c%n_pnts", p_patch%comm_pat_c%n_pnts)
-    CALL ftg_read("p_patch%comm_pat_c%n_recv", p_patch%comm_pat_c%n_recv)
-    CALL ftg_read("p_patch%comm_pat_c%n_send", p_patch%comm_pat_c%n_send)
-    CALL ftg_read("p_patch%comm_pat_c%np_recv", p_patch%comm_pat_c%np_recv)
-    CALL ftg_read("p_patch%comm_pat_c%np_send", p_patch%comm_pat_c%np_send)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%pelist_recv", p_patch%comm_pat_c%pelist_recv, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%pelist_send", p_patch%comm_pat_c%pelist_send, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%recv_count", p_patch%comm_pat_c%recv_count, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%recv_dst_blk", p_patch%comm_pat_c%recv_dst_blk, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%recv_dst_idx", p_patch%comm_pat_c%recv_dst_idx, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%recv_limits", p_patch%comm_pat_c%recv_limits, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%recv_src", p_patch%comm_pat_c%recv_src, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%recv_startidx", p_patch%comm_pat_c%recv_startidx, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%send_count", p_patch%comm_pat_c%send_count, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%send_limits", p_patch%comm_pat_c%send_limits, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%send_src_blk", p_patch%comm_pat_c%send_src_blk, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%send_src_idx", p_patch%comm_pat_c%send_src_idx, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c%send_startidx", p_patch%comm_pat_c%send_startidx, ftg_rperturb)
-    CALL ftg_read("p_patch%comm_pat_c1%n_pnts", p_patch%comm_pat_c1%n_pnts)
-    CALL ftg_read("p_patch%comm_pat_c1%n_recv", p_patch%comm_pat_c1%n_recv)
-    CALL ftg_read("p_patch%comm_pat_c1%n_send", p_patch%comm_pat_c1%n_send)
-    CALL ftg_read("p_patch%comm_pat_c1%np_recv", p_patch%comm_pat_c1%np_recv)
-    CALL ftg_read("p_patch%comm_pat_c1%np_send", p_patch%comm_pat_c1%np_send)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%pelist_recv", p_patch%comm_pat_c1%pelist_recv, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%pelist_send", p_patch%comm_pat_c1%pelist_send, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%recv_count", p_patch%comm_pat_c1%recv_count, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%recv_dst_blk", p_patch%comm_pat_c1%recv_dst_blk, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%recv_dst_idx", p_patch%comm_pat_c1%recv_dst_idx, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%recv_limits", p_patch%comm_pat_c1%recv_limits, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%recv_src", p_patch%comm_pat_c1%recv_src, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%recv_startidx", p_patch%comm_pat_c1%recv_startidx, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%send_count", p_patch%comm_pat_c1%send_count, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%send_limits", p_patch%comm_pat_c1%send_limits, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%send_src_blk", p_patch%comm_pat_c1%send_src_blk, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%send_src_idx", p_patch%comm_pat_c1%send_src_idx, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_c1%send_startidx", p_patch%comm_pat_c1%send_startidx, ftg_rperturb)
-    CALL ftg_read("p_patch%comm_pat_e%n_pnts", p_patch%comm_pat_e%n_pnts)
-    CALL ftg_read("p_patch%comm_pat_e%n_recv", p_patch%comm_pat_e%n_recv)
-    CALL ftg_read("p_patch%comm_pat_e%n_send", p_patch%comm_pat_e%n_send)
-    CALL ftg_read("p_patch%comm_pat_e%np_recv", p_patch%comm_pat_e%np_recv)
-    CALL ftg_read("p_patch%comm_pat_e%np_send", p_patch%comm_pat_e%np_send)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%pelist_recv", p_patch%comm_pat_e%pelist_recv, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%pelist_send", p_patch%comm_pat_e%pelist_send, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%recv_count", p_patch%comm_pat_e%recv_count, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%recv_dst_blk", p_patch%comm_pat_e%recv_dst_blk, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%recv_dst_idx", p_patch%comm_pat_e%recv_dst_idx, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%recv_limits", p_patch%comm_pat_e%recv_limits, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%recv_src", p_patch%comm_pat_e%recv_src, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%recv_startidx", p_patch%comm_pat_e%recv_startidx, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%send_count", p_patch%comm_pat_e%send_count, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%send_limits", p_patch%comm_pat_e%send_limits, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%send_src_blk", p_patch%comm_pat_e%send_src_blk, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%send_src_idx", p_patch%comm_pat_e%send_src_idx, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_e%send_startidx", p_patch%comm_pat_e%send_startidx, ftg_rperturb)
-    CALL ftg_read("p_patch%comm_pat_v%n_pnts", p_patch%comm_pat_v%n_pnts)
-    CALL ftg_read("p_patch%comm_pat_v%n_recv", p_patch%comm_pat_v%n_recv)
-    CALL ftg_read("p_patch%comm_pat_v%n_send", p_patch%comm_pat_v%n_send)
-    CALL ftg_read("p_patch%comm_pat_v%np_recv", p_patch%comm_pat_v%np_recv)
-    CALL ftg_read("p_patch%comm_pat_v%np_send", p_patch%comm_pat_v%np_send)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%pelist_recv", p_patch%comm_pat_v%pelist_recv, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%pelist_send", p_patch%comm_pat_v%pelist_send, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%recv_count", p_patch%comm_pat_v%recv_count, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%recv_dst_blk", p_patch%comm_pat_v%recv_dst_blk, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%recv_dst_idx", p_patch%comm_pat_v%recv_dst_idx, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%recv_limits", p_patch%comm_pat_v%recv_limits, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%recv_src", p_patch%comm_pat_v%recv_src, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%recv_startidx", p_patch%comm_pat_v%recv_startidx, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%send_count", p_patch%comm_pat_v%send_count, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%send_limits", p_patch%comm_pat_v%send_limits, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%send_src_blk", p_patch%comm_pat_v%send_src_blk, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%send_src_idx", p_patch%comm_pat_v%send_src_idx, ftg_rperturb)
-    CALL ftg_allocate_and_read_allocatable("p_patch%comm_pat_v%send_startidx", p_patch%comm_pat_v%send_startidx, ftg_rperturb)
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%area_edge", p_patch%edges%area_edge, ftg_rperturb)
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%cell_blk", p_patch%edges%cell_blk, ftg_rperturb)
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%cell_idx", p_patch%edges%cell_idx, ftg_rperturb)
@@ -511,11 +437,9 @@ CONTAINS
     CALL ftg_read("mo_parallel_config__icon_comm_method", mo_parallel_config__icon_comm_method)
     CALL ftg_read("mo_dynamics_config__idiv_method", mo_dynamics_config__idiv_method)
     CALL ftg_read("mo_nonhydrostatic_config__igradp_method", mo_nonhydrostatic_config__igradp_method)
-    CALL ftg_read("mo_parallel_config__iorder_sendrecv", mo_parallel_config__iorder_sendrecv)
     CALL ftg_read("mo_initicon_config__is_iau_active", mo_initicon_config__is_iau_active)
     CALL ftg_read("mo_nonhydrostatic_config__itime_scheme", mo_nonhydrostatic_config__itime_scheme)
     CALL ftg_read("mo_parallel_config__itype_comm", mo_parallel_config__itype_comm)
-    CALL ftg_read("mo_parallel_config__itype_exch_barrier", mo_parallel_config__itype_exch_barrier)
     CALL ftg_read("mo_nonhydrostatic_config__kstart_dd3d", mo_nonhydrostatic_config__kstart_dd3d)
     CALL ftg_read("mo_nonhydrostatic_config__kstart_moist", mo_nonhydrostatic_config__kstart_moist)
     CALL ftg_read("mo_grid_config__l_limited_area", mo_grid_config__l_limited_area)
@@ -552,8 +476,6 @@ CONTAINS
     CALL ftg_read("mo_icon_comm_lib__this_is_mpi_sequential", mo_icon_comm_lib__this_is_mpi_sequential)
     CALL ftg_read("mo_timer__timer_back_traj", mo_timer__timer_back_traj)
     CALL ftg_read("mo_timer__timer_barrier", mo_timer__timer_barrier)
-    CALL ftg_read("mo_timer__timer_exch_data", mo_timer__timer_exch_data)
-    CALL ftg_read("mo_timer__timer_exch_data_wait", mo_timer__timer_exch_data_wait)
     CALL ftg_read("mo_timer__timer_icon_comm_barrier_2", mo_timer__timer_icon_comm_barrier_2)
     CALL ftg_read("mo_timer__timer_icon_comm_fillrecv", mo_timer__timer_icon_comm_fillrecv)
     CALL ftg_read("mo_timer__timer_icon_comm_fillsend", mo_timer__timer_icon_comm_fillsend)

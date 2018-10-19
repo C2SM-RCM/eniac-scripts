@@ -1,5 +1,5 @@
---- a/src/configure_model/mo_echam_phy_config.f90	2018-05-16 12:10:43.249187036 +0200
-+++ b/src/configure_model/mo_echam_phy_config.f90	2018-05-16 12:10:41.965619000 +0200
+--- eniac_a/src/configure_model/mo_echam_phy_config.f90	2018-09-12 14:27:13.855063454 +0200
++++ eniac_b/src/configure_model/mo_echam_phy_config.f90	2018-09-12 14:27:01.927638000 +0200
 @@ -217,6 +217,14 @@
    !!
    TYPE(timedelta) , POINTER :: dt_zero

@@ -71,7 +71,7 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Configure build
   run_command echo "Configuring standalone ..." || exit 1
-  run_command ./configure --with-fortran=gcc >& standalone_configure_c.log || exit 1
+  run_command ./configure --with-fortran=gcc_ftg >& standalone_configure_c.log || exit 1
 
   # Build
   run_command echo "Building standalone ..." || exit 1
@@ -109,7 +109,7 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Configure build
   run_command echo "Configuring standalone ..." || exit 1
-  run_command ./configure --with-fortran=gcc >& standalone_configure_r.log || exit 1
+  run_command ./configure --with-fortran=gcc_ftg >& standalone_configure_r.log || exit 1
 
   # Build
   run_command echo "Building standalone ..." || exit 1
@@ -147,9 +147,7 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Configure build
   run_command echo "Configuring standalone ..." || exit 1
-  run_command git checkout config/mh-linux || exit 1
-  run_command patch -p1 <${commondir}/patches/mh-linux_ftg.patch
-  run_command ./configure --with-fortran=gcc >& standalone_configure.log || exit 1
+  run_command ./configure --with-fortran=gcc_standalone >& standalone_configure.log || exit 1
   # Tune configuration for standalone
   ${commondir}/tune_configuration.sh
 
@@ -208,7 +206,7 @@ if [[ ${run_next_part} -eq 1 ]]; then
   # Cleanup generated standalone
   run_command pushd ${standalonedir} > /dev/null || exit 1
   run_command chmod 755 configure || exit 1
-  run_command ./configure --with-fortran=gcc >& /dev/null || exit 1
+  run_command ./configure --with-fortran=gcc_standalone >& /dev/null || exit 1
   run_command make distclean >& /dev/null || exit 1
   run_command popd > /dev/null || exit 1
 

@@ -1,6 +1,6 @@
---- eniac_a/src/atm_phy_schemes/mo_convect_tables.f90	2018-05-31 10:02:25.952665384 +0200
-+++ eniac_b/src/atm_phy_schemes/mo_convect_tables.f90	2018-05-31 10:02:19.980498000 +0200
-@@ -151,6 +151,16 @@
+--- eniac_a/src/atm_phy_schemes/mo_convect_tables.f90	2018-10-18 15:20:01.714376206 +0200
++++ eniac_b/src/atm_phy_schemes/mo_convect_tables.f90	2018-10-18 15:19:56.123905000 +0200
+@@ -153,6 +153,16 @@
  
    !------------------------------------------------------------------------------
  

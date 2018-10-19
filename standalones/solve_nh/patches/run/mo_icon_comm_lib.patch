@@ -1,8 +1,8 @@
---- eniac_a/src/parallel_infrastructure/mo_icon_comm_lib.f90	2018-06-05 16:23:53.000000000 +0200
-+++ eniac_b/src/parallel_infrastructure/mo_icon_comm_lib.f90	2018-06-05 16:22:49.000000000 +0200
-@@ -283,6 +283,17 @@
+--- eniac_a/src/parallel_infrastructure/mo_icon_comm_lib.f90	2018-09-25 11:29:16.917518549 +0200
++++ eniac_b/src/parallel_infrastructure/mo_icon_comm_lib.f90	2018-09-25 11:29:09.683912000 +0200
+@@ -282,6 +282,17 @@
    END INTERFACE
-   
+ 
    !-------------------------------------------------------------------------
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================

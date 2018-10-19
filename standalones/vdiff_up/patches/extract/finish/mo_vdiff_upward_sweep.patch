@@ -1,6 +1,6 @@
---- eniac_a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-05-17 11:53:17.000000000 +0200
-+++ eniac_b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-05-17 13:42:12.220100000 +0200
-@@ -192,7 +192,7 @@
+--- eniac_a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-10-15 11:49:12.957520000 +0200
++++ eniac_b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-10-15 12:25:59.735885494 +0200
+@@ -202,7 +202,7 @@
    USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
    USE mo_mpi,            ONLY: get_my_mpi_all_id
    USE m_ser_ftg,         ONLY: ftg_set_serializer, ftg_add_serializer_metainfo, ignore_bullshit_max_dim_size, &
@@ -9,7 +9,7 @@
    
    CHARACTER(*), INTENT(IN) :: stage, dir
    
-@@ -208,6 +208,7 @@
+@@ -218,6 +218,7 @@
      !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
      !  END IF
      

@@ -27,10 +27,7 @@ specific_patches ()
 }
 
 # Common patches
-patch -p1 <${commondir}/patches/mh-linux_ftg.patch
-if [ ${slave} = "kesch" ]; then
-  patch -p1 < ${commondir}/patches/atm_amip_test_kesch.patch
-fi
+patch -p1 < ${commondir}/patches/${expname}_ltimer.patch
 
 # run specific patches
 patchdir=${scriptdir}/patches/reference

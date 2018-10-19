@@ -10,7 +10,6 @@ fi
 slave="$1"
 compiler="gcc"
 target="cpu"
-datadir="ERROR_DATA_SHOULD_NOT_BE_NEEDED"
 
 # Environment setup
 testroutine="solve_nh"

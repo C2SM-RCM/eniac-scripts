@@ -1,7 +1,7 @@
---- a/src/atm_dyn_iconam/mo_velocity_advection.f90	2018-05-16 13:44:18.766409304 +0200
-+++ b/src/atm_dyn_iconam/mo_velocity_advection.f90	2018-05-16 13:44:18.559899000 +0200
-@@ -74,6 +74,27 @@
- #endif
+--- eniac_a/src/atm_dyn_iconam/mo_velocity_advection.f90	2018-09-21 10:31:00.576442667 +0200
++++ eniac_b/src/atm_dyn_iconam/mo_velocity_advection.f90	2018-09-21 10:30:51.068555000 +0200
+@@ -67,6 +67,27 @@
+   LOGICAL, PARAMETER ::  acc_validate = .FALSE.     !  THIS SHOULD BE .FALSE. AFTER VALIDATION PHASE!
  #endif
  
 +
@@ -28,11 +28,10 @@
    CONTAINS
  
  
-@@ -157,6 +178,16 @@
-     REAL(vp), DIMENSION(:,:,:),   POINTER  :: w_concorr_c_tmp
-     REAL(vp), DIMENSION(:,:,:,:), POINTER  :: ddt_vn_adv_tmp
+@@ -153,6 +174,16 @@
      REAL(vp), DIMENSION(:,:,:,:), POINTER  :: ddt_w_adv_tmp
-+
+ #endif
+ 
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  
 +  ftg_velocity_tendencies_round = ftg_velocity_tendencies_round + 1
@@ -42,10 +41,11 @@
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
 +  
 +
- #endif
++
      !--------------------------------------------------------------------------
  
-@@ -734,6 +765,345 @@
+     IF (timers_level > 5) CALL timer_start(timer_solve_nh_veltend)
+@@ -752,8 +783,347 @@
  
      IF (timers_level > 5) CALL timer_stop(timer_solve_nh_veltend)
  
@@ -390,4 +390,6 @@
 +
 +
 +
- END MODULE mo_velocity_advection
+ #ifdef _OPENACC
+      SUBROUTINE h2d_velocity_tendencies( p_prog, p_diag, z_w_concorr_me, z_kin_hor_e, z_vt_ie )
+        TYPE(t_nh_prog), INTENT(INOUT)            :: p_prog

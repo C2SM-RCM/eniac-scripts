@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-06-15 10:08:28.265789000 +0200
-+++ eniac_b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-06-15 10:08:14.980261000 +0200
+--- eniac_a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-10-15 12:37:01.498183000 +0200
++++ eniac_b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-10-15 12:36:55.589212000 +0200
 @@ -28,6 +28,27 @@
    PRIVATE
    PUBLIC :: vdiff_up
@@ -35,20 +35,20 @@
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  
 +  ftg_vdiff_up_round = ftg_vdiff_up_round + 1
-+  CALL ftg_vdiff_up_capture_input(kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, pcptgz, &
-+  &  pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, &
-+  &  pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
++  CALL ftg_vdiff_up_capture_input(jcs, kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, &
++  &  pcptgz, pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, &
++  &  pkedisp, pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
 +  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
 +  
 +
 +
+     !$acc data &
+     !$acc present(pum1,pvm1,ptm1,pmair,pmref,pqm1,pxlm1,pxim1,pxtm1) &
+     !$acc present(pgeom1,pcptgz,pztottevn,pzthvvar,pcfm_tile,pfrc,aa,bb)   &
+@@ -152,7 +184,328 @@
  
-     !-----------------------------------------------------------------------
-     ! 6. Obtain solution of the tri-diagonal system by back-substitution.
-@@ -142,7 +174,326 @@
-     ! Note: computation of additional diagnostics, e.g., surface sensible heat flux,
-     !       wind stress, 10m wind, 2m temperature etc., has not been implemented yet.
+     !$acc end data
  
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
@@ -103,8 +103,8 @@
 +  
 +END FUNCTION ftg_vdiff_up_capture_input_active
 +
-+SUBROUTINE ftg_vdiff_up_capture_input(kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, pcptgz, &
-+&  pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, &
++SUBROUTINE ftg_vdiff_up_capture_input(jcs, kproma, kbdim, klev, klevm1, ktrac, ksfc_type, idx_wtr, pdtime, pfrc, pcfm_tile, aa, &
++&  pcptgz, pum1, pvm1, ptm1, pmair, pmref, pqm1, pxlm1, pxim1, pxtm1, pgeom1, pztottevn, bb, pzthvvar, pxvar, pz0m_tile, pkedisp, &
 +&  pute_vdf, pvte_vdf, pq_vdf, pqte_vdf, pxlte_vdf, pxite_vdf, pxtte_vdf, pz0m, pthvvar, ptotte, psh_vdiff, pqv_vdiff)
 +  
 +  USE mtime,     ONLY: calendarType
@@ -118,6 +118,7 @@
 +  &  ixv, mo_vdiff_solver__ih => ih
 +  USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
 +  
++  INTEGER, INTENT(in) :: jcs
 +  INTEGER, INTENT(in) :: kproma
 +  INTEGER, INTENT(in) :: kbdim
 +  INTEGER, INTENT(in) :: klev
@@ -174,6 +175,7 @@
 +    CALL ftg_write("ftg_mtime_calendar", calendarType())
 +    
 +    ! BASIC ARGUMENTS
++    CALL ftg_write("jcs", jcs)
 +    CALL ftg_write("kproma", kproma)
 +    CALL ftg_write("kbdim", kbdim)
 +    CALL ftg_write("klev", klev)

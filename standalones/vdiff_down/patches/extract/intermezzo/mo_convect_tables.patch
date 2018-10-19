@@ -1,6 +1,6 @@
---- eniac_a/src/atm_phy_schemes/mo_convect_tables.f90	2018-05-31 09:49:33.000000000 +0200
-+++ eniac_b/src/atm_phy_schemes/mo_convect_tables.f90	2018-05-31 09:57:15.626867000 +0200
-@@ -154,7 +154,9 @@
+--- eniac_a/src/atm_phy_schemes/mo_convect_tables.f90	2018-10-15 13:20:20.000000000 +0200
++++ eniac_b/src/atm_phy_schemes/mo_convect_tables.f90	2018-10-15 13:20:25.391026000 +0200
+@@ -156,7 +156,9 @@
  
    ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
    

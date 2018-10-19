@@ -1,6 +1,6 @@
---- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-05-17 14:15:32.286316447 +0200
-+++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-05-17 13:43:51.145877000 +0200
-@@ -26,6 +26,27 @@
+--- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-10-15 09:38:30.716248845 +0200
++++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-10-15 09:36:28.555522000 +0200
+@@ -27,6 +27,27 @@
    PRIVATE
    PUBLIC :: wind_stress, surface_fluxes, nsurf_diag
  
@@ -28,28 +28,28 @@
  CONTAINS
    !>
    !!
-@@ -422,6 +443,17 @@
- #ifdef HAVE_FC_ATTRIBUTE_CONTIGUOUS
+@@ -424,6 +445,17 @@
      CONTIGUOUS :: pbtile
  #endif
-+
+ 
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  
 +  ftg_nsurf_diag_round = ftg_nsurf_diag_round + 1
-+  CALL ftg_nsurf_diag_capture_input(kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, pocu, &
-+  &  pocv, pzf, pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, pdew2_gbm, &
-+  &  puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
++  CALL ftg_nsurf_diag_capture_input(jcs, kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, &
++  &  pocu, pocv, pzf, pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, &
++  &  pdew2_gbm, puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
 +  
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
 +  
 +
-     !CONSTANTS
-     zhuv          =  10._wp ! 10m
-     zhtq          =   2._wp !  2m
-@@ -561,7 +593,264 @@
-         ptasmin  (jl) = MIN(ptasmin(jl),ptas_gbm(jl))
-     ENDDO
-     
++
+     !$ACC DATA PCOPYIN( pfrc, pqm1, pzf, pzs, pcptgz, pcpt_tile, pbn_tile,     &
+     !$ACC               pbhn_tile, pbh_tile, pbm_tile, pri_tile, ptm1, papm1,  &
+     !$ACC               pxm1, pum1, pvm1, paphm1, pocu, pocv, ptasmax,         &
+@@ -623,7 +655,354 @@
+ 
+   !$ACC END DATA
+ 
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  
@@ -84,7 +84,7 @@
 +    !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
 +    !  END IF
 +    
-+    ignore_bullshit = .FALSE.
++    ignore_bullshit = .FALSE. 
 +    ignore_bullshit_max_dim_size = 100000
 +    ignore_bullshit_allow_negative_indices = .TRUE.
 +    
@@ -103,7 +103,7 @@
 +  
 +END FUNCTION ftg_nsurf_diag_capture_input_active
 +
-+SUBROUTINE ftg_nsurf_diag_capture_input(kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, &
++SUBROUTINE ftg_nsurf_diag_capture_input(jcs, kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, &
 +&  pocu, pocv, pzf, pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, pdew2_gbm, &
 +&  puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
 +  
@@ -113,7 +113,9 @@
 +  
 +  USE mo_echam_convect_tables, ONLY: mo_echam_convect_tables__tlucu => tlucu
 +  USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
++  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
 +  
++  INTEGER, INTENT(in) :: jcs
 +  INTEGER, INTENT(in) :: kproma
 +  INTEGER, INTENT(in) :: kbdim
 +  INTEGER, INTENT(in) :: ksfc_type
@@ -165,6 +167,7 @@
 +    CALL ftg_write("ftg_mtime_calendar", calendarType())
 +    
 +    ! BASIC ARGUMENTS
++    CALL ftg_write("jcs", jcs)
 +    CALL ftg_write("kproma", kproma)
 +    CALL ftg_write("kbdim", kbdim)
 +    CALL ftg_write("ksfc_type", ksfc_type)
@@ -212,6 +215,49 @@
 +    CALL ftg_write("mo_echam_convect_tables__tlucu", mo_echam_convect_tables__tlucu, LBOUND(mo_echam_convect_tables__tlucu), &
 +    &  UBOUND(mo_echam_convect_tables__tlucu))
 +    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      ftg_c = "mo_model_domain__p_patch"
++      CALL ftg_register_only(ftg_c, "TYPE(t_patch)", LBOUND(mo_model_domain__p_patch), UBOUND(mo_model_domain__p_patch))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_cells)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_domain_decomp_info)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info%glb_index'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index, LBOUND(mo_model_domain__p_patch( &
++          &  ftg_d1)%cells%decomp_info%glb_index), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index))
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_edges)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center'
++          CALL ftg_register_only(ftg_c, "TYPE(t_geographical_coordinates)", LBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center), &
++          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center))
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lat'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lat, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
++          &  center%lat), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lat))
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lon'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lon, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
++          &  center%lon), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lon))
++        END IF
++      END DO
++    END IF
++    
 +    
 +    CALL ftg_write("ftg_nsurf_diag_round", ftg_nsurf_diag_round)
 +    
@@ -240,6 +286,7 @@
 +  
 +  USE mo_echam_convect_tables, ONLY: mo_echam_convect_tables__tlucu => tlucu
 +  USE mo_echam_phy_memory, ONLY: mo_echam_phy_memory__cdimissval => cdimissval
++  USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
 +  
 +  REAL(wp), DIMENSION(:), INTENT(in) :: psfcWind_gbm
 +  REAL(wp), DIMENSION(:), INTENT(in) :: ptas_gbm
@@ -290,6 +337,49 @@
 +    CALL ftg_write("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
 +    CALL ftg_write("mo_echam_convect_tables__tlucu", mo_echam_convect_tables__tlucu, LBOUND(mo_echam_convect_tables__tlucu), &
 +    &  UBOUND(mo_echam_convect_tables__tlucu))
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      ftg_c = "mo_model_domain__p_patch"
++      CALL ftg_register_only(ftg_c, "TYPE(t_patch)", LBOUND(mo_model_domain__p_patch), UBOUND(mo_model_domain__p_patch))
++    END IF
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_cells)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_domain_decomp_info)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info%glb_index'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index, LBOUND(mo_model_domain__p_patch( &
++          &  ftg_d1)%cells%decomp_info%glb_index), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index))
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges'
++          CALL ftg_register_only(ftg_c, "TYPE(t_grid_edges)")
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center'
++          CALL ftg_register_only(ftg_c, "TYPE(t_geographical_coordinates)", LBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center), &
++          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center))
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lat'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lat, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
++          &  center%lat), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lat))
++        END IF
++      END DO
++    END IF
++    
++    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
++        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
++          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lon'
++          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lon, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
++          &  center%lon), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lon))
++        END IF
++      END DO
++    END IF
 +    
 +    
 +    CALL ftg_write("ftg_nsurf_diag_round", ftg_nsurf_diag_round)
