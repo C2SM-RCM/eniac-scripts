@@ -15,7 +15,7 @@ if [ "${slave}" = "kesch" ]; then
     module load pgi/17.10
   fi
 elif [ "${slave}" = "daint" ]; then
-  module load cray-python || exit 1
+  module load cray-python/3.6.1.1 || exit 1
 fi
 
 if [ "${compiler}" = "gcc" ]; then
