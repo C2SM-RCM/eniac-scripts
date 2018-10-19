@@ -14,6 +14,8 @@ src/atm_dyn_iconam/mo_velocity_advection.f90
 src/configure_model/mo_advection_config.f90
 src/configure_model/mo_parallel_config.f90
 src/parallel_infrastructure/mo_communication.f90
+src/parallel_infrastructure/mo_communication_orig.f90
+src/parallel_infrastructure/mo_communication_yaxt.f90
 src/parallel_infrastructure/mo_mpi.f90
 src/parallel_infrastructure/mo_sync.f90
 src/shared/mo_fortran_tools.f90
