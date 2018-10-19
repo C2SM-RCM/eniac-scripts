@@ -1,6 +1,6 @@
---- eniac_a/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-15 13:29:39.586806210 +0200
-+++ eniac_b/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-15 13:29:20.450193000 +0200
-@@ -30,6 +30,27 @@
+--- eniac_a/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-18 15:20:01.713218815 +0200
++++ eniac_b/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-18 15:19:56.125335000 +0200
+@@ -31,6 +31,27 @@
    PRIVATE
    PUBLIC :: vdiff_down
  
@@ -28,7 +28,7 @@
  CONTAINS
    !>
    !!
-@@ -192,6 +213,20 @@
+@@ -193,6 +214,20 @@
  
      INTEGER  :: jl, jk
  
@@ -46,13 +46,13 @@
 +  
 +
 +
-     !$acc data &
-     !$acc present(pcoriol,pzf,pzh,pfrc,ptsfc_tile,pocu,pocv,ppsfc) &
-     !$acc present(pum1,pvm1,ptm1,pqm1,pxlm1,pxim1,pxm1,pxtm1) &
-@@ -395,7 +430,612 @@
-                   & aa, bb                             )! in, inout
+ #ifdef _OPENACC
+     CALL message('vdiff_down','ENIAC GPU-info : Update device until rest of ICON is ported!')
+ #endif
+@@ -419,7 +454,612 @@
+     !$acc end data ! ENIAC remove when porting is done
+     !$acc end data ! ENIAC remove when porting is done
  
-   !$acc end data
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
 +  

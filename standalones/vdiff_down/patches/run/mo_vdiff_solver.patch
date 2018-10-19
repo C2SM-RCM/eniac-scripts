@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_echam/mo_vdiff_solver.f90	2018-10-15 13:29:39.587368648 +0200
-+++ eniac_b/src/atm_phy_echam/mo_vdiff_solver.f90	2018-10-15 13:29:20.439389000 +0200
+--- eniac_a/src/atm_phy_echam/mo_vdiff_solver.f90	2018-10-18 15:20:01.713824904 +0200
++++ eniac_b/src/atm_phy_echam/mo_vdiff_solver.f90	2018-10-18 15:19:56.115783000 +0200
 @@ -53,6 +53,14 @@
  
    CHARACTER(len=*), PARAMETER :: thismodule = 'mo_vdiff_solver'
