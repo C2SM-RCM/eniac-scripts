@@ -31,3 +31,11 @@ rm -rf tmp_experiments
 # Remove reference submission script
 rm -f run/dict.atm_amip_test
 rm -f submit_reference.sh
+
+# Remove failed patches .orig and .rej files
+for f in $(find . -type f -name '*.orig');do
+  rm $f;
+done
+for f in $(find . -type f -name '*.rej');do
+  rm $f;
+done
