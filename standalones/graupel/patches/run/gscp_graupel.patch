@@ -1,16 +1,6 @@
-diff --git a/src/atm_phy_schemes/gscp_graupel.f90 b/src/atm_phy_schemes/gscp_graupel.f90
-index 688292ccb..f96769920 100644
---- a/src/atm_phy_schemes/gscp_graupel.f90
-+++ b/src/atm_phy_schemes/gscp_graupel.f90
-@@ -223,6 +223,7 @@ USE gscp_data, ONLY: &          ! all variables are used here
-     do_i,      & !
-     co_i
- #endif
-+USE timing_tools, ONLY: start_loc_timing, end_loc_timing
- 
- !==============================================================================
- 
-@@ -251,6 +252,27 @@ CHARACTER(132) :: message_text = ''
+--- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-10-23 11:43:44.844469333 +0200
++++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-10-23 11:43:38.049730000 +0200
+@@ -251,6 +251,27 @@
  
  !==============================================================================
  
@@ -22,9 +12,9 @@ index 688292ccb..f96769920 100644
 +  INTEGER :: ftg_graupel_capture_round = 1
 +  INTEGER :: ftg_graupel_round = 0
 +  CHARACTER(len=1024) :: ftg_graupel_input_dir = &
-+  '/users/pmarti/ICON/daint/icon-eniac/experiments/eniac_graupel_test/ftg/data/input'
++  '++FTGDATADIR++/data/input'
 +  CHARACTER(len=1024) :: ftg_graupel_output_dir = &
-+  '/users/pmarti/ICON/daint/icon-eniac/experiments/eniac_graupel_test/ftg/data/output'
++  '++FTGDATADIR++/data/output'
 +  
 +  PUBLIC :: ftg_graupel_capture_input_enabled, ftg_graupel_capture_output_enabled, ftg_graupel_capture_round, &
 +  &  ftg_graupel_input_dir, ftg_graupel_output_dir
@@ -38,12 +28,11 @@ index 688292ccb..f96769920 100644
  CONTAINS
  
  !==============================================================================
-@@ -606,6 +628,20 @@ SUBROUTINE graupel     (             &
+@@ -606,6 +628,18 @@
    fxna_cooper(ztx) = 5.0E+0_wp * EXP(0.304_wp * (t0 - ztx))   ! FR: Cooper (1986) used by Greg Thompson(2008)
  
  
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
-+  CALL start_loc_timing("graupel: FTG capture input", 11)
 +  
 +  ftg_graupel_round = ftg_graupel_round + 1
 +  CALL ftg_graupel_capture_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, &
@@ -52,48 +41,24 @@ index 688292ccb..f96769920 100644
 +  &  ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, &
 +  &  ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
 +  
-+  CALL end_loc_timing(11)
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
 +  
 +
  ! Define reciprocal of heat capacity of dry air (at constant pressure vs at constant volume)
  
  #ifdef __COSMO__
-@@ -624,12 +660,15 @@ SUBROUTINE graupel     (             &
-   ENDIF
- #endif
- 
-+  CALL start_loc_timing("graupel: ACC copyin", 12)
-   CALL message('gscp_graupel','ENIAC GPU-info : Update device until rest of ICON is ported!')
-   !$ACC DATA                                                                   &
-   !$ACC PCOPYIN( dz, rho, p )                                                  &
-   !$ACC PCOPY( t, qv, qc, qi, qr, qs, qg, qrsflux, qnc, prr_gsp, prs_gsp,      &
-   !$ACC        prg_gsp )
-+  CALL end_loc_timing(12)
- 
-+  CALL start_loc_timing("graupel: computation", 13)
- !------------------------------------------------------------------------------
- !  Section 1: Initial setting of local and global variables
- !------------------------------------------------------------------------------
-@@ -1744,12 +1783,529 @@ SUBROUTINE graupel     (             &
-   !$ACC END DATA ! ENIAC remove when porting is done
-   !$ACC END DATA ! ENIAC remove when porting is done
- 
-+  CALL end_loc_timing(13)
- !------------------------------------------------------------------------------
+@@ -1748,8 +1782,532 @@
  ! End of subroutine graupel
  !------------------------------------------------------------------------------
  
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
-+  CALL start_loc_timing("graupel: FTG capture output", 14)
 +  
 +  CALL ftg_graupel_capture_output(t, qv, qc, qi, qr, qs, qg, qnc, prr_gsp, prs_gsp, prg_gsp, qrsflux, ddt_tend_t, &
 +  &  ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, &
 +  &  ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, &
 +  &  ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
 +  
-+  CALL end_loc_timing(14)
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
 +  
 +
@@ -149,6 +114,7 @@ index 688292ccb..f96769920 100644
 +  USE mtime,     ONLY: calendarType
 +  USE mo_mpi,    ONLY: get_my_mpi_all_id
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  USE timing_tools, ONLY: start_loc_timing, end_loc_timing
 +  
 +  USE mo_run_config, ONLY: mo_run_config__ldass_lhn => ldass_lhn
 +  USE gscp_data, ONLY: gscp_data__ccsagg => ccsagg, gscp_data__zvzxp => zvzxp, gscp_data__ccsaxp => ccsaxp, gscp_data__ccdvtp => &
@@ -214,6 +180,7 @@ index 688292ccb..f96769920 100644
 +  CHARACTER(len=256) :: ftg_c
 +  
 +  IF (ftg_graupel_capture_input_active()) THEN
++    CALL start_loc_timing("graupel: FTG capture input", 10)
 +    
 +    CALL ftg_graupel_init_for_capture('input', ftg_graupel_input_dir)
 +    CALL ftg_set_savepoint('input')
@@ -382,7 +349,10 @@ index 688292ccb..f96769920 100644
 +    WRITE (0,*) 'FTG FINALIZE INPUT DATA graupel', get_my_mpi_all_id()
 +    CALL ftg_destroy_serializer()
 +    
++    CALL end_loc_timing(10)
 +  END IF
++  
++  CALL start_loc_timing("graupel: computation", 11)
 +  
 +END SUBROUTINE ftg_graupel_capture_input
 +
@@ -402,6 +372,7 @@ index 688292ccb..f96769920 100644
 +  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
 +  USE mo_exception, ONLY: finish
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  USE timing_tools, ONLY: start_loc_timing, end_loc_timing
 +  
 +  USE mo_run_config, ONLY: mo_run_config__ldass_lhn => ldass_lhn
 +  USE gscp_data, ONLY: gscp_data__ccsagg => ccsagg, gscp_data__zvzxp => zvzxp, gscp_data__ccsaxp => ccsaxp, gscp_data__ccdvtp => &
@@ -452,7 +423,10 @@ index 688292ccb..f96769920 100644
 +  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
 +  CHARACTER(len=256) :: ftg_c
 +  
++  CALL end_loc_timing(11)
++  
 +  IF (ftg_graupel_capture_output_active()) THEN
++    CALL start_loc_timing("graupel: FTG capture output", 19)
 +    
 +    CALL ftg_graupel_init_for_capture('output', ftg_graupel_output_dir)
 +    CALL ftg_set_savepoint('output')
@@ -594,6 +568,7 @@ index 688292ccb..f96769920 100644
 +    CALL work_mpi_barrier()
 +    !      CALL finish('FTG EXIT', 'Output captured: graupel', 0)
 +    
++    CALL end_loc_timing(19)
 +  END IF
 +  
 +END SUBROUTINE ftg_graupel_capture_output

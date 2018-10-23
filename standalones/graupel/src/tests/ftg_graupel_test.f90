@@ -29,12 +29,12 @@ PROGRAM ftg_graupel_test
   IMPLICIT NONE
   
   CHARACTER(*), PARAMETER :: INPUT_DIR = &
-  '/users/pmarti/ICON/daint/icon-eniac/experiments/eniac_graupel_test/ftg/data/input'
+  '++FTGDATADIR++/data/input'
   CHARACTER(*), PARAMETER :: OUTPUT_DIR = &
-  '/users/pmarti/ICON/daint/icon-eniac/experiments/eniac_graupel_test/ftg/data/output_test'
+  '++FTGDATADIR++/data/output_test'
   LOGICAL, PARAMETER :: OUTPUT_ENABLED = .TRUE.
   LOGICAL, PARAMETER :: SERIALBOX_DEBUG = .FALSE.
-  REAL, PARAMETER :: ftg_rperturb = 0.0
+  REAL, PARAMETER :: ftg_rperturb = ++FTGPERTURB++
   
   CALL start_mpi('ftg_graupel_test') !ICON
   
@@ -113,13 +113,13 @@ CONTAINS
     &  ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
     CALL ftg_destroy_serializer()
    
-    CALL start_loc_timing("graupel", 10) 
+    CALL start_loc_timing("graupel", 1) 
     CALL graupel(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, qc0, prr_gsp, &
     &  prs_gsp, prg_gsp, qrsflux, l_cv, ldiag_ttend, ldiag_qtend, ddt_tend_t, ddt_tend_qv, ddt_tend_qc, &
     &  ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, ddt_diag_idep, ddt_diag_sdep, &
     &  ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, ddt_diag_smelt, &
     &  ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
-    CALL end_loc_timing(10) 
+    CALL end_loc_timing(1) 
     CALL print_loc_timing()
     
   END SUBROUTINE ftg_test_graupel

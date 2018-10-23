@@ -107,6 +107,9 @@ if [[ ${run_next_part} -eq 1 ]]; then
   # Create copy of original sources to (re)generate patches
   backup_orig_sources
 
+  # Copy required tools
+  run_command cp -r ${commondir}/src . || exit 1
+
   # Configure build
   run_command echo "Configuring standalone ..." || exit 1
   run_command ./configure --with-fortran=gcc_ftg >& standalone_configure_r.log || exit 1

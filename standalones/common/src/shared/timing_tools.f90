@@ -107,6 +107,11 @@ REAL (KIND=dp), SAVE :: rsync(max_timing)
 ! Module procedures in timing_tools
 !==============================================================================
 
+PUBLIC :: init_loc_timing
+PUBLIC :: start_loc_timing
+PUBLIC :: end_loc_timing
+PUBLIC :: print_loc_timing
+
 CONTAINS
 
 !==============================================================================
