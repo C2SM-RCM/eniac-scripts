@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-10-17 15:43:46.437211872 +0200
-+++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-10-17 15:43:40.289090000 +0200
+--- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-10-23 13:04:54.935737750 +0200
++++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-10-23 13:04:48.239037000 +0200
 @@ -251,6 +251,27 @@
  
  !==============================================================================
@@ -47,7 +47,7 @@
  ! Define reciprocal of heat capacity of dry air (at constant pressure vs at constant volume)
  
  #ifdef __COSMO__
-@@ -1654,8 +1688,522 @@
+@@ -1654,8 +1688,532 @@
  ! End of subroutine graupel
  !------------------------------------------------------------------------------
  
@@ -114,6 +114,7 @@
 +  USE mtime,     ONLY: calendarType
 +  USE mo_mpi,    ONLY: get_my_mpi_all_id
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  USE timing_tools, ONLY: start_loc_timing, end_loc_timing
 +  
 +  USE mo_run_config, ONLY: mo_run_config__ldass_lhn => ldass_lhn
 +  USE gscp_data, ONLY: gscp_data__ccsagg => ccsagg, gscp_data__zvzxp => zvzxp, gscp_data__ccsaxp => ccsaxp, gscp_data__ccdvtp => &
@@ -179,6 +180,7 @@
 +  CHARACTER(len=256) :: ftg_c
 +  
 +  IF (ftg_graupel_capture_input_active()) THEN
++    CALL start_loc_timing("graupel: FTG capture input", 10)
 +    
 +    CALL ftg_graupel_init_for_capture('input', ftg_graupel_input_dir)
 +    CALL ftg_set_savepoint('input')
@@ -347,7 +349,10 @@
 +    WRITE (0,*) 'FTG FINALIZE INPUT DATA graupel', get_my_mpi_all_id()
 +    CALL ftg_destroy_serializer()
 +    
++    CALL end_loc_timing(10)
 +  END IF
++  
++  CALL start_loc_timing("graupel: computation", 11)
 +  
 +END SUBROUTINE ftg_graupel_capture_input
 +
@@ -367,6 +372,7 @@
 +  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
 +  USE mo_exception, ONLY: finish
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  USE timing_tools, ONLY: start_loc_timing, end_loc_timing
 +  
 +  USE mo_run_config, ONLY: mo_run_config__ldass_lhn => ldass_lhn
 +  USE gscp_data, ONLY: gscp_data__ccsagg => ccsagg, gscp_data__zvzxp => zvzxp, gscp_data__ccsaxp => ccsaxp, gscp_data__ccdvtp => &
@@ -417,7 +423,10 @@
 +  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
 +  CHARACTER(len=256) :: ftg_c
 +  
++  CALL end_loc_timing(11)
++  
 +  IF (ftg_graupel_capture_output_active()) THEN
++    CALL start_loc_timing("graupel: FTG capture output", 19)
 +    
 +    CALL ftg_graupel_init_for_capture('output', ftg_graupel_output_dir)
 +    CALL ftg_set_savepoint('output')
@@ -559,6 +568,7 @@
 +    CALL work_mpi_barrier()
 +    !      CALL finish('FTG EXIT', 'Output captured: graupel', 0)
 +    
++    CALL end_loc_timing(19)
 +  END IF
 +  
 +END SUBROUTINE ftg_graupel_capture_output
