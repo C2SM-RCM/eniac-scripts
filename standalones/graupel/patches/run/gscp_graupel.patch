@@ -1,6 +1,16 @@
---- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-09-04 08:44:56.272558329 +0200
-+++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-09-04 08:44:47.621976000 +0200
-@@ -251,6 +251,27 @@
+diff --git a/src/atm_phy_schemes/gscp_graupel.f90 b/src/atm_phy_schemes/gscp_graupel.f90
+index 688292ccb..f96769920 100644
+--- a/src/atm_phy_schemes/gscp_graupel.f90
++++ b/src/atm_phy_schemes/gscp_graupel.f90
+@@ -223,6 +223,7 @@ USE gscp_data, ONLY: &          ! all variables are used here
+     do_i,      & !
+     co_i
+ #endif
++USE timing_tools, ONLY: start_loc_timing, end_loc_timing
+ 
+ !==============================================================================
+ 
+@@ -251,6 +252,27 @@ CHARACTER(132) :: message_text = ''
  
  !==============================================================================
  
@@ -12,9 +22,9 @@
 +  INTEGER :: ftg_graupel_capture_round = 1
 +  INTEGER :: ftg_graupel_round = 0
 +  CHARACTER(len=1024) :: ftg_graupel_input_dir = &
-+  '++FTGDATADIR++/data/input'
++  '/users/pmarti/ICON/daint/icon-eniac/experiments/eniac_graupel_test/ftg/data/input'
 +  CHARACTER(len=1024) :: ftg_graupel_output_dir = &
-+  '++FTGDATADIR++/data/output'
++  '/users/pmarti/ICON/daint/icon-eniac/experiments/eniac_graupel_test/ftg/data/output'
 +  
 +  PUBLIC :: ftg_graupel_capture_input_enabled, ftg_graupel_capture_output_enabled, ftg_graupel_capture_round, &
 +  &  ftg_graupel_input_dir, ftg_graupel_output_dir
@@ -28,11 +38,12 @@
  CONTAINS
  
  !==============================================================================
-@@ -606,6 +628,18 @@
+@@ -606,6 +628,20 @@ SUBROUTINE graupel     (             &
    fxna_cooper(ztx) = 5.0E+0_wp * EXP(0.304_wp * (t0 - ztx))   ! FR: Cooper (1986) used by Greg Thompson(2008)
  
  
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  CALL start_loc_timing("graupel: FTG capture input", 11)
 +  
 +  ftg_graupel_round = ftg_graupel_round + 1
 +  CALL ftg_graupel_capture_input(nvec, ke, ivstart, ivend, kstart, idbg, zdt, dz, t, p, rho, qv, qc, qi, qr, qs, qg, qnc, qi0, &
@@ -41,24 +52,48 @@
 +  &  ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, ddt_diag_imelt, &
 +  &  ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
 +  
++  CALL end_loc_timing(11)
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
 +  
 +
  ! Define reciprocal of heat capacity of dry air (at constant pressure vs at constant volume)
  
  #ifdef __COSMO__
-@@ -1747,8 +1781,522 @@
+@@ -624,12 +660,15 @@ SUBROUTINE graupel     (             &
+   ENDIF
+ #endif
+ 
++  CALL start_loc_timing("graupel: ACC copyin", 12)
+   CALL message('gscp_graupel','ENIAC GPU-info : Update device until rest of ICON is ported!')
+   !$ACC DATA                                                                   &
+   !$ACC PCOPYIN( dz, rho, p )                                                  &
+   !$ACC PCOPY( t, qv, qc, qi, qr, qs, qg, qrsflux, qnc, prr_gsp, prs_gsp,      &
+   !$ACC        prg_gsp )
++  CALL end_loc_timing(12)
+ 
++  CALL start_loc_timing("graupel: computation", 13)
+ !------------------------------------------------------------------------------
+ !  Section 1: Initial setting of local and global variables
+ !------------------------------------------------------------------------------
+@@ -1744,12 +1783,529 @@ SUBROUTINE graupel     (             &
+   !$ACC END DATA ! ENIAC remove when porting is done
+   !$ACC END DATA ! ENIAC remove when porting is done
+ 
++  CALL end_loc_timing(13)
+ !------------------------------------------------------------------------------
  ! End of subroutine graupel
  !------------------------------------------------------------------------------
  
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++  CALL start_loc_timing("graupel: FTG capture output", 14)
 +  
 +  CALL ftg_graupel_capture_output(t, qv, qc, qi, qr, qs, qg, qnc, prr_gsp, prs_gsp, prg_gsp, qrsflux, ddt_tend_t, &
 +  &  ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, &
 +  &  ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, &
 +  &  ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
 +  
++  CALL end_loc_timing(14)
 +  ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
 +  
 +

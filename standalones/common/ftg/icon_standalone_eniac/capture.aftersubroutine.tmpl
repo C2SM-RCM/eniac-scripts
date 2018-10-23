@@ -43,6 +43,7 @@
     USE mtime,     ONLY: calendarType
     USE mo_mpi,    ONLY: get_my_mpi_all_id
     USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
+    USE timing_tools, ONLY: start_loc_timing, end_loc_timing
 
     ${globals.imports}
 
@@ -52,6 +53,7 @@
     CHARACTER(len=256) :: ftg_c
 
     IF (ftg_${subroutine.name}_capture_input_active()) THEN
+      CALL start_loc_timing("${subroutine.name}: FTG capture input", 10)
 
       CALL ftg_${subroutine.name}_init_for_capture('input', ftg_${subroutine.name}_input_dir)
       CALL ftg_set_savepoint('input')
@@ -86,6 +88,7 @@
       WRITE (0,*) 'FTG FINALIZE INPUT DATA ${subroutine.name}', get_my_mpi_all_id()
       CALL ftg_destroy_serializer()
 
+      CALL end_loc_timing(10)
     END IF
 
   END SUBROUTINE ftg_${subroutine.name}_capture_input
@@ -103,6 +106,7 @@
     USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
     USE mo_exception, ONLY: finish
     USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
+    USE timing_tools, ONLY: start_loc_timing, end_loc_timing
 
     ${globals.imports}
 
@@ -112,6 +116,7 @@
     CHARACTER(len=256) :: ftg_c
 
     IF (ftg_${subroutine.name}_capture_output_active()) THEN
+      CALL start_loc_timing("${subroutine.name}: FTG capture output", 19)
 
       CALL ftg_${subroutine.name}_init_for_capture('output', ftg_${subroutine.name}_output_dir)
       CALL ftg_set_savepoint('output')
@@ -147,6 +152,7 @@
       CALL work_mpi_barrier()
 !      CALL finish('FTG EXIT', 'Output captured: ${subroutine.name}', 0)
 
+      CALL end_loc_timing(19)
     END IF
 
   END SUBROUTINE ftg_${subroutine.name}_capture_output
