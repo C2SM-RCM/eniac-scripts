@@ -196,6 +196,9 @@
         IF ($aa) THEN
       #end if
       #if $isArray($var)
+\#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_$var)
+        !\$ACC UPDATE HOST($var)
+\#endif
         CALL ftg_write("$var", $var, LBOUND($var), UBOUND($var))
       #else
         CALL ftg_write("$var", $var)
@@ -274,6 +277,9 @@
       $writeVarNameWithFilledIndicesToString($var, "ftg_c", $mandDims, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4")
       #set $filled = $fillIndices($var, $mandDims, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4")
       #if $mandDims < $totalDim($var)
+\#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_$filled)
+        !\$ACC UPDATE HOST($filled)
+\#endif
         CALL ftg_write(ftg_c, $filled, LBOUND($filled), UBOUND($filled))
       #else
         CALL ftg_write(ftg_c, $filled)

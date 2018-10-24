@@ -95,6 +95,9 @@ CONTAINS
     #for $argument in $arguments.all.basic
         #if $isArray($argument)
           CALL ftg_allocate_and_read_allocatable("$argument", $argument, ftg_rperturb)
+\#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_$argument)
+          !\$ACC ENTER DATA COPYIN( $argument )
+\#endif
         #else
           CALL ftg_read("$argument", $argument)
         #end if
@@ -105,6 +108,9 @@ CONTAINS
       IF (PRESENT($argument)) THEN
         #if $isArray($argument)
           CALL ftg_allocate_and_read_allocatable("$argument", $argument, ftg_rperturb)
+\#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_$argument)
+          !\$ACC ENTER DATA COPYIN( $argument )
+\#endif
         #else
           CALL ftg_read("$argument", $argument)
         #end if
