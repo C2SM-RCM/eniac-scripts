@@ -1,0 +1,13 @@
+diff --git a/config/mh-linux b/config/mh-linux
+index 98ae74c09..ead804bbd 100644
+--- a/config/mh-linux
++++ b/config/mh-linux
+@@ -434,7 +434,7 @@ case "$ac_sitename" in
+                         # Setup for standalone run
+                         case "${config_tuning}" in
+                             *standalone)
+-                                FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
++                                FFLAGS      = ${FFLAGS} -D_LOC_TIMING -DFTG_ACC_COPYIN -DFTG_ACC_COPYOUT -I\$(SERIALBOX2ROOT)/include
+                                 OTHER_LIBS  = ${OTHER_LIBS} -L\$(SERIALBOX2ROOT)/lib -l:libSerialboxFortran.a -lstdc++fs -lstdc++
+                                 ;;
+                         esac
