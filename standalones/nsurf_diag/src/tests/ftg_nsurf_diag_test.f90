@@ -3,6 +3,7 @@ PROGRAM ftg_nsurf_diag_test
   
   USE mtime
   USE mo_kind
+  USE timing_tools
   USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
   USE mo_exception,      ONLY: message
   USE mo_mpi,            ONLY: get_my_mpi_all_id, start_mpi, stop_mpi !ICON
@@ -90,9 +91,12 @@ CONTAINS
     &  pdew2_gbm, puas_gbm, pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
     CALL ftg_destroy_serializer()
     
+    CALL start_loc_timing("nsurf_diag", 1)
     CALL nsurf_diag(jcs, kproma, kbdim, ksfc_type, idx_lnd, pfrc, pqm1, ptm1, papm1, paphm1, pxm1, pum1, pvm1, pocu, pocv, pzf, &
     &  pzs, pcptgz, pcpt_tile, pbn_tile, pbhn_tile, pbh_tile, pbm_tile, pri_tile, psfcWind_gbm, ptas_gbm, pdew2_gbm, puas_gbm, &
     &  pvas_gbm, ptasmax, ptasmin, psfcWind_tile, ptas_tile, pdew2_tile, puas_tile, pvas_tile)
+    CALL end_loc_timing(1)
+    CALL print_loc_timing()
     
   END SUBROUTINE ftg_test_nsurf_diag
   
@@ -110,6 +114,8 @@ CONTAINS
     IF (SERIALBOX_DEBUG) THEN
       CALL ftg_print_serializer_debuginfo()
     END IF
+    
+    call init_loc_timing()
     
   END SUBROUTINE ftg_nsurf_diag_init_for_replay
   
@@ -174,36 +180,129 @@ CONTAINS
     CALL ftg_read("ksfc_type", ksfc_type)
     CALL ftg_read("idx_lnd", idx_lnd)
     CALL ftg_allocate_and_read_allocatable("pfrc", pfrc, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pfrc)
+    !$ACC ENTER DATA COPYIN( pfrc )
+#endif
     CALL ftg_allocate_and_read_allocatable("pqm1", pqm1, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pqm1)
+    !$ACC ENTER DATA COPYIN( pqm1 )
+#endif
     CALL ftg_allocate_and_read_allocatable("ptm1", ptm1, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_ptm1)
+    !$ACC ENTER DATA COPYIN( ptm1 )
+#endif
     CALL ftg_allocate_and_read_allocatable("papm1", papm1, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_papm1)
+    !$ACC ENTER DATA COPYIN( papm1 )
+#endif
     CALL ftg_allocate_and_read_allocatable("paphm1", paphm1, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_paphm1)
+    !$ACC ENTER DATA COPYIN( paphm1 )
+#endif
     CALL ftg_allocate_and_read_allocatable("pxm1", pxm1, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pxm1)
+    !$ACC ENTER DATA COPYIN( pxm1 )
+#endif
     CALL ftg_allocate_and_read_allocatable("pum1", pum1, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pum1)
+    !$ACC ENTER DATA COPYIN( pum1 )
+#endif
     CALL ftg_allocate_and_read_allocatable("pvm1", pvm1, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pvm1)
+    !$ACC ENTER DATA COPYIN( pvm1 )
+#endif
     CALL ftg_allocate_and_read_allocatable("pocu", pocu, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pocu)
+    !$ACC ENTER DATA COPYIN( pocu )
+#endif
     CALL ftg_allocate_and_read_allocatable("pocv", pocv, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pocv)
+    !$ACC ENTER DATA COPYIN( pocv )
+#endif
     CALL ftg_allocate_and_read_allocatable("pzf", pzf, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pzf)
+    !$ACC ENTER DATA COPYIN( pzf )
+#endif
     CALL ftg_allocate_and_read_allocatable("pzs", pzs, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pzs)
+    !$ACC ENTER DATA COPYIN( pzs )
+#endif
     CALL ftg_allocate_and_read_allocatable("pcptgz", pcptgz, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pcptgz)
+    !$ACC ENTER DATA COPYIN( pcptgz )
+#endif
     CALL ftg_allocate_and_read_allocatable("pcpt_tile", pcpt_tile, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pcpt_tile)
+    !$ACC ENTER DATA COPYIN( pcpt_tile )
+#endif
     CALL ftg_allocate_and_read_allocatable("pbn_tile", pbn_tile, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pbn_tile)
+    !$ACC ENTER DATA COPYIN( pbn_tile )
+#endif
     CALL ftg_allocate_and_read_allocatable("pbhn_tile", pbhn_tile, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pbhn_tile)
+    !$ACC ENTER DATA COPYIN( pbhn_tile )
+#endif
     CALL ftg_allocate_and_read_allocatable("pbh_tile", pbh_tile, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pbh_tile)
+    !$ACC ENTER DATA COPYIN( pbh_tile )
+#endif
     CALL ftg_allocate_and_read_allocatable("pbm_tile", pbm_tile, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pbm_tile)
+    !$ACC ENTER DATA COPYIN( pbm_tile )
+#endif
     CALL ftg_allocate_and_read_allocatable("pri_tile", pri_tile, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pri_tile)
+    !$ACC ENTER DATA COPYIN( pri_tile )
+#endif
     CALL ftg_allocate_and_read_allocatable("psfcWind_gbm", psfcWind_gbm, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_psfcWind_gbm)
+    !$ACC ENTER DATA COPYIN( psfcWind_gbm )
+#endif
     CALL ftg_allocate_and_read_allocatable("ptas_gbm", ptas_gbm, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_ptas_gbm)
+    !$ACC ENTER DATA COPYIN( ptas_gbm )
+#endif
     CALL ftg_allocate_and_read_allocatable("pdew2_gbm", pdew2_gbm, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pdew2_gbm)
+    !$ACC ENTER DATA COPYIN( pdew2_gbm )
+#endif
     CALL ftg_allocate_and_read_allocatable("puas_gbm", puas_gbm, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_puas_gbm)
+    !$ACC ENTER DATA COPYIN( puas_gbm )
+#endif
     CALL ftg_allocate_and_read_allocatable("pvas_gbm", pvas_gbm, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pvas_gbm)
+    !$ACC ENTER DATA COPYIN( pvas_gbm )
+#endif
     CALL ftg_allocate_and_read_allocatable("ptasmax", ptasmax, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_ptasmax)
+    !$ACC ENTER DATA COPYIN( ptasmax )
+#endif
     CALL ftg_allocate_and_read_allocatable("ptasmin", ptasmin, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_ptasmin)
+    !$ACC ENTER DATA COPYIN( ptasmin )
+#endif
     CALL ftg_allocate_and_read_allocatable("psfcWind_tile", psfcWind_tile, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_psfcWind_tile)
+    !$ACC ENTER DATA COPYIN( psfcWind_tile )
+#endif
     CALL ftg_allocate_and_read_allocatable("ptas_tile", ptas_tile, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_ptas_tile)
+    !$ACC ENTER DATA COPYIN( ptas_tile )
+#endif
     CALL ftg_allocate_and_read_allocatable("pdew2_tile", pdew2_tile, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pdew2_tile)
+    !$ACC ENTER DATA COPYIN( pdew2_tile )
+#endif
     CALL ftg_allocate_and_read_allocatable("puas_tile", puas_tile, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_puas_tile)
+    !$ACC ENTER DATA COPYIN( puas_tile )
+#endif
     CALL ftg_allocate_and_read_allocatable("pvas_tile", pvas_tile, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pvas_tile)
+    !$ACC ENTER DATA COPYIN( pvas_tile )
+#endif
     
     ! OPTIONAL ARGUMENTS
     

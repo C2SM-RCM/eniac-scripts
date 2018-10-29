@@ -8,6 +8,10 @@ run_command echo "Validating standalone output ..."
 # Cleanup results from previous run
 rm -f validation_nproma_${nproma}.result
 rm -f validation_nproma_${nproma}.failed
+rm -rf ${ftgoutputdir}/data/output_test
+
+# Initialized job as failed
+run_command echo "Test was not executed" > validation_nproma_${nproma}.failed || exit 1
 
 if [ "${slave}" = "kesch" ]; then
   module load python/3.6.2-gmvolf-17.02 || exit 1
