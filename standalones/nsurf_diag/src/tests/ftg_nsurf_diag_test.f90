@@ -312,6 +312,9 @@ CONTAINS
     ! GLOBALS
     CALL ftg_read("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
     CALL ftg_read("mo_echam_convect_tables__tlucu", mo_echam_convect_tables__tlucu)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_mo_echam_convect_tables__tlucu)
+    !$ACC ENTER DATA COPYIN( mo_echam_convect_tables__tlucu )
+#endif
     
     ftg_c = "mo_model_domain__p_patch"
     IF (ftg_field_exists(ftg_c)) THEN

@@ -163,6 +163,11 @@ END PROGRAM ftg_${subroutine.name}_test
         #end if
       #else
         CALL ftg_read("$var", $var)
+        #if $isArray($var)
+\#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_$var)
+          !\$ACC ENTER DATA COPYIN( $var )
+\#endif
+        #end if
       #end if
     #else
 

@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-10-29 09:50:28.193473583 +0100
-+++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-10-29 09:50:22.441055000 +0100
+--- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-10-30 10:20:02.610826549 +0100
++++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-10-30 10:19:56.269645000 +0100
 @@ -27,6 +27,27 @@
    PRIVATE
    PUBLIC :: wind_stress, surface_fluxes, nsurf_diag
@@ -43,10 +43,10 @@
 +  
 +
 +
-     !$ACC DATA PCOPYIN( pfrc, pqm1, pzf, pzs, pcptgz, pcpt_tile, pbn_tile,     &
+     !$ACC DATA PRESENT( pfrc, pqm1, pzf, pzs, pcptgz, pcpt_tile, pbn_tile,     &
      !$ACC               pbhn_tile, pbh_tile, pbm_tile, pri_tile, ptm1, papm1,  &
      !$ACC               pxm1, pum1, pvm1, paphm1, pocu, pocv, ptasmax,         &
-@@ -623,7 +655,517 @@
+@@ -623,7 +655,523 @@
  
    !$ACC END DATA
  
@@ -326,7 +326,8 @@
 +          CALL ftg_register_only(ftg_c, "TYPE(t_grid_domain_decomp_info)")
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info%glb_index'
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_cfcc15)
-+          !$ACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index)
++          ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
++          !NOACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index)
 +#endif
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index, LBOUND(mo_model_domain__p_patch( &
 +          &  ftg_d1)%cells%decomp_info%glb_index), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index))
@@ -344,7 +345,8 @@
 +          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center))
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lat'
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_9b3c17)
-+          !$ACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%edges%center%lat)
++          ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
++          !NOACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%edges%center%lat)
 +#endif
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lat, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
 +          &  center%lat), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lat))
@@ -357,7 +359,8 @@
 +        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lon'
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_c5569c)
-+          !$ACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%edges%center%lon)
++          ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
++          !NOACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%edges%center%lon)
 +#endif
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lon, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
 +          &  center%lon), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lon))
@@ -504,7 +507,8 @@
 +          CALL ftg_register_only(ftg_c, "TYPE(t_grid_domain_decomp_info)")
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info%glb_index'
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_cfcc15)
-+          !$ACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index)
++          ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
++          !NOACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index)
 +#endif
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index, LBOUND(mo_model_domain__p_patch( &
 +          &  ftg_d1)%cells%decomp_info%glb_index), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index))
@@ -522,7 +526,8 @@
 +          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center))
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lat'
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_9b3c17)
-+          !$ACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%edges%center%lat)
++          ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
++          !NOACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%edges%center%lat)
 +#endif
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lat, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
 +          &  center%lat), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lat))
@@ -535,7 +540,8 @@
 +        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lon'
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_c5569c)
-+          !$ACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%edges%center%lon)
++          ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
++          !NOACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%edges%center%lon)
 +#endif
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lon, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
 +          &  center%lon), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lon))

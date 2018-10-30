@@ -1,0 +1,67 @@
+diff --git a/config/mh-linux b/config/mh-linux
+index 98ae74c09..3252580d0 100644
+--- a/config/mh-linux
++++ b/config/mh-linux
+@@ -271,7 +271,7 @@ case "$ac_sitename" in
+                         # Setup for standalone run
+                         case "${config_tuning}" in
+                             *standalone)
+-                                FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
++                                FFLAGS      = ${FFLAGS} -D_LOC_TIMING -DFTG_ACC_COPYIN -DFTG_ACC_COPYOUT -I\$(SERIALBOX2ROOT)/include
+                                 OTHER_LIBS  = ${OTHER_LIBS} -L\$(SERIALBOX2ROOT)/lib -l:libSerialboxFortran.a -lstdc++fs -lstdc++
+                                 ;;
+                         esac
+@@ -315,7 +315,7 @@ case "$ac_sitename" in
+                         # Setup for standalone run
+                         case "${config_tuning}" in
+                             *standalone)
+-                                FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
++                                FFLAGS      = ${FFLAGS} -D_LOC_TIMING -DFTG_ACC_COPYIN -DFTG_ACC_COPYOUT -I\$(SERIALBOX2ROOT)/include
+                                 OTHER_LIBS  = ${OTHER_LIBS} -L\$(SERIALBOX2ROOT)/lib -l:libSerialboxFortran.a -lstdc++fs -lstdc++
+                                 ;;
+                         esac
+@@ -382,7 +382,7 @@ case "$ac_sitename" in
+                         # Setup for standalone run
+                         case "${config_tuning}" in
+                             *standalone)
+-                                FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
++                                FFLAGS      = ${FFLAGS} -D_LOC_TIMING -DFTG_ACC_COPYIN -DFTG_ACC_COPYOUT -I\$(SERIALBOX2ROOT)/include
+                                 OTHER_LIBS  = ${OTHER_LIBS} -L\$(SERIALBOX2ROOT)/lib -lSerialboxFortran -lstdc++fs -lstdc++
+                                 ;;
+                         esac
+@@ -434,7 +434,7 @@ case "$ac_sitename" in
+                         # Setup for standalone run
+                         case "${config_tuning}" in
+                             *standalone)
+-                                FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
++                                FFLAGS      = ${FFLAGS} -D_LOC_TIMING -DFTG_ACC_COPYIN -DFTG_ACC_COPYOUT -I\$(SERIALBOX2ROOT)/include
+                                 OTHER_LIBS  = ${OTHER_LIBS} -L\$(SERIALBOX2ROOT)/lib -l:libSerialboxFortran.a -lstdc++fs -lstdc++
+                                 ;;
+                         esac
+@@ -562,7 +562,7 @@ case "$ac_sitename" in
+                         # Setup for standalone run
+                         case "${config_tuning}" in
+                             *standalone)
+-                                FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
++                                FFLAGS      = ${FFLAGS} -D_LOC_TIMING -DFTG_ACC_COPYIN -DFTG_ACC_COPYOUT -I\$(SERIALBOX2ROOT)/include
+                                 OTHER_LIBS  = ${OTHER_LIBS} -L\$(SERIALBOX2ROOT)/lib -l:libSerialboxFortran.a -lstdc++fs -lstdc++
+                                 ;;
+                         esac
+@@ -611,7 +611,7 @@ case "$ac_sitename" in
+                         # Setup for standalone run
+                         case "${config_tuning}" in
+                             *standalone)
+-                                FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
++                                FFLAGS      = ${FFLAGS} -D_LOC_TIMING -DFTG_ACC_COPYIN -DFTG_ACC_COPYOUT -I\$(SERIALBOX2ROOT)/include
+                                 OTHER_LIBS  = ${OTHER_LIBS} -L\$(SERIALBOX2ROOT)/lib \$(SERIALBOX2ROOT)/lib/libSerialboxFortran.a -lstdc++fs -lstdc++
+                                 ;;
+                         esac
+@@ -668,7 +668,7 @@ case "$ac_sitename" in
+                         # Setup for standalone run
+                         case "${config_tuning}" in
+                             *standalone)
+-                                FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
++                                FFLAGS      = ${FFLAGS} -D_LOC_TIMING -DFTG_ACC_COPYIN -DFTG_ACC_COPYOUT -I\$(SERIALBOX2ROOT)/include
+                                 OTHER_LIBS  = ${OTHER_LIBS} -L\$(SERIALBOX2ROOT)/lib -l:libSerialboxFortran.a -lstdc++fs -lstdc++
+                                 ;;
+                         esac
