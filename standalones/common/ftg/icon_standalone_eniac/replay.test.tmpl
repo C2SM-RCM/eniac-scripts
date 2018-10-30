@@ -157,6 +157,9 @@ END PROGRAM ftg_${subroutine.name}_test
             CALL ftg_allocate_and_read_pointer("$var", $var, ftg_rperturb)
         #else
             CALL ftg_allocate_and_read_allocatable("$var", $var, ftg_rperturb)
+\#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_$var)
+          !\$ACC ENTER DATA COPYIN( $var )
+\#endif
         #end if
       #else
         CALL ftg_read("$var", $var)

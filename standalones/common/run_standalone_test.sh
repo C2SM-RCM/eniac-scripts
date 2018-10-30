@@ -107,6 +107,8 @@ if [[ ${run_next_part} -eq 1 ]]; then
     run_command ln -s "${ftgoutputdir}/nproma_${nproma}" "${ftgoutputdir}/data" || exit 1
     run_command ln -s "${ftginputdir}/nproma_${nproma}/input" "${ftgoutputdir}/data/input" || exit 1
     run_command ln -s "${ftginputdir}/nproma_${nproma}/output" "${ftgoutputdir}/data/output" || exit 1
+    # Make sure output test directory is from new run
+    run_command rm -rf ${ftgoutputdir}/data/output_test || exit 1
 
     # Run executable
     run_command echo "Running standalone ..."

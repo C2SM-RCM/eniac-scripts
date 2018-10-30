@@ -280,7 +280,8 @@
         #import hashlib
         #set tmpHash = $hashlib.sha1($filled).hexdigest()[:6]
 \#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_$tmpHash)
-        !\$ACC UPDATE HOST($filled)
+        ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
+        !NOACC UPDATE HOST($filled)
 \#endif
         CALL ftg_write(ftg_c, $filled, LBOUND($filled), UBOUND($filled))
       #else
