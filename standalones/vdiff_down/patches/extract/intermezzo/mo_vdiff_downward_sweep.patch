@@ -1,6 +1,6 @@
---- eniac_a/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-15 13:20:20.000000000 +0200
-+++ eniac_b/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-15 13:20:25.394185000 +0200
-@@ -501,8 +501,10 @@
+--- eniac_a/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-30 11:42:05.836857000 +0100
++++ eniac_b/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-30 11:51:34.471844665 +0100
+@@ -526,8 +526,10 @@
    &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx &
    &  => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
    &  mo_vdiff_solver__iu => iu
@@ -13,28 +13,36 @@
    USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
    USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
    
-@@ -684,7 +686,9 @@
+@@ -890,10 +892,12 @@
      
      
      ! GLOBALS
 +#ifdef __SPLINE_TEST__
+ #if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_convect_tables__dua)
+     !$ACC UPDATE HOST(mo_convect_tables__dua)
+ #endif
      CALL ftg_write("mo_convect_tables__dua", mo_convect_tables__dua, LBOUND(mo_convect_tables__dua), UBOUND(mo_convect_tables__dua))
 +#endif
      IF (ALLOCATED(mo_vdiff_solver__ibtm_mtrx)) THEN
-       CALL ftg_write("mo_vdiff_solver__ibtm_mtrx", mo_vdiff_solver__ibtm_mtrx, LBOUND(mo_vdiff_solver__ibtm_mtrx), UBOUND( &
-       &  mo_vdiff_solver__ibtm_mtrx))
-@@ -715,8 +719,10 @@
-     CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
+ #if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_vdiff_solver__ibtm_mtrx)
+       !$ACC UPDATE HOST(mo_vdiff_solver__ibtm_mtrx)
+@@ -936,6 +940,7 @@
+ #endif
      CALL ftg_write("mo_convect_tables__tlucu", mo_convect_tables__tlucu, LBOUND(mo_convect_tables__tlucu), UBOUND( &
      &  mo_convect_tables__tlucu))
 +#ifdef __SPLINE_TEST__
-     CALL ftg_write("mo_convect_tables__ua", mo_convect_tables__ua, LBOUND(mo_convect_tables__ua), UBOUND(mo_convect_tables__ua))
+ #if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_convect_tables__ua)
+     !$ACC UPDATE HOST(mo_convect_tables__ua)
+ #endif
+@@ -944,6 +949,7 @@
+     !$ACC UPDATE HOST(mo_convect_tables__za)
+ #endif
      CALL ftg_write("mo_convect_tables__za", mo_convect_tables__za, LBOUND(mo_convect_tables__za), UBOUND(mo_convect_tables__za))
 +#endif
      CALL ftg_register_only("mo_echam_vdf_config__echam_vdf_config", "TYPE(t_echam_vdf_config)", LBOUND( &
      &  mo_echam_vdf_config__echam_vdf_config), UBOUND(mo_echam_vdf_config__echam_vdf_config))
-     CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%c_e", mo_echam_vdf_config__echam_vdf_config%c_e, LBOUND( &
-@@ -819,8 +825,10 @@
+ #if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config%c_e)
+@@ -1095,8 +1101,10 @@
    &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx &
    &  => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
    &  mo_vdiff_solver__iu => iu
@@ -47,24 +55,32 @@
    USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
    USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
    
-@@ -906,7 +914,9 @@
+@@ -1275,10 +1283,12 @@
      
      
      ! GLOBALS
 +#ifdef __SPLINE_TEST__
+ #if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_convect_tables__dua)
+     !$ACC UPDATE HOST(mo_convect_tables__dua)
+ #endif
      CALL ftg_write("mo_convect_tables__dua", mo_convect_tables__dua, LBOUND(mo_convect_tables__dua), UBOUND(mo_convect_tables__dua))
 +#endif
      IF (ALLOCATED(mo_vdiff_solver__ibtm_mtrx)) THEN
-       CALL ftg_write("mo_vdiff_solver__ibtm_mtrx", mo_vdiff_solver__ibtm_mtrx, LBOUND(mo_vdiff_solver__ibtm_mtrx), UBOUND( &
-       &  mo_vdiff_solver__ibtm_mtrx))
-@@ -937,8 +947,10 @@
-     CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
+ #if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_vdiff_solver__ibtm_mtrx)
+       !$ACC UPDATE HOST(mo_vdiff_solver__ibtm_mtrx)
+@@ -1321,6 +1331,7 @@
+ #endif
      CALL ftg_write("mo_convect_tables__tlucu", mo_convect_tables__tlucu, LBOUND(mo_convect_tables__tlucu), UBOUND( &
      &  mo_convect_tables__tlucu))
 +#ifdef __SPLINE_TEST__
-     CALL ftg_write("mo_convect_tables__ua", mo_convect_tables__ua, LBOUND(mo_convect_tables__ua), UBOUND(mo_convect_tables__ua))
+ #if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_convect_tables__ua)
+     !$ACC UPDATE HOST(mo_convect_tables__ua)
+ #endif
+@@ -1329,6 +1340,7 @@
+     !$ACC UPDATE HOST(mo_convect_tables__za)
+ #endif
      CALL ftg_write("mo_convect_tables__za", mo_convect_tables__za, LBOUND(mo_convect_tables__za), UBOUND(mo_convect_tables__za))
 +#endif
      CALL ftg_register_only("mo_echam_vdf_config__echam_vdf_config", "TYPE(t_echam_vdf_config)", LBOUND( &
      &  mo_echam_vdf_config__echam_vdf_config), UBOUND(mo_echam_vdf_config__echam_vdf_config))
-     CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%c_e", mo_echam_vdf_config__echam_vdf_config%c_e, LBOUND( &
+ #if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config%c_e)

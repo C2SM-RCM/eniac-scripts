@@ -1,6 +1,6 @@
---- eniac_a/src/tests/ftg_vdiff_down_test.f90	2018-10-15 13:25:22.000000000 +0200
-+++ eniac_b/src/tests/ftg_vdiff_down_test.f90	2018-10-15 13:26:56.465864828 +0200
-@@ -21,8 +21,10 @@
+--- eniac_a/src/tests/ftg_vdiff_down_test.f90	2018-10-30 12:16:53.000000000 +0100
++++ eniac_b/src/tests/ftg_vdiff_down_test.f90	2018-10-30 12:26:15.776127825 +0100
+@@ -22,8 +22,10 @@
    &  mo_vdiff_solver__ibtm_var => ibtm_var, mo_vdiff_solver__ithv => ithv, mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ibtm_mtrx &
    &  => ibtm_mtrx, mo_vdiff_solver__ih => ih, mo_vdiff_solver__itrc_start => itrc_start, mo_vdiff_solver__iv => iv, &
    &  mo_vdiff_solver__iu => iu
@@ -13,24 +13,32 @@
    USE mo_model_domain, ONLY: mo_model_domain__p_patch => p_patch, t_patch
    USE mo_echam_vdiff_params, ONLY: mo_echam_vdiff_params__itop => itop
    
-@@ -349,7 +351,9 @@
+@@ -535,10 +537,12 @@
      
      
      ! GLOBALS
 +#ifdef __SPLINE_TEST__
      CALL ftg_read("mo_convect_tables__dua", mo_convect_tables__dua)
+ #if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_mo_convect_tables__dua)
+     !$ACC ENTER DATA COPYIN( mo_convect_tables__dua )
+ #endif
 +#endif
      CALL ftg_allocate_and_read_allocatable("mo_vdiff_solver__ibtm_mtrx", mo_vdiff_solver__ibtm_mtrx, ftg_rperturb)
-     CALL ftg_allocate_and_read_allocatable("mo_vdiff_solver__ibtm_var", mo_vdiff_solver__ibtm_var, ftg_rperturb)
-     CALL ftg_read("mo_vdiff_solver__ih", mo_vdiff_solver__ih)
-@@ -370,8 +374,10 @@
-     CALL ftg_read("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
-     CALL ftg_read("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
-     CALL ftg_read("mo_convect_tables__tlucu", mo_convect_tables__tlucu)
+ #if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_mo_vdiff_solver__ibtm_mtrx)
+     !$ACC ENTER DATA COPYIN( mo_vdiff_solver__ibtm_mtrx )
+@@ -571,6 +575,7 @@
+ #if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_mo_convect_tables__tlucu)
+     !$ACC ENTER DATA COPYIN( mo_convect_tables__tlucu )
+ #endif
 +#ifdef __SPLINE_TEST__
      CALL ftg_read("mo_convect_tables__ua", mo_convect_tables__ua)
-     CALL ftg_read("mo_convect_tables__za", mo_convect_tables__za)
+ #if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_mo_convect_tables__ua)
+     !$ACC ENTER DATA COPYIN( mo_convect_tables__ua )
+@@ -579,6 +584,7 @@
+ #if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_mo_convect_tables__za)
+     !$ACC ENTER DATA COPYIN( mo_convect_tables__za )
+ #endif
 +#endif
      CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%c_e", mo_echam_vdf_config__echam_vdf_config%c_e)
-     CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%c_f", mo_echam_vdf_config__echam_vdf_config%c_f)
-     CALL ftg_read("mo_echam_vdf_config__echam_vdf_config%c_n", mo_echam_vdf_config__echam_vdf_config%c_n)
+ #if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_mo_echam_vdf_config__echam_vdf_config%c_e)
+     !$ACC ENTER DATA COPYIN( mo_echam_vdf_config__echam_vdf_config%c_e )
