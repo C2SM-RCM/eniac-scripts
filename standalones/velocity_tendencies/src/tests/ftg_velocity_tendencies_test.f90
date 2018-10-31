@@ -3,6 +3,7 @@ PROGRAM ftg_velocity_tendencies_test
   
   USE mtime
   USE mo_kind
+  USE timing_tools
   USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
   USE mo_exception,      ONLY: message
   USE mo_mpi,            ONLY: get_my_mpi_all_id, start_mpi, stop_mpi !ICON
@@ -71,8 +72,11 @@ CONTAINS
     &  ntnd, istep, lvn_only, dtime)
     CALL ftg_destroy_serializer()
     
+    CALL start_loc_timing("velocity_tendencies", 1)
     CALL velocity_tendencies(p_prog, p_patch, p_int, p_metrics, p_diag, z_w_concorr_me, z_kin_hor_e, z_vt_ie, ntnd, istep, &
     &  lvn_only, dtime)
+    CALL end_loc_timing(1)
+    CALL print_loc_timing()
     
   END SUBROUTINE ftg_test_velocity_tendencies
   
@@ -90,6 +94,8 @@ CONTAINS
     IF (SERIALBOX_DEBUG) THEN
       CALL ftg_print_serializer_debuginfo()
     END IF
+    
+    call init_loc_timing()
     
   END SUBROUTINE ftg_velocity_tendencies_init_for_replay
   
@@ -124,8 +130,20 @@ CONTAINS
     
     ! BASIC ARGUMENTS
     CALL ftg_allocate_and_read_allocatable("z_w_concorr_me", z_w_concorr_me, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_z_w_concorr_me)
+    !$ACC ENTER DATA COPYIN( z_w_concorr_me )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("z_kin_hor_e", z_kin_hor_e, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_z_kin_hor_e)
+    !$ACC ENTER DATA COPYIN( z_kin_hor_e )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("z_vt_ie", z_vt_ie, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_z_vt_ie)
+    !$ACC ENTER DATA COPYIN( z_vt_ie )
+#endif
+    
     CALL ftg_read("ntnd", ntnd)
     CALL ftg_read("istep", istep)
     CALL ftg_read("lvn_only", lvn_only)
@@ -137,57 +155,270 @@ CONTAINS
     CALL ftg_allocate_and_read_pointer("p_prog%vn", p_prog%vn, ftg_rperturb)
     CALL ftg_allocate_and_read_pointer("p_prog%w", p_prog%w, ftg_rperturb)
     CALL ftg_read("p_patch%id", p_patch%id)
+    
     CALL ftg_read("p_patch%n_childdom", p_patch%n_childdom)
+    
     CALL ftg_read("p_patch%nblks_c", p_patch%nblks_c)
+    
     CALL ftg_read("p_patch%nblks_e", p_patch%nblks_e)
+    
     CALL ftg_read("p_patch%nblks_v", p_patch%nblks_v)
+    
     CALL ftg_read("p_patch%nlev", p_patch%nlev)
+    
     CALL ftg_read("p_patch%nlevp1", p_patch%nlevp1)
+    
     CALL ftg_read("p_patch%nshift", p_patch%nshift)
+    
     CALL ftg_allocate_and_read_pointer("p_patch%cells%area", p_patch%cells%area, ftg_rperturb)
     CALL ftg_allocate_and_read_allocatable("p_patch%cells%edge_blk", p_patch%cells%edge_blk, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_cells_edge_blk)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%cells%edge_blk )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%cells%edge_idx", p_patch%cells%edge_idx, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_cells_edge_idx)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%cells%edge_idx )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%cells%end_block", p_patch%cells%end_block, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_cells_end_block)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%cells%end_block )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%cells%end_index", p_patch%cells%end_index, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_cells_end_index)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%cells%end_index )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%cells%neighbor_blk", p_patch%cells%neighbor_blk, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_cells_neighbor_blk)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%cells%neighbor_blk )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%cells%neighbor_idx", p_patch%cells%neighbor_idx, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_cells_neighbor_idx)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%cells%neighbor_idx )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%cells%start_block", p_patch%cells%start_block, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_cells_start_block)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%cells%start_block )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%cells%start_index", p_patch%cells%start_index, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_cells_start_index)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%cells%start_index )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%area_edge", p_patch%edges%area_edge, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_area_edge)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%area_edge )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%cell_blk", p_patch%edges%cell_blk, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_cell_blk)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%cell_blk )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%cell_idx", p_patch%edges%cell_idx, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_cell_idx)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%cell_idx )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%end_block", p_patch%edges%end_block, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_end_block)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%end_block )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%end_index", p_patch%edges%end_index, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_end_index)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%end_index )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%f_e", p_patch%edges%f_e, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_f_e)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%f_e )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%inv_dual_edge_length", p_patch%edges%inv_dual_edge_length, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_inv_dual_edge_length)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%inv_dual_edge_length )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%inv_primal_edge_length", p_patch%edges%inv_primal_edge_length, &
     &  ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_inv_primal_edge_length)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%inv_primal_edge_length )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%quad_blk", p_patch%edges%quad_blk, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_quad_blk)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%quad_blk )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%quad_idx", p_patch%edges%quad_idx, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_quad_idx)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%quad_idx )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%start_block", p_patch%edges%start_block, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_start_block)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%start_block )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%start_index", p_patch%edges%start_index, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_start_index)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%start_index )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%tangent_orientation", p_patch%edges%tangent_orientation, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_tangent_orientation)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%tangent_orientation )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%vertex_blk", p_patch%edges%vertex_blk, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_vertex_blk)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%vertex_blk )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%edges%vertex_idx", p_patch%edges%vertex_idx, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_edges_vertex_idx)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%edges%vertex_idx )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%verts%cell_blk", p_patch%verts%cell_blk, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_verts_cell_blk)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%verts%cell_blk )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%verts%cell_idx", p_patch%verts%cell_idx, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_verts_cell_idx)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%verts%cell_idx )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%verts%edge_blk", p_patch%verts%edge_blk, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_verts_edge_blk)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%verts%edge_blk )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%verts%edge_idx", p_patch%verts%edge_idx, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_verts_edge_idx)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%verts%edge_idx )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%verts%end_blk", p_patch%verts%end_blk, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_verts_end_blk)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%verts%end_blk )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%verts%end_block", p_patch%verts%end_block, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_verts_end_block)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%verts%end_block )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%verts%end_index", p_patch%verts%end_index, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_verts_end_index)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%verts%end_index )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%verts%start_blk", p_patch%verts%start_blk, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_verts_start_blk)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%verts%start_blk )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%verts%start_block", p_patch%verts%start_block, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_verts_start_block)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%verts%start_block )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%verts%start_index", p_patch%verts%start_index, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_verts_start_index)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%verts%start_index )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_patch%cells%decomp_info%owner_mask", p_patch%cells%decomp_info%owner_mask, &
     &  ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_patch_cells_decomp_info_owner_mask)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_patch%cells%decomp_info%owner_mask )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_int%c_lin_e", p_int%c_lin_e, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_int_c_lin_e)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_int%c_lin_e )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_int%cells_aw_verts", p_int%cells_aw_verts, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_int_cells_aw_verts)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_int%cells_aw_verts )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_int%e_bln_c_s", p_int%e_bln_c_s, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_int_e_bln_c_s)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_int%e_bln_c_s )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_int%geofac_grdiv", p_int%geofac_grdiv, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_int_geofac_grdiv)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_int%geofac_grdiv )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_int%geofac_n2s", p_int%geofac_n2s, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_int_geofac_n2s)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_int%geofac_n2s )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_int%geofac_rot", p_int%geofac_rot, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_int_geofac_rot)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_int%geofac_rot )
+#endif
+    
     CALL ftg_allocate_and_read_allocatable("p_int%rbf_vec_coeff_e", p_int%rbf_vec_coeff_e, ftg_rperturb)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_p_int_rbf_vec_coeff_e)
+    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+    !NOACC ENTER DATA COPYIN( p_int%rbf_vec_coeff_e )
+#endif
+    
     CALL ftg_allocate_and_read_pointer("p_metrics%coeff1_dwdz", p_metrics%coeff1_dwdz, ftg_rperturb)
     CALL ftg_allocate_and_read_pointer("p_metrics%coeff2_dwdz", p_metrics%coeff2_dwdz, ftg_rperturb)
     CALL ftg_allocate_and_read_pointer("p_metrics%coeff_gradekin", p_metrics%coeff_gradekin, ftg_rperturb)
@@ -202,6 +433,7 @@ CONTAINS
     CALL ftg_allocate_and_read_pointer("p_diag%ddt_w_adv", p_diag%ddt_w_adv, ftg_rperturb)
     CALL ftg_allocate_and_read_pointer("p_diag%dvn_ie_ubc", p_diag%dvn_ie_ubc, ftg_rperturb)
     CALL ftg_read("p_diag%max_vcfl_dyn", p_diag%max_vcfl_dyn)
+    
     CALL ftg_allocate_and_read_pointer("p_diag%vn_ie", p_diag%vn_ie, ftg_rperturb)
     CALL ftg_allocate_and_read_pointer("p_diag%vt", p_diag%vt, ftg_rperturb)
     CALL ftg_allocate_and_read_pointer("p_diag%w_concorr_c", p_diag%w_concorr_c, ftg_rperturb)
@@ -209,15 +441,29 @@ CONTAINS
     
     ! GLOBALS
     CALL ftg_read("mo_nonhydrostatic_config__lextra_diffu", mo_nonhydrostatic_config__lextra_diffu)
+    
     CALL ftg_read("mo_run_config__ltimer", mo_run_config__ltimer)
-    mo_run_config__ltimer = .FALSE.
+    
     CALL ftg_read("mo_run_config__lvert_nest", mo_run_config__lvert_nest)
+    
     CALL ftg_read("mo_init_vgrid__nflatlev", mo_init_vgrid__nflatlev)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_mo_init_vgrid__nflatlev)
+    !$ACC ENTER DATA COPYIN( mo_init_vgrid__nflatlev )
+#endif
+    
     CALL ftg_read("mo_parallel_config__nproma", mo_parallel_config__nproma)
+    
     CALL ftg_read("mo_vertical_grid__nrdmax", mo_vertical_grid__nrdmax)
+#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_mo_vertical_grid__nrdmax)
+    !$ACC ENTER DATA COPYIN( mo_vertical_grid__nrdmax )
+#endif
+    
     CALL ftg_read("mo_timer__timer_intp", mo_timer__timer_intp)
+    
     CALL ftg_read("mo_timer__timer_solve_nh_veltend", mo_timer__timer_solve_nh_veltend)
+    
     CALL ftg_read("mo_run_config__timers_level", mo_run_config__timers_level)
+    
     
     
     CALL ftg_destroy_savepoint()
