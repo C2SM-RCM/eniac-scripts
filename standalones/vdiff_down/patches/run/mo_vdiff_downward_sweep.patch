@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-18 15:20:01.713218815 +0200
-+++ eniac_b/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-18 15:19:56.125335000 +0200
+--- eniac_a/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-31 11:23:33.542904997 +0100
++++ eniac_b/src/atm_phy_echam/mo_vdiff_downward_sweep.f90	2018-10-31 11:23:24.002814000 +0100
 @@ -31,6 +31,27 @@
    PRIVATE
    PUBLIC :: vdiff_down
@@ -46,12 +46,12 @@
 +  
 +
 +
- #ifdef _OPENACC
-     CALL message('vdiff_down','ENIAC GPU-info : Update device until rest of ICON is ported!')
- #endif
-@@ -419,7 +454,612 @@
-     !$acc end data ! ENIAC remove when porting is done
-     !$acc end data ! ENIAC remove when porting is done
+     !$acc data &
+     !$acc present(pcoriol,pzf,pzh,pfrc,ptsfc_tile,pocu,pocv,ppsfc) &
+     !$acc present(pum1,pvm1,ptm1,pqm1,pxlm1,pxim1,pxm1,pxtm1) &
+@@ -397,7 +432,1200 @@
+ 
+     !$acc end data
  
 +
 +  ! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
@@ -116,6 +116,7 @@
 +  USE mtime,     ONLY: calendarType
 +  USE mo_mpi,    ONLY: get_my_mpi_all_id
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  USE timing_tools, ONLY: start_loc_timing, end_loc_timing
 +  
 +  USE mo_echam_vdf_config, ONLY: mo_echam_vdf_config__echam_vdf_config => echam_vdf_config, t_echam_vdf_config
 +  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__ixl => ixl, mo_vdiff_solver__ixi => ixi, mo_vdiff_solver__nmatrix => nmatrix, &
@@ -210,6 +211,7 @@
 +  CHARACTER(len=256) :: ftg_c
 +  
 +  IF (ftg_vdiff_down_capture_input_active()) THEN
++    CALL start_loc_timing("vdiff_down: FTG capture input", 10)
 +    
 +    CALL ftg_vdiff_down_init_for_capture('input', ftg_vdiff_down_input_dir)
 +    CALL ftg_set_savepoint('input')
@@ -235,73 +237,313 @@
 +    CALL ftg_write("idx_ice", idx_ice)
 +    CALL ftg_write("idx_lnd", idx_lnd)
 +    CALL ftg_write("pdtime", pdtime)
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcoriol)
++    !$ACC UPDATE HOST( pcoriol )
++#endif
++    
 +    CALL ftg_write("pcoriol", pcoriol, LBOUND(pcoriol), UBOUND(pcoriol))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pzf)
++    !$ACC UPDATE HOST( pzf )
++#endif
++    
 +    CALL ftg_write("pzf", pzf, LBOUND(pzf), UBOUND(pzf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pzh)
++    !$ACC UPDATE HOST( pzh )
++#endif
++    
 +    CALL ftg_write("pzh", pzh, LBOUND(pzh), UBOUND(pzh))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pfrc)
++    !$ACC UPDATE HOST( pfrc )
++#endif
++    
 +    CALL ftg_write("pfrc", pfrc, LBOUND(pfrc), UBOUND(pfrc))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptsfc_tile)
++    !$ACC UPDATE HOST( ptsfc_tile )
++#endif
++    
 +    CALL ftg_write("ptsfc_tile", ptsfc_tile, LBOUND(ptsfc_tile), UBOUND(ptsfc_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pocu)
++    !$ACC UPDATE HOST( pocu )
++#endif
++    
 +    CALL ftg_write("pocu", pocu, LBOUND(pocu), UBOUND(pocu))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pocv)
++    !$ACC UPDATE HOST( pocv )
++#endif
++    
 +    CALL ftg_write("pocv", pocv, LBOUND(pocv), UBOUND(pocv))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ppsfc)
++    !$ACC UPDATE HOST( ppsfc )
++#endif
++    
 +    CALL ftg_write("ppsfc", ppsfc, LBOUND(ppsfc), UBOUND(ppsfc))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pum1)
++    !$ACC UPDATE HOST( pum1 )
++#endif
++    
 +    CALL ftg_write("pum1", pum1, LBOUND(pum1), UBOUND(pum1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pvm1)
++    !$ACC UPDATE HOST( pvm1 )
++#endif
++    
 +    CALL ftg_write("pvm1", pvm1, LBOUND(pvm1), UBOUND(pvm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptm1)
++    !$ACC UPDATE HOST( ptm1 )
++#endif
++    
 +    CALL ftg_write("ptm1", ptm1, LBOUND(ptm1), UBOUND(ptm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pqm1)
++    !$ACC UPDATE HOST( pqm1 )
++#endif
++    
 +    CALL ftg_write("pqm1", pqm1, LBOUND(pqm1), UBOUND(pqm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxlm1)
++    !$ACC UPDATE HOST( pxlm1 )
++#endif
++    
 +    CALL ftg_write("pxlm1", pxlm1, LBOUND(pxlm1), UBOUND(pxlm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxim1)
++    !$ACC UPDATE HOST( pxim1 )
++#endif
++    
 +    CALL ftg_write("pxim1", pxim1, LBOUND(pxim1), UBOUND(pxim1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxm1)
++    !$ACC UPDATE HOST( pxm1 )
++#endif
++    
 +    CALL ftg_write("pxm1", pxm1, LBOUND(pxm1), UBOUND(pxm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxtm1)
++    !$ACC UPDATE HOST( pxtm1 )
++#endif
++    
 +    CALL ftg_write("pxtm1", pxtm1, LBOUND(pxtm1), UBOUND(pxtm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pmair)
++    !$ACC UPDATE HOST( pmair )
++#endif
++    
 +    CALL ftg_write("pmair", pmair, LBOUND(pmair), UBOUND(pmair))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pmref)
++    !$ACC UPDATE HOST( pmref )
++#endif
++    
 +    CALL ftg_write("pmref", pmref, LBOUND(pmref), UBOUND(pmref))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_paphm1)
++    !$ACC UPDATE HOST( paphm1 )
++#endif
++    
 +    CALL ftg_write("paphm1", paphm1, LBOUND(paphm1), UBOUND(paphm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_papm1)
++    !$ACC UPDATE HOST( papm1 )
++#endif
++    
 +    CALL ftg_write("papm1", papm1, LBOUND(papm1), UBOUND(papm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptvm1)
++    !$ACC UPDATE HOST( ptvm1 )
++#endif
++    
 +    CALL ftg_write("ptvm1", ptvm1, LBOUND(ptvm1), UBOUND(ptvm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_paclc)
++    !$ACC UPDATE HOST( paclc )
++#endif
++    
 +    CALL ftg_write("paclc", paclc, LBOUND(paclc), UBOUND(paclc))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxt_emis)
++    !$ACC UPDATE HOST( pxt_emis )
++#endif
++    
 +    CALL ftg_write("pxt_emis", pxt_emis, LBOUND(pxt_emis), UBOUND(pxt_emis))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pthvvar)
++    !$ACC UPDATE HOST( pthvvar )
++#endif
++    
 +    CALL ftg_write("pthvvar", pthvvar, LBOUND(pthvvar), UBOUND(pthvvar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxvar)
++    !$ACC UPDATE HOST( pxvar )
++#endif
++    
 +    CALL ftg_write("pxvar", pxvar, LBOUND(pxvar), UBOUND(pxvar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pz0m_tile)
++    !$ACC UPDATE HOST( pz0m_tile )
++#endif
++    
 +    CALL ftg_write("pz0m_tile", pz0m_tile, LBOUND(pz0m_tile), UBOUND(pz0m_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptottem1)
++    !$ACC UPDATE HOST( ptottem1 )
++#endif
++    
 +    CALL ftg_write("ptottem1", ptottem1, LBOUND(ptottem1), UBOUND(ptottem1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pustar)
++    !$ACC UPDATE HOST( pustar )
++#endif
++    
 +    CALL ftg_write("pustar", pustar, LBOUND(pustar), UBOUND(pustar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pwstar)
++    !$ACC UPDATE HOST( pwstar )
++#endif
++    
 +    CALL ftg_write("pwstar", pwstar, LBOUND(pwstar), UBOUND(pwstar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pwstar_tile)
++    !$ACC UPDATE HOST( pwstar_tile )
++#endif
++    
 +    CALL ftg_write("pwstar_tile", pwstar_tile, LBOUND(pwstar_tile), UBOUND(pwstar_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pqsat_tile)
++    !$ACC UPDATE HOST( pqsat_tile )
++#endif
++    
 +    CALL ftg_write("pqsat_tile", pqsat_tile, LBOUND(pqsat_tile), UBOUND(pqsat_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_phdtcbl)
++    !$ACC UPDATE HOST( phdtcbl )
++#endif
++    
 +    CALL ftg_write("phdtcbl", phdtcbl, LBOUND(phdtcbl), UBOUND(phdtcbl))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pri)
++    !$ACC UPDATE HOST( pri )
++#endif
++    
 +    CALL ftg_write("pri", pri, LBOUND(pri), UBOUND(pri))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pri_tile)
++    !$ACC UPDATE HOST( pri_tile )
++#endif
++    
 +    CALL ftg_write("pri_tile", pri_tile, LBOUND(pri_tile), UBOUND(pri_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pmixlen)
++    !$ACC UPDATE HOST( pmixlen )
++#endif
++    
 +    CALL ftg_write("pmixlen", pmixlen, LBOUND(pmixlen), UBOUND(pmixlen))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfm)
++    !$ACC UPDATE HOST( pcfm )
++#endif
++    
 +    CALL ftg_write("pcfm", pcfm, LBOUND(pcfm), UBOUND(pcfm))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfm_tile)
++    !$ACC UPDATE HOST( pcfm_tile )
++#endif
++    
 +    CALL ftg_write("pcfm_tile", pcfm_tile, LBOUND(pcfm_tile), UBOUND(pcfm_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfh)
++    !$ACC UPDATE HOST( pcfh )
++#endif
++    
 +    CALL ftg_write("pcfh", pcfh, LBOUND(pcfh), UBOUND(pcfh))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfh_tile)
++    !$ACC UPDATE HOST( pcfh_tile )
++#endif
++    
 +    CALL ftg_write("pcfh_tile", pcfh_tile, LBOUND(pcfh_tile), UBOUND(pcfh_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfv)
++    !$ACC UPDATE HOST( pcfv )
++#endif
++    
 +    CALL ftg_write("pcfv", pcfv, LBOUND(pcfv), UBOUND(pcfv))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcftotte)
++    !$ACC UPDATE HOST( pcftotte )
++#endif
++    
 +    CALL ftg_write("pcftotte", pcftotte, LBOUND(pcftotte), UBOUND(pcftotte))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfthv)
++    !$ACC UPDATE HOST( pcfthv )
++#endif
++    
 +    CALL ftg_write("pcfthv", pcfthv, LBOUND(pcfthv), UBOUND(pcfthv))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_aa)
++    !$ACC UPDATE HOST( aa )
++#endif
++    
 +    CALL ftg_write("aa", aa, LBOUND(aa), UBOUND(aa))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_aa_btm)
++    !$ACC UPDATE HOST( aa_btm )
++#endif
++    
 +    CALL ftg_write("aa_btm", aa_btm, LBOUND(aa_btm), UBOUND(aa_btm))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_bb)
++    !$ACC UPDATE HOST( bb )
++#endif
++    
 +    CALL ftg_write("bb", bb, LBOUND(bb), UBOUND(bb))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_bb_btm)
++    !$ACC UPDATE HOST( bb_btm )
++#endif
++    
 +    CALL ftg_write("bb_btm", bb_btm, LBOUND(bb_btm), UBOUND(bb_btm))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pfactor_sfc)
++    !$ACC UPDATE HOST( pfactor_sfc )
++#endif
++    
 +    CALL ftg_write("pfactor_sfc", pfactor_sfc, LBOUND(pfactor_sfc), UBOUND(pfactor_sfc))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcpt_tile)
++    !$ACC UPDATE HOST( pcpt_tile )
++#endif
++    
 +    CALL ftg_write("pcpt_tile", pcpt_tile, LBOUND(pcpt_tile), UBOUND(pcpt_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcptgz)
++    !$ACC UPDATE HOST( pcptgz )
++#endif
++    
 +    CALL ftg_write("pcptgz", pcptgz, LBOUND(pcptgz), UBOUND(pcptgz))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pzthvvar)
++    !$ACC UPDATE HOST( pzthvvar )
++#endif
++    
 +    CALL ftg_write("pzthvvar", pzthvvar, LBOUND(pzthvvar), UBOUND(pzthvvar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pthvsig)
++    !$ACC UPDATE HOST( pthvsig )
++#endif
++    
 +    CALL ftg_write("pthvsig", pthvsig, LBOUND(pthvsig), UBOUND(pthvsig))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pztottevn)
++    !$ACC UPDATE HOST( pztottevn )
++#endif
++    
 +    CALL ftg_write("pztottevn", pztottevn, LBOUND(pztottevn), UBOUND(pztottevn))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pch_tile)
++    !$ACC UPDATE HOST( pch_tile )
++#endif
++    
 +    CALL ftg_write("pch_tile", pch_tile, LBOUND(pch_tile), UBOUND(pch_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pbn_tile)
++    !$ACC UPDATE HOST( pbn_tile )
++#endif
++    
 +    CALL ftg_write("pbn_tile", pbn_tile, LBOUND(pbn_tile), UBOUND(pbn_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pbhn_tile)
++    !$ACC UPDATE HOST( pbhn_tile )
++#endif
++    
 +    CALL ftg_write("pbhn_tile", pbhn_tile, LBOUND(pbhn_tile), UBOUND(pbhn_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pbm_tile)
++    !$ACC UPDATE HOST( pbm_tile )
++#endif
++    
 +    CALL ftg_write("pbm_tile", pbm_tile, LBOUND(pbm_tile), UBOUND(pbm_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pbh_tile)
++    !$ACC UPDATE HOST( pbh_tile )
++#endif
++    
 +    CALL ftg_write("pbh_tile", pbh_tile, LBOUND(pbh_tile), UBOUND(pbh_tile))
 +    
 +    
 +    ! OPTIONAL ARGUMENTS
 +    IF (PRESENT(pcsat)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcsat)
++      !$ACC UPDATE HOST( pcsat )
++#endif
++      
 +      CALL ftg_write("pcsat", pcsat, LBOUND(pcsat), UBOUND(pcsat))
 +    END IF
 +    IF (PRESENT(pcair)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcair)
++      !$ACC UPDATE HOST( pcair )
++#endif
++      
 +      CALL ftg_write("pcair", pcair, LBOUND(pcair), UBOUND(pcair))
 +    END IF
 +    IF (PRESENT(paz0lh)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_paz0lh)
++      !$ACC UPDATE HOST( paz0lh )
++#endif
++      
 +      CALL ftg_write("paz0lh", paz0lh, LBOUND(paz0lh), UBOUND(paz0lh))
 +    END IF
 +    
@@ -310,13 +552,25 @@
 +    
 +    ! GLOBALS
 +#ifdef __SPLINE_TEST__
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_convect_tables__dua)
++    !$ACC UPDATE HOST( mo_convect_tables__dua )
++#endif
++    
 +    CALL ftg_write("mo_convect_tables__dua", mo_convect_tables__dua, LBOUND(mo_convect_tables__dua), UBOUND(mo_convect_tables__dua))
 +#endif
 +    IF (ALLOCATED(mo_vdiff_solver__ibtm_mtrx)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_vdiff_solver__ibtm_mtrx)
++      !$ACC UPDATE HOST( mo_vdiff_solver__ibtm_mtrx )
++#endif
++      
 +      CALL ftg_write("mo_vdiff_solver__ibtm_mtrx", mo_vdiff_solver__ibtm_mtrx, LBOUND(mo_vdiff_solver__ibtm_mtrx), UBOUND( &
 +      &  mo_vdiff_solver__ibtm_mtrx))
 +    END IF
 +    IF (ALLOCATED(mo_vdiff_solver__ibtm_var)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_vdiff_solver__ibtm_var)
++      !$ACC UPDATE HOST( mo_vdiff_solver__ibtm_var )
++#endif
++      
 +      CALL ftg_write("mo_vdiff_solver__ibtm_var", mo_vdiff_solver__ibtm_var, LBOUND(mo_vdiff_solver__ibtm_var), UBOUND( &
 +      &  mo_vdiff_solver__ibtm_var))
 +    END IF
@@ -335,42 +589,123 @@
 +    CALL ftg_write("mo_vdiff_solver__ixv", mo_vdiff_solver__ixv)
 +    CALL ftg_write("mo_convect_tables__lookupoverflow", mo_convect_tables__lookupoverflow)
 +    IF (ALLOCATED(mo_vdiff_solver__matrix_idx)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_vdiff_solver__matrix_idx)
++      !$ACC UPDATE HOST( mo_vdiff_solver__matrix_idx )
++#endif
++      
 +      CALL ftg_write("mo_vdiff_solver__matrix_idx", mo_vdiff_solver__matrix_idx, LBOUND(mo_vdiff_solver__matrix_idx), UBOUND( &
 +      &  mo_vdiff_solver__matrix_idx))
 +    END IF
 +    CALL ftg_write("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
 +    CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_convect_tables__tlucu)
++    !$ACC UPDATE HOST( mo_convect_tables__tlucu )
++#endif
++    
 +    CALL ftg_write("mo_convect_tables__tlucu", mo_convect_tables__tlucu, LBOUND(mo_convect_tables__tlucu), UBOUND( &
 +    &  mo_convect_tables__tlucu))
 +#ifdef __SPLINE_TEST__
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_convect_tables__ua)
++    !$ACC UPDATE HOST( mo_convect_tables__ua )
++#endif
++    
 +    CALL ftg_write("mo_convect_tables__ua", mo_convect_tables__ua, LBOUND(mo_convect_tables__ua), UBOUND(mo_convect_tables__ua))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_convect_tables__za)
++    !$ACC UPDATE HOST( mo_convect_tables__za )
++#endif
++    
 +    CALL ftg_write("mo_convect_tables__za", mo_convect_tables__za, LBOUND(mo_convect_tables__za), UBOUND(mo_convect_tables__za))
 +#endif
 +    CALL ftg_register_only("mo_echam_vdf_config__echam_vdf_config", "TYPE(t_echam_vdf_config)", LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config), UBOUND(mo_echam_vdf_config__echam_vdf_config))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_c_e)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%c_e )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%c_e", mo_echam_vdf_config__echam_vdf_config%c_e, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%c_e), UBOUND(mo_echam_vdf_config__echam_vdf_config%c_e))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_c_f)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%c_f )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%c_f", mo_echam_vdf_config__echam_vdf_config%c_f, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%c_f), UBOUND(mo_echam_vdf_config__echam_vdf_config%c_f))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_c_n)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%c_n )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%c_n", mo_echam_vdf_config__echam_vdf_config%c_n, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%c_n), UBOUND(mo_echam_vdf_config__echam_vdf_config%c_n))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_f_tau0)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%f_tau0 )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%f_tau0", mo_echam_vdf_config__echam_vdf_config%f_tau0, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%f_tau0), UBOUND(mo_echam_vdf_config__echam_vdf_config%f_tau0))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_f_theta0)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%f_theta0 )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%f_theta0", mo_echam_vdf_config__echam_vdf_config%f_theta0, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%f_theta0), UBOUND(mo_echam_vdf_config__echam_vdf_config%f_theta0))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_fbl)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%fbl )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%fbl", mo_echam_vdf_config__echam_vdf_config%fbl, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%fbl), UBOUND(mo_echam_vdf_config__echam_vdf_config%fbl))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_fsl)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%fsl )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%fsl", mo_echam_vdf_config__echam_vdf_config%fsl, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%fsl), UBOUND(mo_echam_vdf_config__echam_vdf_config%fsl))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_lsfc_heat_flux)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux, &
 +    &  LBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux), UBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_lsfc_mom_flux)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux, &
 +    &  LBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux), UBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_pr0)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%pr0 )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%pr0", mo_echam_vdf_config__echam_vdf_config%pr0, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%pr0), UBOUND(mo_echam_vdf_config__echam_vdf_config%pr0))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_wmc)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%wmc )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%wmc", mo_echam_vdf_config__echam_vdf_config%wmc, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%wmc), UBOUND(mo_echam_vdf_config__echam_vdf_config%wmc))
-+    
 +    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +      ftg_c = "mo_model_domain__p_patch"
 +      CALL ftg_register_only(ftg_c, "TYPE(t_patch)", LBOUND(mo_model_domain__p_patch), UBOUND(mo_model_domain__p_patch))
@@ -383,12 +718,17 @@
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info'
 +          CALL ftg_register_only(ftg_c, "TYPE(t_grid_domain_decomp_info)")
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info%glb_index'
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_cfcc15)
++          ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++          !NOACC UPDATE HOST( mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index )
++#endif
++          
++          
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index, LBOUND(mo_model_domain__p_patch( &
 +          &  ftg_d1)%cells%decomp_info%glb_index), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index))
 +        END IF
 +      END DO
 +    END IF
-+    
 +    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
 +        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
@@ -398,16 +738,27 @@
 +          CALL ftg_register_only(ftg_c, "TYPE(t_geographical_coordinates)", LBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center), &
 +          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center))
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lat'
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_9b3c17)
++          ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++          !NOACC UPDATE HOST( mo_model_domain__p_patch(ftg_d1)%edges%center%lat )
++#endif
++          
++          
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lat, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
 +          &  center%lat), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lat))
 +        END IF
 +      END DO
 +    END IF
-+    
 +    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
 +        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lon'
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_c5569c)
++          ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++          !NOACC UPDATE HOST( mo_model_domain__p_patch(ftg_d1)%edges%center%lon )
++#endif
++          
++          
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lon, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
 +          &  center%lon), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lon))
 +        END IF
@@ -421,7 +772,10 @@
 +    WRITE (0,*) 'FTG FINALIZE INPUT DATA vdiff_down', get_my_mpi_all_id()
 +    CALL ftg_destroy_serializer()
 +    
++    CALL end_loc_timing(10)
 +  END IF
++  
++  CALL start_loc_timing("vdiff_down: computation", 11)
 +  
 +END SUBROUTINE ftg_vdiff_down_capture_input
 +
@@ -440,6 +794,7 @@
 +  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
 +  USE mo_exception, ONLY: finish
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  USE timing_tools, ONLY: start_loc_timing, end_loc_timing
 +  
 +  USE mo_echam_vdf_config, ONLY: mo_echam_vdf_config__echam_vdf_config => echam_vdf_config, t_echam_vdf_config
 +  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__ixl => ixl, mo_vdiff_solver__ixi => ixi, mo_vdiff_solver__nmatrix => nmatrix, &
@@ -489,7 +844,10 @@
 +  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
 +  CHARACTER(len=256) :: ftg_c
 +  
++  CALL end_loc_timing(11)
++  
 +  IF (ftg_vdiff_down_capture_output_active()) THEN
++    CALL start_loc_timing("vdiff_down: FTG capture output", 19)
 +    
 +    CALL ftg_vdiff_down_init_for_capture('output', ftg_vdiff_down_output_dir)
 +    CALL ftg_set_savepoint('output')
@@ -499,35 +857,155 @@
 +    
 +    
 +    ! BASIC ARGUMENTS
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pustar)
++    !$ACC UPDATE HOST( pustar )
++#endif
++    
 +    CALL ftg_write("pustar", pustar, LBOUND(pustar), UBOUND(pustar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pwstar)
++    !$ACC UPDATE HOST( pwstar )
++#endif
++    
 +    CALL ftg_write("pwstar", pwstar, LBOUND(pwstar), UBOUND(pwstar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pwstar_tile)
++    !$ACC UPDATE HOST( pwstar_tile )
++#endif
++    
 +    CALL ftg_write("pwstar_tile", pwstar_tile, LBOUND(pwstar_tile), UBOUND(pwstar_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pqsat_tile)
++    !$ACC UPDATE HOST( pqsat_tile )
++#endif
++    
 +    CALL ftg_write("pqsat_tile", pqsat_tile, LBOUND(pqsat_tile), UBOUND(pqsat_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_phdtcbl)
++    !$ACC UPDATE HOST( phdtcbl )
++#endif
++    
 +    CALL ftg_write("phdtcbl", phdtcbl, LBOUND(phdtcbl), UBOUND(phdtcbl))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pri)
++    !$ACC UPDATE HOST( pri )
++#endif
++    
 +    CALL ftg_write("pri", pri, LBOUND(pri), UBOUND(pri))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pri_tile)
++    !$ACC UPDATE HOST( pri_tile )
++#endif
++    
 +    CALL ftg_write("pri_tile", pri_tile, LBOUND(pri_tile), UBOUND(pri_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pmixlen)
++    !$ACC UPDATE HOST( pmixlen )
++#endif
++    
 +    CALL ftg_write("pmixlen", pmixlen, LBOUND(pmixlen), UBOUND(pmixlen))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfm)
++    !$ACC UPDATE HOST( pcfm )
++#endif
++    
 +    CALL ftg_write("pcfm", pcfm, LBOUND(pcfm), UBOUND(pcfm))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfm_tile)
++    !$ACC UPDATE HOST( pcfm_tile )
++#endif
++    
 +    CALL ftg_write("pcfm_tile", pcfm_tile, LBOUND(pcfm_tile), UBOUND(pcfm_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfh)
++    !$ACC UPDATE HOST( pcfh )
++#endif
++    
 +    CALL ftg_write("pcfh", pcfh, LBOUND(pcfh), UBOUND(pcfh))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfh_tile)
++    !$ACC UPDATE HOST( pcfh_tile )
++#endif
++    
 +    CALL ftg_write("pcfh_tile", pcfh_tile, LBOUND(pcfh_tile), UBOUND(pcfh_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfv)
++    !$ACC UPDATE HOST( pcfv )
++#endif
++    
 +    CALL ftg_write("pcfv", pcfv, LBOUND(pcfv), UBOUND(pcfv))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcftotte)
++    !$ACC UPDATE HOST( pcftotte )
++#endif
++    
 +    CALL ftg_write("pcftotte", pcftotte, LBOUND(pcftotte), UBOUND(pcftotte))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfthv)
++    !$ACC UPDATE HOST( pcfthv )
++#endif
++    
 +    CALL ftg_write("pcfthv", pcfthv, LBOUND(pcfthv), UBOUND(pcfthv))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_aa)
++    !$ACC UPDATE HOST( aa )
++#endif
++    
 +    CALL ftg_write("aa", aa, LBOUND(aa), UBOUND(aa))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_aa_btm)
++    !$ACC UPDATE HOST( aa_btm )
++#endif
++    
 +    CALL ftg_write("aa_btm", aa_btm, LBOUND(aa_btm), UBOUND(aa_btm))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_bb)
++    !$ACC UPDATE HOST( bb )
++#endif
++    
 +    CALL ftg_write("bb", bb, LBOUND(bb), UBOUND(bb))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_bb_btm)
++    !$ACC UPDATE HOST( bb_btm )
++#endif
++    
 +    CALL ftg_write("bb_btm", bb_btm, LBOUND(bb_btm), UBOUND(bb_btm))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pfactor_sfc)
++    !$ACC UPDATE HOST( pfactor_sfc )
++#endif
++    
 +    CALL ftg_write("pfactor_sfc", pfactor_sfc, LBOUND(pfactor_sfc), UBOUND(pfactor_sfc))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcpt_tile)
++    !$ACC UPDATE HOST( pcpt_tile )
++#endif
++    
 +    CALL ftg_write("pcpt_tile", pcpt_tile, LBOUND(pcpt_tile), UBOUND(pcpt_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcptgz)
++    !$ACC UPDATE HOST( pcptgz )
++#endif
++    
 +    CALL ftg_write("pcptgz", pcptgz, LBOUND(pcptgz), UBOUND(pcptgz))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pzthvvar)
++    !$ACC UPDATE HOST( pzthvvar )
++#endif
++    
 +    CALL ftg_write("pzthvvar", pzthvvar, LBOUND(pzthvvar), UBOUND(pzthvvar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pthvsig)
++    !$ACC UPDATE HOST( pthvsig )
++#endif
++    
 +    CALL ftg_write("pthvsig", pthvsig, LBOUND(pthvsig), UBOUND(pthvsig))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pztottevn)
++    !$ACC UPDATE HOST( pztottevn )
++#endif
++    
 +    CALL ftg_write("pztottevn", pztottevn, LBOUND(pztottevn), UBOUND(pztottevn))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pch_tile)
++    !$ACC UPDATE HOST( pch_tile )
++#endif
++    
 +    CALL ftg_write("pch_tile", pch_tile, LBOUND(pch_tile), UBOUND(pch_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pbn_tile)
++    !$ACC UPDATE HOST( pbn_tile )
++#endif
++    
 +    CALL ftg_write("pbn_tile", pbn_tile, LBOUND(pbn_tile), UBOUND(pbn_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pbhn_tile)
++    !$ACC UPDATE HOST( pbhn_tile )
++#endif
++    
 +    CALL ftg_write("pbhn_tile", pbhn_tile, LBOUND(pbhn_tile), UBOUND(pbhn_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pbm_tile)
++    !$ACC UPDATE HOST( pbm_tile )
++#endif
++    
 +    CALL ftg_write("pbm_tile", pbm_tile, LBOUND(pbm_tile), UBOUND(pbm_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pbh_tile)
++    !$ACC UPDATE HOST( pbh_tile )
++#endif
++    
 +    CALL ftg_write("pbh_tile", pbh_tile, LBOUND(pbh_tile), UBOUND(pbh_tile))
 +    
 +    
@@ -538,13 +1016,25 @@
 +    
 +    ! GLOBALS
 +#ifdef __SPLINE_TEST__
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_convect_tables__dua)
++    !$ACC UPDATE HOST( mo_convect_tables__dua )
++#endif
++    
 +    CALL ftg_write("mo_convect_tables__dua", mo_convect_tables__dua, LBOUND(mo_convect_tables__dua), UBOUND(mo_convect_tables__dua))
 +#endif
 +    IF (ALLOCATED(mo_vdiff_solver__ibtm_mtrx)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_vdiff_solver__ibtm_mtrx)
++      !$ACC UPDATE HOST( mo_vdiff_solver__ibtm_mtrx )
++#endif
++      
 +      CALL ftg_write("mo_vdiff_solver__ibtm_mtrx", mo_vdiff_solver__ibtm_mtrx, LBOUND(mo_vdiff_solver__ibtm_mtrx), UBOUND( &
 +      &  mo_vdiff_solver__ibtm_mtrx))
 +    END IF
 +    IF (ALLOCATED(mo_vdiff_solver__ibtm_var)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_vdiff_solver__ibtm_var)
++      !$ACC UPDATE HOST( mo_vdiff_solver__ibtm_var )
++#endif
++      
 +      CALL ftg_write("mo_vdiff_solver__ibtm_var", mo_vdiff_solver__ibtm_var, LBOUND(mo_vdiff_solver__ibtm_var), UBOUND( &
 +      &  mo_vdiff_solver__ibtm_var))
 +    END IF
@@ -563,42 +1053,123 @@
 +    CALL ftg_write("mo_vdiff_solver__ixv", mo_vdiff_solver__ixv)
 +    CALL ftg_write("mo_convect_tables__lookupoverflow", mo_convect_tables__lookupoverflow)
 +    IF (ALLOCATED(mo_vdiff_solver__matrix_idx)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_vdiff_solver__matrix_idx)
++      !$ACC UPDATE HOST( mo_vdiff_solver__matrix_idx )
++#endif
++      
 +      CALL ftg_write("mo_vdiff_solver__matrix_idx", mo_vdiff_solver__matrix_idx, LBOUND(mo_vdiff_solver__matrix_idx), UBOUND( &
 +      &  mo_vdiff_solver__matrix_idx))
 +    END IF
 +    CALL ftg_write("mo_vdiff_solver__nmatrix", mo_vdiff_solver__nmatrix)
 +    CALL ftg_write("mo_vdiff_solver__nvar_vdiff", mo_vdiff_solver__nvar_vdiff)
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_convect_tables__tlucu)
++    !$ACC UPDATE HOST( mo_convect_tables__tlucu )
++#endif
++    
 +    CALL ftg_write("mo_convect_tables__tlucu", mo_convect_tables__tlucu, LBOUND(mo_convect_tables__tlucu), UBOUND( &
 +    &  mo_convect_tables__tlucu))
 +#ifdef __SPLINE_TEST__
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_convect_tables__ua)
++    !$ACC UPDATE HOST( mo_convect_tables__ua )
++#endif
++    
 +    CALL ftg_write("mo_convect_tables__ua", mo_convect_tables__ua, LBOUND(mo_convect_tables__ua), UBOUND(mo_convect_tables__ua))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_convect_tables__za)
++    !$ACC UPDATE HOST( mo_convect_tables__za )
++#endif
++    
 +    CALL ftg_write("mo_convect_tables__za", mo_convect_tables__za, LBOUND(mo_convect_tables__za), UBOUND(mo_convect_tables__za))
 +#endif
 +    CALL ftg_register_only("mo_echam_vdf_config__echam_vdf_config", "TYPE(t_echam_vdf_config)", LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config), UBOUND(mo_echam_vdf_config__echam_vdf_config))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_c_e)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%c_e )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%c_e", mo_echam_vdf_config__echam_vdf_config%c_e, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%c_e), UBOUND(mo_echam_vdf_config__echam_vdf_config%c_e))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_c_f)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%c_f )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%c_f", mo_echam_vdf_config__echam_vdf_config%c_f, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%c_f), UBOUND(mo_echam_vdf_config__echam_vdf_config%c_f))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_c_n)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%c_n )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%c_n", mo_echam_vdf_config__echam_vdf_config%c_n, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%c_n), UBOUND(mo_echam_vdf_config__echam_vdf_config%c_n))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_f_tau0)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%f_tau0 )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%f_tau0", mo_echam_vdf_config__echam_vdf_config%f_tau0, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%f_tau0), UBOUND(mo_echam_vdf_config__echam_vdf_config%f_tau0))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_f_theta0)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%f_theta0 )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%f_theta0", mo_echam_vdf_config__echam_vdf_config%f_theta0, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%f_theta0), UBOUND(mo_echam_vdf_config__echam_vdf_config%f_theta0))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_fbl)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%fbl )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%fbl", mo_echam_vdf_config__echam_vdf_config%fbl, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%fbl), UBOUND(mo_echam_vdf_config__echam_vdf_config%fbl))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_fsl)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%fsl )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%fsl", mo_echam_vdf_config__echam_vdf_config%fsl, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%fsl), UBOUND(mo_echam_vdf_config__echam_vdf_config%fsl))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_lsfc_heat_flux)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux, &
 +    &  LBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux), UBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_heat_flux))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_lsfc_mom_flux)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux", mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux, &
 +    &  LBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux), UBOUND(mo_echam_vdf_config__echam_vdf_config%lsfc_mom_flux))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_pr0)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%pr0 )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%pr0", mo_echam_vdf_config__echam_vdf_config%pr0, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%pr0), UBOUND(mo_echam_vdf_config__echam_vdf_config%pr0))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_vdf_config__echam_vdf_config_wmc)
++    ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++    !NOACC UPDATE HOST( mo_echam_vdf_config__echam_vdf_config%wmc )
++#endif
++    
++    
 +    CALL ftg_write("mo_echam_vdf_config__echam_vdf_config%wmc", mo_echam_vdf_config__echam_vdf_config%wmc, LBOUND( &
 +    &  mo_echam_vdf_config__echam_vdf_config%wmc), UBOUND(mo_echam_vdf_config__echam_vdf_config%wmc))
-+    
 +    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +      ftg_c = "mo_model_domain__p_patch"
 +      CALL ftg_register_only(ftg_c, "TYPE(t_patch)", LBOUND(mo_model_domain__p_patch), UBOUND(mo_model_domain__p_patch))
@@ -611,12 +1182,17 @@
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info'
 +          CALL ftg_register_only(ftg_c, "TYPE(t_grid_domain_decomp_info)")
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info%glb_index'
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_cfcc15)
++          ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++          !NOACC UPDATE HOST( mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index )
++#endif
++          
++          
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index, LBOUND(mo_model_domain__p_patch( &
 +          &  ftg_d1)%cells%decomp_info%glb_index), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index))
 +        END IF
 +      END DO
 +    END IF
-+    
 +    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
 +        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
@@ -626,16 +1202,27 @@
 +          CALL ftg_register_only(ftg_c, "TYPE(t_geographical_coordinates)", LBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center), &
 +          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center))
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lat'
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_9b3c17)
++          ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++          !NOACC UPDATE HOST( mo_model_domain__p_patch(ftg_d1)%edges%center%lat )
++#endif
++          
++          
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lat, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
 +          &  center%lat), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lat))
 +        END IF
 +      END DO
 +    END IF
-+    
 +    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
 +        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lon'
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_c5569c)
++          ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++          !NOACC UPDATE HOST( mo_model_domain__p_patch(ftg_d1)%edges%center%lon )
++#endif
++          
++          
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lon, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
 +          &  center%lon), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lon))
 +        END IF
@@ -652,6 +1239,7 @@
 +    CALL work_mpi_barrier()
 +    !      CALL finish('FTG EXIT', 'Output captured: vdiff_down', 0)
 +    
++    CALL end_loc_timing(19)
 +  END IF
 +  
 +END SUBROUTINE ftg_vdiff_down_capture_output
