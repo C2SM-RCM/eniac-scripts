@@ -297,22 +297,21 @@
 #end def
 #def ftg_acc_copyout($var)
   #if $isArray($var)
-    #if '%' in $var
-      ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
-\#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_$var.replace('%','_'))
-      !NOACC UPDATE HOST( $var )
-\#endif
-    #else if '(' in $var
+    #if '(' in $var
       #import hashlib
       #set tmpHash = $hashlib.sha1($var).hexdigest()[:6]
 \#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_$tmpHash)
-      ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
+      ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+      !NOACC UPDATE HOST( $var )
+\#endif
+    #else if '%' in $var
+\#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_$var.replace('%','_'))
+      ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
       !NOACC UPDATE HOST( $var )
 \#endif
     #else
 \#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_$var)
       !\$ACC UPDATE HOST( $var )
-\#endif
-    #end if
+\#endif #end if
   #end if
 #end def

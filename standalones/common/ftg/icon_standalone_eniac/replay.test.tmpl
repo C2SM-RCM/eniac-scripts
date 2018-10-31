@@ -211,10 +211,17 @@ END PROGRAM ftg_${subroutine.name}_test
   #end if
 #end def
 #def ftg_acc_copyin($var)
-  #if isArray($var)
-    #if '%' in $var
+  #if $isArray($var)
+    #if '(' in $var
+      #import hashlib
+      #set tmpHash = $hashlib.sha1($var).hexdigest()[:6]
+\#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_$tmpHash)
       ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+      !NOACC ENTER DATA COPYIN( $var )
+\#endif
+    #else if '%' in $var
 \#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_$var.replace('%','_'))
+      ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
       !NOACC ENTER DATA COPYIN( $var )
 \#endif
     #else
