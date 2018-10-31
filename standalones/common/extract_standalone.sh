@@ -55,6 +55,9 @@ if [[ ${run_next_part} -eq 1 ]]; then
   run_command sed -e "s|++ICONDIR++|${workdir}|g" ${commondir}/ftg/config_fortrantestgenerator.py.tmpl > fortrantestgenerator/config_fortrantestgenerator.py || exit 1
   run_command cp -r ${commondir}/ftg/icon_standalone_eniac fortrantestgenerator/templates || exit 1
 
+  # Copy required tools
+  run_command cp -r ${commondir}/src . || exit 1
+
 fi
 
 # Allow for interactive interruption
@@ -116,9 +119,6 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Create copy of original sources to (re)generate patches
   backup_orig_sources
-
-  # Copy required tools
-  run_command cp -r ${commondir}/src . || exit 1
 
   # Configure build
   run_command echo "Configuring standalone ..." || exit 1

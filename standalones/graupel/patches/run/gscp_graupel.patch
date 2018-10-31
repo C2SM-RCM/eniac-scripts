@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-10-29 07:13:42.992158947 +0100
-+++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-10-29 07:11:09.712402000 +0100
+--- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-10-31 13:43:03.606781431 +0100
++++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-10-31 13:42:57.964365000 +0100
 @@ -251,6 +251,27 @@
  
  !==============================================================================
@@ -47,7 +47,7 @@
  ! Define reciprocal of heat capacity of dry air (at constant pressure vs at constant volume)
  
  #ifdef __COSMO__
-@@ -1735,8 +1769,755 @@
+@@ -1735,8 +1769,830 @@
  ! End of subroutine graupel
  !------------------------------------------------------------------------------
  
@@ -196,66 +196,81 @@
 +    CALL ftg_write("ke", ke)
 +    CALL ftg_write("zdt", zdt)
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_dz)
-+    !$ACC UPDATE HOST(dz)
++    !$ACC UPDATE HOST( dz )
 +#endif
++    
 +    CALL ftg_write("dz", dz, LBOUND(dz), UBOUND(dz))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_t)
-+    !$ACC UPDATE HOST(t)
++    !$ACC UPDATE HOST( t )
 +#endif
++    
 +    CALL ftg_write("t", t, LBOUND(t), UBOUND(t))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_p)
-+    !$ACC UPDATE HOST(p)
++    !$ACC UPDATE HOST( p )
 +#endif
++    
 +    CALL ftg_write("p", p, LBOUND(p), UBOUND(p))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_rho)
-+    !$ACC UPDATE HOST(rho)
++    !$ACC UPDATE HOST( rho )
 +#endif
++    
 +    CALL ftg_write("rho", rho, LBOUND(rho), UBOUND(rho))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qv)
-+    !$ACC UPDATE HOST(qv)
++    !$ACC UPDATE HOST( qv )
 +#endif
++    
 +    CALL ftg_write("qv", qv, LBOUND(qv), UBOUND(qv))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qc)
-+    !$ACC UPDATE HOST(qc)
++    !$ACC UPDATE HOST( qc )
 +#endif
++    
 +    CALL ftg_write("qc", qc, LBOUND(qc), UBOUND(qc))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qi)
-+    !$ACC UPDATE HOST(qi)
++    !$ACC UPDATE HOST( qi )
 +#endif
++    
 +    CALL ftg_write("qi", qi, LBOUND(qi), UBOUND(qi))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qr)
-+    !$ACC UPDATE HOST(qr)
++    !$ACC UPDATE HOST( qr )
 +#endif
++    
 +    CALL ftg_write("qr", qr, LBOUND(qr), UBOUND(qr))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qs)
-+    !$ACC UPDATE HOST(qs)
++    !$ACC UPDATE HOST( qs )
 +#endif
++    
 +    CALL ftg_write("qs", qs, LBOUND(qs), UBOUND(qs))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qg)
-+    !$ACC UPDATE HOST(qg)
++    !$ACC UPDATE HOST( qg )
 +#endif
++    
 +    CALL ftg_write("qg", qg, LBOUND(qg), UBOUND(qg))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qnc)
-+    !$ACC UPDATE HOST(qnc)
++    !$ACC UPDATE HOST( qnc )
 +#endif
++    
 +    CALL ftg_write("qnc", qnc, LBOUND(qnc), UBOUND(qnc))
 +    CALL ftg_write("qi0", qi0)
 +    CALL ftg_write("qc0", qc0)
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_prr_gsp)
-+    !$ACC UPDATE HOST(prr_gsp)
++    !$ACC UPDATE HOST( prr_gsp )
 +#endif
++    
 +    CALL ftg_write("prr_gsp", prr_gsp, LBOUND(prr_gsp), UBOUND(prr_gsp))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_prs_gsp)
-+    !$ACC UPDATE HOST(prs_gsp)
++    !$ACC UPDATE HOST( prs_gsp )
 +#endif
++    
 +    CALL ftg_write("prs_gsp", prs_gsp, LBOUND(prs_gsp), UBOUND(prs_gsp))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_prg_gsp)
-+    !$ACC UPDATE HOST(prg_gsp)
++    !$ACC UPDATE HOST( prg_gsp )
 +#endif
++    
 +    CALL ftg_write("prg_gsp", prg_gsp, LBOUND(prg_gsp), UBOUND(prg_gsp))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qrsflux)
-+    !$ACC UPDATE HOST(qrsflux)
++    !$ACC UPDATE HOST( qrsflux )
 +#endif
++    
 +    CALL ftg_write("qrsflux", qrsflux, LBOUND(qrsflux), UBOUND(qrsflux))
 +    
 +    
@@ -283,146 +298,170 @@
 +    END IF
 +    IF (PRESENT(ddt_tend_t)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_t)
-+      !$ACC UPDATE HOST(ddt_tend_t)
++      !$ACC UPDATE HOST( ddt_tend_t )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_t", ddt_tend_t, LBOUND(ddt_tend_t), UBOUND(ddt_tend_t))
 +    END IF
 +    IF (PRESENT(ddt_tend_qv)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_qv)
-+      !$ACC UPDATE HOST(ddt_tend_qv)
++      !$ACC UPDATE HOST( ddt_tend_qv )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_qv", ddt_tend_qv, LBOUND(ddt_tend_qv), UBOUND(ddt_tend_qv))
 +    END IF
 +    IF (PRESENT(ddt_tend_qc)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_qc)
-+      !$ACC UPDATE HOST(ddt_tend_qc)
++      !$ACC UPDATE HOST( ddt_tend_qc )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_qc", ddt_tend_qc, LBOUND(ddt_tend_qc), UBOUND(ddt_tend_qc))
 +    END IF
 +    IF (PRESENT(ddt_tend_qi)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_qi)
-+      !$ACC UPDATE HOST(ddt_tend_qi)
++      !$ACC UPDATE HOST( ddt_tend_qi )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_qi", ddt_tend_qi, LBOUND(ddt_tend_qi), UBOUND(ddt_tend_qi))
 +    END IF
 +    IF (PRESENT(ddt_tend_qr)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_qr)
-+      !$ACC UPDATE HOST(ddt_tend_qr)
++      !$ACC UPDATE HOST( ddt_tend_qr )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_qr", ddt_tend_qr, LBOUND(ddt_tend_qr), UBOUND(ddt_tend_qr))
 +    END IF
 +    IF (PRESENT(ddt_tend_qs)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_qs)
-+      !$ACC UPDATE HOST(ddt_tend_qs)
++      !$ACC UPDATE HOST( ddt_tend_qs )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_qs", ddt_tend_qs, LBOUND(ddt_tend_qs), UBOUND(ddt_tend_qs))
 +    END IF
 +    IF (PRESENT(ddt_diag_au)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_au)
-+      !$ACC UPDATE HOST(ddt_diag_au)
++      !$ACC UPDATE HOST( ddt_diag_au )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_au", ddt_diag_au, LBOUND(ddt_diag_au), UBOUND(ddt_diag_au))
 +    END IF
 +    IF (PRESENT(ddt_diag_ac)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_ac)
-+      !$ACC UPDATE HOST(ddt_diag_ac)
++      !$ACC UPDATE HOST( ddt_diag_ac )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_ac", ddt_diag_ac, LBOUND(ddt_diag_ac), UBOUND(ddt_diag_ac))
 +    END IF
 +    IF (PRESENT(ddt_diag_ev)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_ev)
-+      !$ACC UPDATE HOST(ddt_diag_ev)
++      !$ACC UPDATE HOST( ddt_diag_ev )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_ev", ddt_diag_ev, LBOUND(ddt_diag_ev), UBOUND(ddt_diag_ev))
 +    END IF
 +    IF (PRESENT(ddt_diag_nuc)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_nuc)
-+      !$ACC UPDATE HOST(ddt_diag_nuc)
++      !$ACC UPDATE HOST( ddt_diag_nuc )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_nuc", ddt_diag_nuc, LBOUND(ddt_diag_nuc), UBOUND(ddt_diag_nuc))
 +    END IF
 +    IF (PRESENT(ddt_diag_idep)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_idep)
-+      !$ACC UPDATE HOST(ddt_diag_idep)
++      !$ACC UPDATE HOST( ddt_diag_idep )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_idep", ddt_diag_idep, LBOUND(ddt_diag_idep), UBOUND(ddt_diag_idep))
 +    END IF
 +    IF (PRESENT(ddt_diag_sdep)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_sdep)
-+      !$ACC UPDATE HOST(ddt_diag_sdep)
++      !$ACC UPDATE HOST( ddt_diag_sdep )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_sdep", ddt_diag_sdep, LBOUND(ddt_diag_sdep), UBOUND(ddt_diag_sdep))
 +    END IF
 +    IF (PRESENT(ddt_diag_agg)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_agg)
-+      !$ACC UPDATE HOST(ddt_diag_agg)
++      !$ACC UPDATE HOST( ddt_diag_agg )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_agg", ddt_diag_agg, LBOUND(ddt_diag_agg), UBOUND(ddt_diag_agg))
 +    END IF
 +    IF (PRESENT(ddt_diag_rim)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_rim)
-+      !$ACC UPDATE HOST(ddt_diag_rim)
++      !$ACC UPDATE HOST( ddt_diag_rim )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_rim", ddt_diag_rim, LBOUND(ddt_diag_rim), UBOUND(ddt_diag_rim))
 +    END IF
 +    IF (PRESENT(ddt_diag_rcri)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_rcri)
-+      !$ACC UPDATE HOST(ddt_diag_rcri)
++      !$ACC UPDATE HOST( ddt_diag_rcri )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_rcri", ddt_diag_rcri, LBOUND(ddt_diag_rcri), UBOUND(ddt_diag_rcri))
 +    END IF
 +    IF (PRESENT(ddt_diag_icri)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_icri)
-+      !$ACC UPDATE HOST(ddt_diag_icri)
++      !$ACC UPDATE HOST( ddt_diag_icri )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_icri", ddt_diag_icri, LBOUND(ddt_diag_icri), UBOUND(ddt_diag_icri))
 +    END IF
 +    IF (PRESENT(ddt_diag_dau)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_dau)
-+      !$ACC UPDATE HOST(ddt_diag_dau)
++      !$ACC UPDATE HOST( ddt_diag_dau )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_dau", ddt_diag_dau, LBOUND(ddt_diag_dau), UBOUND(ddt_diag_dau))
 +    END IF
 +    IF (PRESENT(ddt_diag_iau)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_iau)
-+      !$ACC UPDATE HOST(ddt_diag_iau)
++      !$ACC UPDATE HOST( ddt_diag_iau )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_iau", ddt_diag_iau, LBOUND(ddt_diag_iau), UBOUND(ddt_diag_iau))
 +    END IF
 +    IF (PRESENT(ddt_diag_imelt)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_imelt)
-+      !$ACC UPDATE HOST(ddt_diag_imelt)
++      !$ACC UPDATE HOST( ddt_diag_imelt )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_imelt", ddt_diag_imelt, LBOUND(ddt_diag_imelt), UBOUND(ddt_diag_imelt))
 +    END IF
 +    IF (PRESENT(ddt_diag_smelt)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_smelt)
-+      !$ACC UPDATE HOST(ddt_diag_smelt)
++      !$ACC UPDATE HOST( ddt_diag_smelt )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_smelt", ddt_diag_smelt, LBOUND(ddt_diag_smelt), UBOUND(ddt_diag_smelt))
 +    END IF
 +    IF (PRESENT(ddt_diag_cfrz)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_cfrz)
-+      !$ACC UPDATE HOST(ddt_diag_cfrz)
++      !$ACC UPDATE HOST( ddt_diag_cfrz )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_cfrz", ddt_diag_cfrz, LBOUND(ddt_diag_cfrz), UBOUND(ddt_diag_cfrz))
 +    END IF
 +    IF (PRESENT(ddt_diag_rfrz)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_rfrz)
-+      !$ACC UPDATE HOST(ddt_diag_rfrz)
++      !$ACC UPDATE HOST( ddt_diag_rfrz )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_rfrz", ddt_diag_rfrz, LBOUND(ddt_diag_rfrz), UBOUND(ddt_diag_rfrz))
 +    END IF
 +    IF (PRESENT(ddt_diag_shed)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_shed)
-+      !$ACC UPDATE HOST(ddt_diag_shed)
++      !$ACC UPDATE HOST( ddt_diag_shed )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_shed", ddt_diag_shed, LBOUND(ddt_diag_shed), UBOUND(ddt_diag_shed))
 +    END IF
 +    IF (PRESENT(ddt_tend_qg)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_qg)
-+      !$ACC UPDATE HOST(ddt_tend_qg)
++      !$ACC UPDATE HOST( ddt_tend_qg )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_qg", ddt_tend_qg, LBOUND(ddt_tend_qg), UBOUND(ddt_tend_qg))
 +    END IF
 +    
@@ -553,198 +592,234 @@
 +    
 +    ! BASIC ARGUMENTS
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_t)
-+    !$ACC UPDATE HOST(t)
++    !$ACC UPDATE HOST( t )
 +#endif
++    
 +    CALL ftg_write("t", t, LBOUND(t), UBOUND(t))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qv)
-+    !$ACC UPDATE HOST(qv)
++    !$ACC UPDATE HOST( qv )
 +#endif
++    
 +    CALL ftg_write("qv", qv, LBOUND(qv), UBOUND(qv))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qc)
-+    !$ACC UPDATE HOST(qc)
++    !$ACC UPDATE HOST( qc )
 +#endif
++    
 +    CALL ftg_write("qc", qc, LBOUND(qc), UBOUND(qc))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qi)
-+    !$ACC UPDATE HOST(qi)
++    !$ACC UPDATE HOST( qi )
 +#endif
++    
 +    CALL ftg_write("qi", qi, LBOUND(qi), UBOUND(qi))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qr)
-+    !$ACC UPDATE HOST(qr)
++    !$ACC UPDATE HOST( qr )
 +#endif
++    
 +    CALL ftg_write("qr", qr, LBOUND(qr), UBOUND(qr))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qs)
-+    !$ACC UPDATE HOST(qs)
++    !$ACC UPDATE HOST( qs )
 +#endif
++    
 +    CALL ftg_write("qs", qs, LBOUND(qs), UBOUND(qs))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qg)
-+    !$ACC UPDATE HOST(qg)
++    !$ACC UPDATE HOST( qg )
 +#endif
++    
 +    CALL ftg_write("qg", qg, LBOUND(qg), UBOUND(qg))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qnc)
-+    !$ACC UPDATE HOST(qnc)
++    !$ACC UPDATE HOST( qnc )
 +#endif
++    
 +    CALL ftg_write("qnc", qnc, LBOUND(qnc), UBOUND(qnc))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_prr_gsp)
-+    !$ACC UPDATE HOST(prr_gsp)
++    !$ACC UPDATE HOST( prr_gsp )
 +#endif
++    
 +    CALL ftg_write("prr_gsp", prr_gsp, LBOUND(prr_gsp), UBOUND(prr_gsp))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_prs_gsp)
-+    !$ACC UPDATE HOST(prs_gsp)
++    !$ACC UPDATE HOST( prs_gsp )
 +#endif
++    
 +    CALL ftg_write("prs_gsp", prs_gsp, LBOUND(prs_gsp), UBOUND(prs_gsp))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_prg_gsp)
-+    !$ACC UPDATE HOST(prg_gsp)
++    !$ACC UPDATE HOST( prg_gsp )
 +#endif
++    
 +    CALL ftg_write("prg_gsp", prg_gsp, LBOUND(prg_gsp), UBOUND(prg_gsp))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qrsflux)
-+    !$ACC UPDATE HOST(qrsflux)
++    !$ACC UPDATE HOST( qrsflux )
 +#endif
++    
 +    CALL ftg_write("qrsflux", qrsflux, LBOUND(qrsflux), UBOUND(qrsflux))
 +    
 +    
 +    ! OPTIONAL ARGUMENTS
 +    IF (PRESENT(ddt_tend_t)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_t)
-+      !$ACC UPDATE HOST(ddt_tend_t)
++      !$ACC UPDATE HOST( ddt_tend_t )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_t", ddt_tend_t, LBOUND(ddt_tend_t), UBOUND(ddt_tend_t))
 +    END IF
 +    IF (PRESENT(ddt_tend_qv)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_qv)
-+      !$ACC UPDATE HOST(ddt_tend_qv)
++      !$ACC UPDATE HOST( ddt_tend_qv )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_qv", ddt_tend_qv, LBOUND(ddt_tend_qv), UBOUND(ddt_tend_qv))
 +    END IF
 +    IF (PRESENT(ddt_tend_qc)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_qc)
-+      !$ACC UPDATE HOST(ddt_tend_qc)
++      !$ACC UPDATE HOST( ddt_tend_qc )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_qc", ddt_tend_qc, LBOUND(ddt_tend_qc), UBOUND(ddt_tend_qc))
 +    END IF
 +    IF (PRESENT(ddt_tend_qi)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_qi)
-+      !$ACC UPDATE HOST(ddt_tend_qi)
++      !$ACC UPDATE HOST( ddt_tend_qi )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_qi", ddt_tend_qi, LBOUND(ddt_tend_qi), UBOUND(ddt_tend_qi))
 +    END IF
 +    IF (PRESENT(ddt_tend_qr)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_qr)
-+      !$ACC UPDATE HOST(ddt_tend_qr)
++      !$ACC UPDATE HOST( ddt_tend_qr )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_qr", ddt_tend_qr, LBOUND(ddt_tend_qr), UBOUND(ddt_tend_qr))
 +    END IF
 +    IF (PRESENT(ddt_tend_qs)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_qs)
-+      !$ACC UPDATE HOST(ddt_tend_qs)
++      !$ACC UPDATE HOST( ddt_tend_qs )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_qs", ddt_tend_qs, LBOUND(ddt_tend_qs), UBOUND(ddt_tend_qs))
 +    END IF
 +    IF (PRESENT(ddt_diag_au)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_au)
-+      !$ACC UPDATE HOST(ddt_diag_au)
++      !$ACC UPDATE HOST( ddt_diag_au )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_au", ddt_diag_au, LBOUND(ddt_diag_au), UBOUND(ddt_diag_au))
 +    END IF
 +    IF (PRESENT(ddt_diag_ac)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_ac)
-+      !$ACC UPDATE HOST(ddt_diag_ac)
++      !$ACC UPDATE HOST( ddt_diag_ac )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_ac", ddt_diag_ac, LBOUND(ddt_diag_ac), UBOUND(ddt_diag_ac))
 +    END IF
 +    IF (PRESENT(ddt_diag_ev)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_ev)
-+      !$ACC UPDATE HOST(ddt_diag_ev)
++      !$ACC UPDATE HOST( ddt_diag_ev )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_ev", ddt_diag_ev, LBOUND(ddt_diag_ev), UBOUND(ddt_diag_ev))
 +    END IF
 +    IF (PRESENT(ddt_diag_nuc)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_nuc)
-+      !$ACC UPDATE HOST(ddt_diag_nuc)
++      !$ACC UPDATE HOST( ddt_diag_nuc )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_nuc", ddt_diag_nuc, LBOUND(ddt_diag_nuc), UBOUND(ddt_diag_nuc))
 +    END IF
 +    IF (PRESENT(ddt_diag_idep)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_idep)
-+      !$ACC UPDATE HOST(ddt_diag_idep)
++      !$ACC UPDATE HOST( ddt_diag_idep )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_idep", ddt_diag_idep, LBOUND(ddt_diag_idep), UBOUND(ddt_diag_idep))
 +    END IF
 +    IF (PRESENT(ddt_diag_sdep)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_sdep)
-+      !$ACC UPDATE HOST(ddt_diag_sdep)
++      !$ACC UPDATE HOST( ddt_diag_sdep )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_sdep", ddt_diag_sdep, LBOUND(ddt_diag_sdep), UBOUND(ddt_diag_sdep))
 +    END IF
 +    IF (PRESENT(ddt_diag_agg)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_agg)
-+      !$ACC UPDATE HOST(ddt_diag_agg)
++      !$ACC UPDATE HOST( ddt_diag_agg )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_agg", ddt_diag_agg, LBOUND(ddt_diag_agg), UBOUND(ddt_diag_agg))
 +    END IF
 +    IF (PRESENT(ddt_diag_rim)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_rim)
-+      !$ACC UPDATE HOST(ddt_diag_rim)
++      !$ACC UPDATE HOST( ddt_diag_rim )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_rim", ddt_diag_rim, LBOUND(ddt_diag_rim), UBOUND(ddt_diag_rim))
 +    END IF
 +    IF (PRESENT(ddt_diag_rcri)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_rcri)
-+      !$ACC UPDATE HOST(ddt_diag_rcri)
++      !$ACC UPDATE HOST( ddt_diag_rcri )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_rcri", ddt_diag_rcri, LBOUND(ddt_diag_rcri), UBOUND(ddt_diag_rcri))
 +    END IF
 +    IF (PRESENT(ddt_diag_icri)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_icri)
-+      !$ACC UPDATE HOST(ddt_diag_icri)
++      !$ACC UPDATE HOST( ddt_diag_icri )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_icri", ddt_diag_icri, LBOUND(ddt_diag_icri), UBOUND(ddt_diag_icri))
 +    END IF
 +    IF (PRESENT(ddt_diag_dau)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_dau)
-+      !$ACC UPDATE HOST(ddt_diag_dau)
++      !$ACC UPDATE HOST( ddt_diag_dau )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_dau", ddt_diag_dau, LBOUND(ddt_diag_dau), UBOUND(ddt_diag_dau))
 +    END IF
 +    IF (PRESENT(ddt_diag_iau)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_iau)
-+      !$ACC UPDATE HOST(ddt_diag_iau)
++      !$ACC UPDATE HOST( ddt_diag_iau )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_iau", ddt_diag_iau, LBOUND(ddt_diag_iau), UBOUND(ddt_diag_iau))
 +    END IF
 +    IF (PRESENT(ddt_diag_imelt)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_imelt)
-+      !$ACC UPDATE HOST(ddt_diag_imelt)
++      !$ACC UPDATE HOST( ddt_diag_imelt )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_imelt", ddt_diag_imelt, LBOUND(ddt_diag_imelt), UBOUND(ddt_diag_imelt))
 +    END IF
 +    IF (PRESENT(ddt_diag_smelt)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_smelt)
-+      !$ACC UPDATE HOST(ddt_diag_smelt)
++      !$ACC UPDATE HOST( ddt_diag_smelt )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_smelt", ddt_diag_smelt, LBOUND(ddt_diag_smelt), UBOUND(ddt_diag_smelt))
 +    END IF
 +    IF (PRESENT(ddt_diag_cfrz)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_cfrz)
-+      !$ACC UPDATE HOST(ddt_diag_cfrz)
++      !$ACC UPDATE HOST( ddt_diag_cfrz )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_cfrz", ddt_diag_cfrz, LBOUND(ddt_diag_cfrz), UBOUND(ddt_diag_cfrz))
 +    END IF
 +    IF (PRESENT(ddt_diag_rfrz)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_rfrz)
-+      !$ACC UPDATE HOST(ddt_diag_rfrz)
++      !$ACC UPDATE HOST( ddt_diag_rfrz )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_rfrz", ddt_diag_rfrz, LBOUND(ddt_diag_rfrz), UBOUND(ddt_diag_rfrz))
 +    END IF
 +    IF (PRESENT(ddt_diag_shed)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_diag_shed)
-+      !$ACC UPDATE HOST(ddt_diag_shed)
++      !$ACC UPDATE HOST( ddt_diag_shed )
 +#endif
++      
 +      CALL ftg_write("ddt_diag_shed", ddt_diag_shed, LBOUND(ddt_diag_shed), UBOUND(ddt_diag_shed))
 +    END IF
 +    IF (PRESENT(ddt_tend_qg)) THEN
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ddt_tend_qg)
-+      !$ACC UPDATE HOST(ddt_tend_qg)
++      !$ACC UPDATE HOST( ddt_tend_qg )
 +#endif
++      
 +      CALL ftg_write("ddt_tend_qg", ddt_tend_qg, LBOUND(ddt_tend_qg), UBOUND(ddt_tend_qg))
 +    END IF
 +    

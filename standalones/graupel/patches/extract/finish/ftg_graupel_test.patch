@@ -1,5 +1,5 @@
---- eniac_a/src/tests/ftg_graupel_test.f90	2018-10-29 07:07:57.000000000 +0100
-+++ eniac_b/src/tests/ftg_graupel_test.f90	2018-10-29 07:09:54.593556081 +0100
+--- eniac_a/src/tests/ftg_graupel_test.f90	2018-10-31 13:31:25.000000000 +0100
++++ eniac_b/src/tests/ftg_graupel_test.f90	2018-10-31 13:32:28.266090052 +0100
 @@ -69,8 +69,6 @@
      REAL(KIND=wp), DIMENSION(:), ALLOCATABLE :: prr_gsp
      REAL(KIND=wp), DIMENSION(:), ALLOCATABLE :: prs_gsp
@@ -45,18 +45,20 @@
      REAL(KIND=wp), DIMENSION(:,:), ALLOCATABLE, INTENT(inout) :: qrsflux
      LOGICAL, INTENT(inout), OPTIONAL :: l_cv
      LOGICAL, INTENT(inout), OPTIONAL :: ldiag_ttend
-@@ -280,14 +276,6 @@
- #if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_prg_gsp)
+@@ -294,16 +290,6 @@
      !$ACC ENTER DATA COPYIN( prg_gsp )
  #endif
+     
 -    CALL ftg_allocate_and_read_allocatable("tinc_lh", tinc_lh, ftg_rperturb)
 -#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_tinc_lh)
 -    !$ACC ENTER DATA COPYIN( tinc_lh )
 -#endif
+-    
 -    CALL ftg_allocate_and_read_allocatable("pstoph", pstoph, ftg_rperturb)
 -#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_pstoph)
 -    !$ACC ENTER DATA COPYIN( pstoph )
 -#endif
+-    
      CALL ftg_allocate_and_read_allocatable("qrsflux", qrsflux, ftg_rperturb)
  #if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_qrsflux)
      !$ACC ENTER DATA COPYIN( qrsflux )

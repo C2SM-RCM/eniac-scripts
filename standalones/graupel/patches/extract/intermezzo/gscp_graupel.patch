@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-10-29 06:58:20.000000000 +0100
-+++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-10-29 07:02:01.108420025 +0100
+--- eniac_a/src/atm_phy_schemes/gscp_graupel.f90	2018-10-31 13:17:54.918371000 +0100
++++ eniac_b/src/atm_phy_schemes/gscp_graupel.f90	2018-10-31 13:20:42.490738095 +0100
 @@ -607,18 +607,6 @@
  
    LOGICAL :: ldum
@@ -65,22 +65,24 @@
    REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qrsflux
    LOGICAL, INTENT(in), OPTIONAL :: l_cv
    LOGICAL, INTENT(in), OPTIONAL :: ldiag_ttend
-@@ -1973,14 +1971,6 @@
-     !$ACC UPDATE HOST(prg_gsp)
+@@ -1987,16 +1985,6 @@
  #endif
+     
      CALL ftg_write("prg_gsp", prg_gsp, LBOUND(prg_gsp), UBOUND(prg_gsp))
 -#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_tinc_lh)
--    !$ACC UPDATE HOST(tinc_lh)
+-    !$ACC UPDATE HOST( tinc_lh )
 -#endif
+-    
 -    CALL ftg_write("tinc_lh", tinc_lh, LBOUND(tinc_lh), UBOUND(tinc_lh))
 -#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pstoph)
--    !$ACC UPDATE HOST(pstoph)
+-    !$ACC UPDATE HOST( pstoph )
 -#endif
+-    
 -    CALL ftg_write("pstoph", pstoph, LBOUND(pstoph), UBOUND(pstoph))
  #if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qrsflux)
-     !$ACC UPDATE HOST(qrsflux)
+     !$ACC UPDATE HOST( qrsflux )
  #endif
-@@ -2209,7 +2199,7 @@
+@@ -2250,7 +2238,7 @@
  
  END FUNCTION ftg_graupel_capture_output_active
  
@@ -89,7 +91,7 @@
  &  ddt_tend_qv, ddt_tend_qc, ddt_tend_qi, ddt_tend_qr, ddt_tend_qs, ddt_diag_au, ddt_diag_ac, ddt_diag_ev, ddt_diag_nuc, &
  &  ddt_diag_idep, ddt_diag_sdep, ddt_diag_agg, ddt_diag_rim, ddt_diag_rcri, ddt_diag_icri, ddt_diag_dau, ddt_diag_iau, &
  &  ddt_diag_imelt, ddt_diag_smelt, ddt_diag_cfrz, ddt_diag_rfrz, ddt_diag_shed, ddt_tend_qg)
-@@ -2238,7 +2228,6 @@
+@@ -2279,7 +2267,6 @@
    REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prr_gsp
    REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prs_gsp
    REAL(KIND=wp), DIMENSION(:), INTENT(in) :: prg_gsp
@@ -97,14 +99,15 @@
    REAL(KIND=wp), DIMENSION(:,:), INTENT(in) :: qrsflux
    REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_t
    REAL(KIND=wp), DIMENSION(:,:), INTENT(in), OPTIONAL :: ddt_tend_qv
-@@ -2325,10 +2314,6 @@
-     !$ACC UPDATE HOST(prg_gsp)
+@@ -2377,11 +2364,6 @@
  #endif
+     
      CALL ftg_write("prg_gsp", prg_gsp, LBOUND(prg_gsp), UBOUND(prg_gsp))
 -#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_tinc_lh)
--    !$ACC UPDATE HOST(tinc_lh)
+-    !$ACC UPDATE HOST( tinc_lh )
 -#endif
+-    
 -    CALL ftg_write("tinc_lh", tinc_lh, LBOUND(tinc_lh), UBOUND(tinc_lh))
  #if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_qrsflux)
-     !$ACC UPDATE HOST(qrsflux)
+     !$ACC UPDATE HOST( qrsflux )
  #endif
