@@ -1,5 +1,5 @@
---- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-10-30 10:20:02.610826549 +0100
-+++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-10-30 10:19:56.269645000 +0100
+--- eniac_a/src/atm_phy_echam/mo_surface_diag.f90	2018-10-31 15:56:57.691809204 +0100
++++ eniac_b/src/atm_phy_echam/mo_surface_diag.f90	2018-10-31 15:56:47.542888000 +0100
 @@ -27,6 +27,27 @@
    PRIVATE
    PUBLIC :: wind_stress, surface_fluxes, nsurf_diag
@@ -46,7 +46,7 @@
      !$ACC DATA PRESENT( pfrc, pqm1, pzf, pzs, pcptgz, pcpt_tile, pbn_tile,     &
      !$ACC               pbhn_tile, pbh_tile, pbm_tile, pri_tile, ptm1, papm1,  &
      !$ACC               pxm1, pum1, pvm1, paphm1, pocu, pocv, ptasmax,         &
-@@ -623,7 +655,523 @@
+@@ -620,7 +652,574 @@
  
    !$ACC END DATA
  
@@ -175,128 +175,159 @@
 +    CALL ftg_write("ksfc_type", ksfc_type)
 +    CALL ftg_write("idx_lnd", idx_lnd)
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pfrc)
-+    !$ACC UPDATE HOST(pfrc)
++    !$ACC UPDATE HOST( pfrc )
 +#endif
++    
 +    CALL ftg_write("pfrc", pfrc, LBOUND(pfrc), UBOUND(pfrc))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pqm1)
-+    !$ACC UPDATE HOST(pqm1)
++    !$ACC UPDATE HOST( pqm1 )
 +#endif
++    
 +    CALL ftg_write("pqm1", pqm1, LBOUND(pqm1), UBOUND(pqm1))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptm1)
-+    !$ACC UPDATE HOST(ptm1)
++    !$ACC UPDATE HOST( ptm1 )
 +#endif
++    
 +    CALL ftg_write("ptm1", ptm1, LBOUND(ptm1), UBOUND(ptm1))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_papm1)
-+    !$ACC UPDATE HOST(papm1)
++    !$ACC UPDATE HOST( papm1 )
 +#endif
++    
 +    CALL ftg_write("papm1", papm1, LBOUND(papm1), UBOUND(papm1))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_paphm1)
-+    !$ACC UPDATE HOST(paphm1)
++    !$ACC UPDATE HOST( paphm1 )
 +#endif
++    
 +    CALL ftg_write("paphm1", paphm1, LBOUND(paphm1), UBOUND(paphm1))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxm1)
-+    !$ACC UPDATE HOST(pxm1)
++    !$ACC UPDATE HOST( pxm1 )
 +#endif
++    
 +    CALL ftg_write("pxm1", pxm1, LBOUND(pxm1), UBOUND(pxm1))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pum1)
-+    !$ACC UPDATE HOST(pum1)
++    !$ACC UPDATE HOST( pum1 )
 +#endif
++    
 +    CALL ftg_write("pum1", pum1, LBOUND(pum1), UBOUND(pum1))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pvm1)
-+    !$ACC UPDATE HOST(pvm1)
++    !$ACC UPDATE HOST( pvm1 )
 +#endif
++    
 +    CALL ftg_write("pvm1", pvm1, LBOUND(pvm1), UBOUND(pvm1))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pocu)
-+    !$ACC UPDATE HOST(pocu)
++    !$ACC UPDATE HOST( pocu )
 +#endif
++    
 +    CALL ftg_write("pocu", pocu, LBOUND(pocu), UBOUND(pocu))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pocv)
-+    !$ACC UPDATE HOST(pocv)
++    !$ACC UPDATE HOST( pocv )
 +#endif
++    
 +    CALL ftg_write("pocv", pocv, LBOUND(pocv), UBOUND(pocv))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pzf)
-+    !$ACC UPDATE HOST(pzf)
++    !$ACC UPDATE HOST( pzf )
 +#endif
++    
 +    CALL ftg_write("pzf", pzf, LBOUND(pzf), UBOUND(pzf))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pzs)
-+    !$ACC UPDATE HOST(pzs)
++    !$ACC UPDATE HOST( pzs )
 +#endif
++    
 +    CALL ftg_write("pzs", pzs, LBOUND(pzs), UBOUND(pzs))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcptgz)
-+    !$ACC UPDATE HOST(pcptgz)
++    !$ACC UPDATE HOST( pcptgz )
 +#endif
++    
 +    CALL ftg_write("pcptgz", pcptgz, LBOUND(pcptgz), UBOUND(pcptgz))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcpt_tile)
-+    !$ACC UPDATE HOST(pcpt_tile)
++    !$ACC UPDATE HOST( pcpt_tile )
 +#endif
++    
 +    CALL ftg_write("pcpt_tile", pcpt_tile, LBOUND(pcpt_tile), UBOUND(pcpt_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pbn_tile)
-+    !$ACC UPDATE HOST(pbn_tile)
++    !$ACC UPDATE HOST( pbn_tile )
 +#endif
++    
 +    CALL ftg_write("pbn_tile", pbn_tile, LBOUND(pbn_tile), UBOUND(pbn_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pbhn_tile)
-+    !$ACC UPDATE HOST(pbhn_tile)
++    !$ACC UPDATE HOST( pbhn_tile )
 +#endif
++    
 +    CALL ftg_write("pbhn_tile", pbhn_tile, LBOUND(pbhn_tile), UBOUND(pbhn_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pbh_tile)
-+    !$ACC UPDATE HOST(pbh_tile)
++    !$ACC UPDATE HOST( pbh_tile )
 +#endif
++    
 +    CALL ftg_write("pbh_tile", pbh_tile, LBOUND(pbh_tile), UBOUND(pbh_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pbm_tile)
-+    !$ACC UPDATE HOST(pbm_tile)
++    !$ACC UPDATE HOST( pbm_tile )
 +#endif
++    
 +    CALL ftg_write("pbm_tile", pbm_tile, LBOUND(pbm_tile), UBOUND(pbm_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pri_tile)
-+    !$ACC UPDATE HOST(pri_tile)
++    !$ACC UPDATE HOST( pri_tile )
 +#endif
++    
 +    CALL ftg_write("pri_tile", pri_tile, LBOUND(pri_tile), UBOUND(pri_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_psfcWind_gbm)
-+    !$ACC UPDATE HOST(psfcWind_gbm)
++    !$ACC UPDATE HOST( psfcWind_gbm )
 +#endif
++    
 +    CALL ftg_write("psfcWind_gbm", psfcWind_gbm, LBOUND(psfcWind_gbm), UBOUND(psfcWind_gbm))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptas_gbm)
-+    !$ACC UPDATE HOST(ptas_gbm)
++    !$ACC UPDATE HOST( ptas_gbm )
 +#endif
++    
 +    CALL ftg_write("ptas_gbm", ptas_gbm, LBOUND(ptas_gbm), UBOUND(ptas_gbm))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pdew2_gbm)
-+    !$ACC UPDATE HOST(pdew2_gbm)
++    !$ACC UPDATE HOST( pdew2_gbm )
 +#endif
++    
 +    CALL ftg_write("pdew2_gbm", pdew2_gbm, LBOUND(pdew2_gbm), UBOUND(pdew2_gbm))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_puas_gbm)
-+    !$ACC UPDATE HOST(puas_gbm)
++    !$ACC UPDATE HOST( puas_gbm )
 +#endif
++    
 +    CALL ftg_write("puas_gbm", puas_gbm, LBOUND(puas_gbm), UBOUND(puas_gbm))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pvas_gbm)
-+    !$ACC UPDATE HOST(pvas_gbm)
++    !$ACC UPDATE HOST( pvas_gbm )
 +#endif
++    
 +    CALL ftg_write("pvas_gbm", pvas_gbm, LBOUND(pvas_gbm), UBOUND(pvas_gbm))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptasmax)
-+    !$ACC UPDATE HOST(ptasmax)
++    !$ACC UPDATE HOST( ptasmax )
 +#endif
++    
 +    CALL ftg_write("ptasmax", ptasmax, LBOUND(ptasmax), UBOUND(ptasmax))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptasmin)
-+    !$ACC UPDATE HOST(ptasmin)
++    !$ACC UPDATE HOST( ptasmin )
 +#endif
++    
 +    CALL ftg_write("ptasmin", ptasmin, LBOUND(ptasmin), UBOUND(ptasmin))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_psfcWind_tile)
-+    !$ACC UPDATE HOST(psfcWind_tile)
++    !$ACC UPDATE HOST( psfcWind_tile )
 +#endif
++    
 +    CALL ftg_write("psfcWind_tile", psfcWind_tile, LBOUND(psfcWind_tile), UBOUND(psfcWind_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptas_tile)
-+    !$ACC UPDATE HOST(ptas_tile)
++    !$ACC UPDATE HOST( ptas_tile )
 +#endif
++    
 +    CALL ftg_write("ptas_tile", ptas_tile, LBOUND(ptas_tile), UBOUND(ptas_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pdew2_tile)
-+    !$ACC UPDATE HOST(pdew2_tile)
++    !$ACC UPDATE HOST( pdew2_tile )
 +#endif
++    
 +    CALL ftg_write("pdew2_tile", pdew2_tile, LBOUND(pdew2_tile), UBOUND(pdew2_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_puas_tile)
-+    !$ACC UPDATE HOST(puas_tile)
++    !$ACC UPDATE HOST( puas_tile )
 +#endif
++    
 +    CALL ftg_write("puas_tile", puas_tile, LBOUND(puas_tile), UBOUND(puas_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pvas_tile)
-+    !$ACC UPDATE HOST(pvas_tile)
++    !$ACC UPDATE HOST( pvas_tile )
 +#endif
++    
 +    CALL ftg_write("pvas_tile", pvas_tile, LBOUND(pvas_tile), UBOUND(pvas_tile))
 +    
 +    
@@ -308,11 +339,11 @@
 +    ! GLOBALS
 +    CALL ftg_write("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_convect_tables__tlucu)
-+    !$ACC UPDATE HOST(mo_echam_convect_tables__tlucu)
++    !$ACC UPDATE HOST( mo_echam_convect_tables__tlucu )
 +#endif
++    
 +    CALL ftg_write("mo_echam_convect_tables__tlucu", mo_echam_convect_tables__tlucu, LBOUND(mo_echam_convect_tables__tlucu), &
 +    &  UBOUND(mo_echam_convect_tables__tlucu))
-+    
 +    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +      ftg_c = "mo_model_domain__p_patch"
 +      CALL ftg_register_only(ftg_c, "TYPE(t_patch)", LBOUND(mo_model_domain__p_patch), UBOUND(mo_model_domain__p_patch))
@@ -326,15 +357,16 @@
 +          CALL ftg_register_only(ftg_c, "TYPE(t_grid_domain_decomp_info)")
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info%glb_index'
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_cfcc15)
-+          ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
-+          !NOACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index)
++          ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++          !NOACC UPDATE HOST( mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index )
 +#endif
++          
++          
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index, LBOUND(mo_model_domain__p_patch( &
 +          &  ftg_d1)%cells%decomp_info%glb_index), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index))
 +        END IF
 +      END DO
 +    END IF
-+    
 +    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
 +        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
@@ -345,23 +377,26 @@
 +          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center))
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lat'
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_9b3c17)
-+          ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
-+          !NOACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%edges%center%lat)
++          ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++          !NOACC UPDATE HOST( mo_model_domain__p_patch(ftg_d1)%edges%center%lat )
 +#endif
++          
++          
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lat, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
 +          &  center%lat), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lat))
 +        END IF
 +      END DO
 +    END IF
-+    
 +    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
 +        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lon'
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_c5569c)
-+          ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
-+          !NOACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%edges%center%lon)
++          ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++          !NOACC UPDATE HOST( mo_model_domain__p_patch(ftg_d1)%edges%center%lon )
 +#endif
++          
++          
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lon, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
 +          &  center%lon), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lon))
 +        END IF
@@ -432,52 +467,64 @@
 +    
 +    ! BASIC ARGUMENTS
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_psfcWind_gbm)
-+    !$ACC UPDATE HOST(psfcWind_gbm)
++    !$ACC UPDATE HOST( psfcWind_gbm )
 +#endif
++    
 +    CALL ftg_write("psfcWind_gbm", psfcWind_gbm, LBOUND(psfcWind_gbm), UBOUND(psfcWind_gbm))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptas_gbm)
-+    !$ACC UPDATE HOST(ptas_gbm)
++    !$ACC UPDATE HOST( ptas_gbm )
 +#endif
++    
 +    CALL ftg_write("ptas_gbm", ptas_gbm, LBOUND(ptas_gbm), UBOUND(ptas_gbm))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pdew2_gbm)
-+    !$ACC UPDATE HOST(pdew2_gbm)
++    !$ACC UPDATE HOST( pdew2_gbm )
 +#endif
++    
 +    CALL ftg_write("pdew2_gbm", pdew2_gbm, LBOUND(pdew2_gbm), UBOUND(pdew2_gbm))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_puas_gbm)
-+    !$ACC UPDATE HOST(puas_gbm)
++    !$ACC UPDATE HOST( puas_gbm )
 +#endif
++    
 +    CALL ftg_write("puas_gbm", puas_gbm, LBOUND(puas_gbm), UBOUND(puas_gbm))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pvas_gbm)
-+    !$ACC UPDATE HOST(pvas_gbm)
++    !$ACC UPDATE HOST( pvas_gbm )
 +#endif
++    
 +    CALL ftg_write("pvas_gbm", pvas_gbm, LBOUND(pvas_gbm), UBOUND(pvas_gbm))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptasmax)
-+    !$ACC UPDATE HOST(ptasmax)
++    !$ACC UPDATE HOST( ptasmax )
 +#endif
++    
 +    CALL ftg_write("ptasmax", ptasmax, LBOUND(ptasmax), UBOUND(ptasmax))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptasmin)
-+    !$ACC UPDATE HOST(ptasmin)
++    !$ACC UPDATE HOST( ptasmin )
 +#endif
++    
 +    CALL ftg_write("ptasmin", ptasmin, LBOUND(ptasmin), UBOUND(ptasmin))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_psfcWind_tile)
-+    !$ACC UPDATE HOST(psfcWind_tile)
++    !$ACC UPDATE HOST( psfcWind_tile )
 +#endif
++    
 +    CALL ftg_write("psfcWind_tile", psfcWind_tile, LBOUND(psfcWind_tile), UBOUND(psfcWind_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptas_tile)
-+    !$ACC UPDATE HOST(ptas_tile)
++    !$ACC UPDATE HOST( ptas_tile )
 +#endif
++    
 +    CALL ftg_write("ptas_tile", ptas_tile, LBOUND(ptas_tile), UBOUND(ptas_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pdew2_tile)
-+    !$ACC UPDATE HOST(pdew2_tile)
++    !$ACC UPDATE HOST( pdew2_tile )
 +#endif
++    
 +    CALL ftg_write("pdew2_tile", pdew2_tile, LBOUND(pdew2_tile), UBOUND(pdew2_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_puas_tile)
-+    !$ACC UPDATE HOST(puas_tile)
++    !$ACC UPDATE HOST( puas_tile )
 +#endif
++    
 +    CALL ftg_write("puas_tile", puas_tile, LBOUND(puas_tile), UBOUND(puas_tile))
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pvas_tile)
-+    !$ACC UPDATE HOST(pvas_tile)
++    !$ACC UPDATE HOST( pvas_tile )
 +#endif
++    
 +    CALL ftg_write("pvas_tile", pvas_tile, LBOUND(pvas_tile), UBOUND(pvas_tile))
 +    
 +    
@@ -489,11 +536,11 @@
 +    ! GLOBALS
 +    CALL ftg_write("mo_echam_phy_memory__cdimissval", mo_echam_phy_memory__cdimissval)
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_echam_convect_tables__tlucu)
-+    !$ACC UPDATE HOST(mo_echam_convect_tables__tlucu)
++    !$ACC UPDATE HOST( mo_echam_convect_tables__tlucu )
 +#endif
++    
 +    CALL ftg_write("mo_echam_convect_tables__tlucu", mo_echam_convect_tables__tlucu, LBOUND(mo_echam_convect_tables__tlucu), &
 +    &  UBOUND(mo_echam_convect_tables__tlucu))
-+    
 +    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +      ftg_c = "mo_model_domain__p_patch"
 +      CALL ftg_register_only(ftg_c, "TYPE(t_patch)", LBOUND(mo_model_domain__p_patch), UBOUND(mo_model_domain__p_patch))
@@ -507,15 +554,16 @@
 +          CALL ftg_register_only(ftg_c, "TYPE(t_grid_domain_decomp_info)")
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%cells%decomp_info%glb_index'
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_cfcc15)
-+          ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
-+          !NOACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index)
++          ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++          !NOACC UPDATE HOST( mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index )
 +#endif
++          
++          
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index, LBOUND(mo_model_domain__p_patch( &
 +          &  ftg_d1)%cells%decomp_info%glb_index), UBOUND(mo_model_domain__p_patch(ftg_d1)%cells%decomp_info%glb_index))
 +        END IF
 +      END DO
 +    END IF
-+    
 +    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
 +        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
@@ -526,23 +574,26 @@
 +          &  UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center))
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lat'
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_9b3c17)
-+          ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
-+          !NOACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%edges%center%lat)
++          ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++          !NOACC UPDATE HOST( mo_model_domain__p_patch(ftg_d1)%edges%center%lat )
 +#endif
++          
++          
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lat, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
 +          &  center%lat), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lat))
 +        END IF
 +      END DO
 +    END IF
-+    
 +    IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +      DO ftg_d1 = LBOUND(mo_model_domain__p_patch, 1), UBOUND(mo_model_domain__p_patch, 1)
 +        IF (ALLOCATED(mo_model_domain__p_patch)) THEN
 +          WRITE (ftg_c,'(A,I0,A)') 'mo_model_domain__p_patch(', ftg_d1, ')%edges%center%lon'
 +#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_c5569c)
-+          ! THIS IS CURRENTLY DISABLED AS IT GENERATES BROKEN ACC CODE
-+          !NOACC UPDATE HOST(mo_model_domain__p_patch(ftg_d1)%edges%center%lon)
++          ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
++          !NOACC UPDATE HOST( mo_model_domain__p_patch(ftg_d1)%edges%center%lon )
 +#endif
++          
++          
 +          CALL ftg_write(ftg_c, mo_model_domain__p_patch(ftg_d1)%edges%center%lon, LBOUND(mo_model_domain__p_patch(ftg_d1)%edges% &
 +          &  center%lon), UBOUND(mo_model_domain__p_patch(ftg_d1)%edges%center%lon))
 +        END IF
