@@ -2,6 +2,7 @@ PROGRAM ftg_${subroutine.name}_test
 
   USE mtime
   USE mo_kind
+  USE timing_tools
   USE mo_impl_constants, ONLY: MAX_CHAR_LENGTH
   USE mo_exception,      ONLY: message
   USE mo_mpi,            ONLY: get_my_mpi_all_id, start_mpi, stop_mpi !ICON
@@ -47,7 +48,10 @@ CONTAINS
     CALL ftg_${subroutine.name}_replay_input(${arguments.all.names})
     CALL ftg_destroy_serializer()
 
+    CALL start_loc_timing("${subroutine.name}", 1)
     CALL ${subroutine.name}(${arguments.all.names})
+    CALL end_loc_timing(1)
+    CALL print_loc_timing()
 
   END SUBROUTINE ftg_test_${subroutine.name}
 
@@ -65,6 +69,8 @@ CONTAINS
     IF (SERIALBOX_DEBUG) THEN
       CALL ftg_print_serializer_debuginfo()
     END IF
+
+    call init_loc_timing()
 
   END SUBROUTINE ftg_${subroutine.name}_init_for_replay
 
@@ -89,6 +95,7 @@ CONTAINS
     #for $argument in $arguments.all.basic
         #if $isArray($argument)
           CALL ftg_allocate_and_read_allocatable("$argument", $argument, ftg_rperturb)
+          $ftg_acc_copyin($argument)
         #else
           CALL ftg_read("$argument", $argument)
         #end if
@@ -99,6 +106,7 @@ CONTAINS
       IF (PRESENT($argument)) THEN
         #if $isArray($argument)
           CALL ftg_allocate_and_read_allocatable("$argument", $argument, ftg_rperturb)
+          $ftg_acc_copyin($argument)
         #else
           CALL ftg_read("$argument", $argument)
         #end if
@@ -121,10 +129,10 @@ END PROGRAM ftg_${subroutine.name}_test
 ################################################################################
 #def ftg_read($var)
   #if $dim($var) > 4 or $type($var).upper().startswith('CHARACTER'):
-    ! *** WARNING: Type not supported by serialbox *** 
-    !     $var 
+    ! *** WARNING: Type not supported by serialbox ***
+    !     $var
     !     $type($var) | dimension: $dim($var)
-  #else 
+  #else
     #if $isReferencable($var)
       #set $d = 1
       #for $level in $levels($var)[:-1]
@@ -145,9 +153,11 @@ END PROGRAM ftg_${subroutine.name}_test
             CALL ftg_allocate_and_read_pointer("$var", $var, ftg_rperturb)
         #else
             CALL ftg_allocate_and_read_allocatable("$var", $var, ftg_rperturb)
+            $ftg_acc_copyin($var)
         #end if
       #else
         CALL ftg_read("$var", $var)
+        $ftg_acc_copyin($var)
       #end if
     #else
 
@@ -193,10 +203,31 @@ END PROGRAM ftg_${subroutine.name}_test
         CALL ftg_allocate_and_read_allocatable(ftg_c, $filled, ftg_rperturb)
       #else
         CALL ftg_read(ftg_c, $filled)
-      #end if 
+      #end if
       #for $d in range(1, $getNumberOfMandatoryDimensions($var) + 1)
         END DO
       #end for
+    #end if
+  #end if
+#end def
+#def ftg_acc_copyin($var)
+  #if $isArray($var)
+    #if '(' in $var
+      #import hashlib
+      #set tmpHash = $hashlib.sha1($var).hexdigest()[:6]
+\#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_$tmpHash)
+      ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+      !NOACC ENTER DATA COPYIN( $var )
+\#endif
+    #else if '%' in $var
+\#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_$var.replace('%','_'))
+      ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+      !NOACC ENTER DATA COPYIN( $var )
+\#endif
+    #else
+\#if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_$var)
+      !\$ACC ENTER DATA COPYIN( $var )
+\#endif
     #end if
   #end if
 #end def

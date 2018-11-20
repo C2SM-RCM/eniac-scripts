@@ -27,6 +27,7 @@ rm -rf fortrantestgenerator/
 rm -rf eniac_a
 rm -rf eniac_b
 rm -rf tmp_experiments
+rm -rf src/shared/timing_tools.f90
 
 # Remove reference submission script
 rm -f run/dict.atm_amip_test

@@ -37,6 +37,13 @@ backup_orig_sources() {
   fi
 }
 
+noindent_preprocessor() {
+  # Search for indented preprocessor directives and remove space
+  for f in $(grep -rl "^  *#" $1); do
+    run_command sed -i -e "s/^  *#/#/" $f || exit 1
+  done
+}
+
 # Allow for interactive interruption
 interactive_step "prepare repository and FTG tools"
 if [[ ${run_next_part} -eq 1 ]]; then
@@ -47,6 +54,9 @@ if [[ ${run_next_part} -eq 1 ]]; then
   run_command git clone https://github.com/fortesg/fortrantestgenerator || exit 1
   run_command sed -e "s|++ICONDIR++|${workdir}|g" ${commondir}/ftg/config_fortrantestgenerator.py.tmpl > fortrantestgenerator/config_fortrantestgenerator.py || exit 1
   run_command cp -r ${commondir}/ftg/icon_standalone_eniac fortrantestgenerator/templates || exit 1
+
+  # Copy required tools
+  run_command cp -r ${commondir}/src . || exit 1
 
 fi
 
@@ -82,6 +92,9 @@ if [[ ${run_next_part} -eq 1 ]]; then
   run_command pushd fortrantestgenerator/ > /dev/null || exit 1
   run_command ./FortranTestGenerator.py -c ${testmodule} ${testroutine} &> standalone_ftg_c.log
   run_command popd > /dev/null || exit 1
+
+  # Fix preprocessor indentation
+  noindent_preprocessor "src/"
 
   # Cleanup
   run_command make distclean >& /dev/null || exit 1
@@ -120,6 +133,9 @@ if [[ ${run_next_part} -eq 1 ]]; then
   run_command pushd fortrantestgenerator/ > /dev/null || exit 1
   run_command ./FortranTestGenerator.py -r ${testmodule} ${testroutine} &> standalone_ftg_r.log
   run_command popd > /dev/null || exit 1
+
+  # Fix preprocessor indentation
+  noindent_preprocessor "src/"
 
   # Cleanup
   run_command make distclean >& /dev/null || exit 1

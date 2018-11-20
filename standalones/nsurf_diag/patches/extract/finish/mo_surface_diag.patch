@@ -13,7 +13,7 @@
      !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
      !  END IF
      
-+    ignore_bullshit = .FALSE. 
++    ignore_bullshit = .TRUE.
      ignore_bullshit_max_dim_size = 100000
      ignore_bullshit_allow_negative_indices = .TRUE.
      

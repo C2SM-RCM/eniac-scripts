@@ -1,6 +1,6 @@
---- eniac_a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-10-15 12:37:01.498183000 +0200
-+++ eniac_b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-10-15 12:36:55.589212000 +0200
-@@ -28,6 +28,27 @@
+--- eniac_a/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-10-31 13:24:13.493158000 +0100
++++ eniac_b/src/atm_phy_echam/mo_vdiff_upward_sweep.f90	2018-10-31 13:24:03.930941000 +0100
+@@ -29,6 +29,27 @@
    PRIVATE
    PUBLIC :: vdiff_up
  
@@ -28,7 +28,7 @@
  CONTAINS
    !>
    !!
-@@ -116,6 +137,17 @@
+@@ -117,6 +138,17 @@
      REAL(wp),INTENT(OUT) :: psh_vdiff (kbdim)      ! sens. heat flux
      REAL(wp),INTENT(OUT) :: pqv_vdiff (kbdim)      ! qv flux
  
@@ -46,7 +46,7 @@
      !$acc data &
      !$acc present(pum1,pvm1,ptm1,pmair,pmref,pqm1,pxlm1,pxim1,pxtm1) &
      !$acc present(pgeom1,pcptgz,pztottevn,pzthvvar,pcfm_tile,pfrc,aa,bb)   &
-@@ -152,7 +184,328 @@
+@@ -153,7 +185,546 @@
  
      !$acc end data
  
@@ -110,6 +110,7 @@
 +  USE mtime,     ONLY: calendarType
 +  USE mo_mpi,    ONLY: get_my_mpi_all_id
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  USE timing_tools, ONLY: start_loc_timing, end_loc_timing
 +  
 +  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ixl => ixl, mo_vdiff_solver__ixi => ixi, &
 +  &  mo_vdiff_solver__nmatrix => nmatrix, mo_vdiff_solver__itotte => itotte, mo_vdiff_solver__matrix_idx => matrix_idx, &
@@ -164,6 +165,7 @@
 +  CHARACTER(len=256) :: ftg_c
 +  
 +  IF (ftg_vdiff_up_capture_input_active()) THEN
++    CALL start_loc_timing("vdiff_up: FTG capture input", 10)
 +    
 +    CALL ftg_vdiff_up_init_for_capture('input', ftg_vdiff_up_input_dir)
 +    CALL ftg_set_savepoint('input')
@@ -184,37 +186,165 @@
 +    CALL ftg_write("ksfc_type", ksfc_type)
 +    CALL ftg_write("idx_wtr", idx_wtr)
 +    CALL ftg_write("pdtime", pdtime)
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pfrc)
++    !$ACC UPDATE HOST( pfrc )
++#endif
++    
 +    CALL ftg_write("pfrc", pfrc, LBOUND(pfrc), UBOUND(pfrc))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcfm_tile)
++    !$ACC UPDATE HOST( pcfm_tile )
++#endif
++    
 +    CALL ftg_write("pcfm_tile", pcfm_tile, LBOUND(pcfm_tile), UBOUND(pcfm_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_aa)
++    !$ACC UPDATE HOST( aa )
++#endif
++    
 +    CALL ftg_write("aa", aa, LBOUND(aa), UBOUND(aa))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pcptgz)
++    !$ACC UPDATE HOST( pcptgz )
++#endif
++    
 +    CALL ftg_write("pcptgz", pcptgz, LBOUND(pcptgz), UBOUND(pcptgz))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pum1)
++    !$ACC UPDATE HOST( pum1 )
++#endif
++    
 +    CALL ftg_write("pum1", pum1, LBOUND(pum1), UBOUND(pum1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pvm1)
++    !$ACC UPDATE HOST( pvm1 )
++#endif
++    
 +    CALL ftg_write("pvm1", pvm1, LBOUND(pvm1), UBOUND(pvm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptm1)
++    !$ACC UPDATE HOST( ptm1 )
++#endif
++    
 +    CALL ftg_write("ptm1", ptm1, LBOUND(ptm1), UBOUND(ptm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pmair)
++    !$ACC UPDATE HOST( pmair )
++#endif
++    
 +    CALL ftg_write("pmair", pmair, LBOUND(pmair), UBOUND(pmair))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pmref)
++    !$ACC UPDATE HOST( pmref )
++#endif
++    
 +    CALL ftg_write("pmref", pmref, LBOUND(pmref), UBOUND(pmref))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pqm1)
++    !$ACC UPDATE HOST( pqm1 )
++#endif
++    
 +    CALL ftg_write("pqm1", pqm1, LBOUND(pqm1), UBOUND(pqm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxlm1)
++    !$ACC UPDATE HOST( pxlm1 )
++#endif
++    
 +    CALL ftg_write("pxlm1", pxlm1, LBOUND(pxlm1), UBOUND(pxlm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxim1)
++    !$ACC UPDATE HOST( pxim1 )
++#endif
++    
 +    CALL ftg_write("pxim1", pxim1, LBOUND(pxim1), UBOUND(pxim1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxtm1)
++    !$ACC UPDATE HOST( pxtm1 )
++#endif
++    
 +    CALL ftg_write("pxtm1", pxtm1, LBOUND(pxtm1), UBOUND(pxtm1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pgeom1)
++    !$ACC UPDATE HOST( pgeom1 )
++#endif
++    
 +    CALL ftg_write("pgeom1", pgeom1, LBOUND(pgeom1), UBOUND(pgeom1))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pztottevn)
++    !$ACC UPDATE HOST( pztottevn )
++#endif
++    
 +    CALL ftg_write("pztottevn", pztottevn, LBOUND(pztottevn), UBOUND(pztottevn))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_bb)
++    !$ACC UPDATE HOST( bb )
++#endif
++    
 +    CALL ftg_write("bb", bb, LBOUND(bb), UBOUND(bb))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pzthvvar)
++    !$ACC UPDATE HOST( pzthvvar )
++#endif
++    
 +    CALL ftg_write("pzthvvar", pzthvvar, LBOUND(pzthvvar), UBOUND(pzthvvar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxvar)
++    !$ACC UPDATE HOST( pxvar )
++#endif
++    
 +    CALL ftg_write("pxvar", pxvar, LBOUND(pxvar), UBOUND(pxvar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pz0m_tile)
++    !$ACC UPDATE HOST( pz0m_tile )
++#endif
++    
 +    CALL ftg_write("pz0m_tile", pz0m_tile, LBOUND(pz0m_tile), UBOUND(pz0m_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pkedisp)
++    !$ACC UPDATE HOST( pkedisp )
++#endif
++    
 +    CALL ftg_write("pkedisp", pkedisp, LBOUND(pkedisp), UBOUND(pkedisp))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pute_vdf)
++    !$ACC UPDATE HOST( pute_vdf )
++#endif
++    
 +    CALL ftg_write("pute_vdf", pute_vdf, LBOUND(pute_vdf), UBOUND(pute_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pvte_vdf)
++    !$ACC UPDATE HOST( pvte_vdf )
++#endif
++    
 +    CALL ftg_write("pvte_vdf", pvte_vdf, LBOUND(pvte_vdf), UBOUND(pvte_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pq_vdf)
++    !$ACC UPDATE HOST( pq_vdf )
++#endif
++    
 +    CALL ftg_write("pq_vdf", pq_vdf, LBOUND(pq_vdf), UBOUND(pq_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pqte_vdf)
++    !$ACC UPDATE HOST( pqte_vdf )
++#endif
++    
 +    CALL ftg_write("pqte_vdf", pqte_vdf, LBOUND(pqte_vdf), UBOUND(pqte_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxlte_vdf)
++    !$ACC UPDATE HOST( pxlte_vdf )
++#endif
++    
 +    CALL ftg_write("pxlte_vdf", pxlte_vdf, LBOUND(pxlte_vdf), UBOUND(pxlte_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxite_vdf)
++    !$ACC UPDATE HOST( pxite_vdf )
++#endif
++    
 +    CALL ftg_write("pxite_vdf", pxite_vdf, LBOUND(pxite_vdf), UBOUND(pxite_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxtte_vdf)
++    !$ACC UPDATE HOST( pxtte_vdf )
++#endif
++    
 +    CALL ftg_write("pxtte_vdf", pxtte_vdf, LBOUND(pxtte_vdf), UBOUND(pxtte_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pz0m)
++    !$ACC UPDATE HOST( pz0m )
++#endif
++    
 +    CALL ftg_write("pz0m", pz0m, LBOUND(pz0m), UBOUND(pz0m))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pthvvar)
++    !$ACC UPDATE HOST( pthvvar )
++#endif
++    
 +    CALL ftg_write("pthvvar", pthvvar, LBOUND(pthvvar), UBOUND(pthvvar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptotte)
++    !$ACC UPDATE HOST( ptotte )
++#endif
++    
 +    CALL ftg_write("ptotte", ptotte, LBOUND(ptotte), UBOUND(ptotte))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_psh_vdiff)
++    !$ACC UPDATE HOST( psh_vdiff )
++#endif
++    
 +    CALL ftg_write("psh_vdiff", psh_vdiff, LBOUND(psh_vdiff), UBOUND(psh_vdiff))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pqv_vdiff)
++    !$ACC UPDATE HOST( pqv_vdiff )
++#endif
++    
 +    CALL ftg_write("pqv_vdiff", pqv_vdiff, LBOUND(pqv_vdiff), UBOUND(pqv_vdiff))
 +    
 +    
@@ -225,6 +355,10 @@
 +    
 +    ! GLOBALS
 +    IF (ALLOCATED(mo_vdiff_solver__ibtm_var)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_vdiff_solver__ibtm_var)
++      !$ACC UPDATE HOST( mo_vdiff_solver__ibtm_var )
++#endif
++      
 +      CALL ftg_write("mo_vdiff_solver__ibtm_var", mo_vdiff_solver__ibtm_var, LBOUND(mo_vdiff_solver__ibtm_var), UBOUND( &
 +      &  mo_vdiff_solver__ibtm_var))
 +    END IF
@@ -240,6 +374,10 @@
 +    CALL ftg_write("mo_vdiff_solver__ixl", mo_vdiff_solver__ixl)
 +    CALL ftg_write("mo_vdiff_solver__ixv", mo_vdiff_solver__ixv)
 +    IF (ALLOCATED(mo_vdiff_solver__matrix_idx)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_vdiff_solver__matrix_idx)
++      !$ACC UPDATE HOST( mo_vdiff_solver__matrix_idx )
++#endif
++      
 +      CALL ftg_write("mo_vdiff_solver__matrix_idx", mo_vdiff_solver__matrix_idx, LBOUND(mo_vdiff_solver__matrix_idx), UBOUND( &
 +      &  mo_vdiff_solver__matrix_idx))
 +    END IF
@@ -253,7 +391,10 @@
 +    WRITE (0,*) 'FTG FINALIZE INPUT DATA vdiff_up', get_my_mpi_all_id()
 +    CALL ftg_destroy_serializer()
 +    
++    CALL end_loc_timing(10)
 +  END IF
++  
++  CALL start_loc_timing("vdiff_up: computation", 11)
 +  
 +END SUBROUTINE ftg_vdiff_up_capture_input
 +
@@ -271,6 +412,7 @@
 +  USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
 +  USE mo_exception, ONLY: finish
 +  USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
++  USE timing_tools, ONLY: start_loc_timing, end_loc_timing
 +  
 +  USE mo_vdiff_solver, ONLY: mo_vdiff_solver__iqv => iqv, mo_vdiff_solver__ixl => ixl, mo_vdiff_solver__ixi => ixi, &
 +  &  mo_vdiff_solver__nmatrix => nmatrix, mo_vdiff_solver__itotte => itotte, mo_vdiff_solver__matrix_idx => matrix_idx, &
@@ -299,7 +441,10 @@
 +  INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
 +  CHARACTER(len=256) :: ftg_c
 +  
++  CALL end_loc_timing(11)
++  
 +  IF (ftg_vdiff_up_capture_output_active()) THEN
++    CALL start_loc_timing("vdiff_up: FTG capture output", 19)
 +    
 +    CALL ftg_vdiff_up_init_for_capture('output', ftg_vdiff_up_output_dir)
 +    CALL ftg_set_savepoint('output')
@@ -309,21 +454,85 @@
 +    
 +    
 +    ! BASIC ARGUMENTS
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_bb)
++    !$ACC UPDATE HOST( bb )
++#endif
++    
 +    CALL ftg_write("bb", bb, LBOUND(bb), UBOUND(bb))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxvar)
++    !$ACC UPDATE HOST( pxvar )
++#endif
++    
 +    CALL ftg_write("pxvar", pxvar, LBOUND(pxvar), UBOUND(pxvar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pz0m_tile)
++    !$ACC UPDATE HOST( pz0m_tile )
++#endif
++    
 +    CALL ftg_write("pz0m_tile", pz0m_tile, LBOUND(pz0m_tile), UBOUND(pz0m_tile))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pkedisp)
++    !$ACC UPDATE HOST( pkedisp )
++#endif
++    
 +    CALL ftg_write("pkedisp", pkedisp, LBOUND(pkedisp), UBOUND(pkedisp))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pute_vdf)
++    !$ACC UPDATE HOST( pute_vdf )
++#endif
++    
 +    CALL ftg_write("pute_vdf", pute_vdf, LBOUND(pute_vdf), UBOUND(pute_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pvte_vdf)
++    !$ACC UPDATE HOST( pvte_vdf )
++#endif
++    
 +    CALL ftg_write("pvte_vdf", pvte_vdf, LBOUND(pvte_vdf), UBOUND(pvte_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pq_vdf)
++    !$ACC UPDATE HOST( pq_vdf )
++#endif
++    
 +    CALL ftg_write("pq_vdf", pq_vdf, LBOUND(pq_vdf), UBOUND(pq_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pqte_vdf)
++    !$ACC UPDATE HOST( pqte_vdf )
++#endif
++    
 +    CALL ftg_write("pqte_vdf", pqte_vdf, LBOUND(pqte_vdf), UBOUND(pqte_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxlte_vdf)
++    !$ACC UPDATE HOST( pxlte_vdf )
++#endif
++    
 +    CALL ftg_write("pxlte_vdf", pxlte_vdf, LBOUND(pxlte_vdf), UBOUND(pxlte_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxite_vdf)
++    !$ACC UPDATE HOST( pxite_vdf )
++#endif
++    
 +    CALL ftg_write("pxite_vdf", pxite_vdf, LBOUND(pxite_vdf), UBOUND(pxite_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pxtte_vdf)
++    !$ACC UPDATE HOST( pxtte_vdf )
++#endif
++    
 +    CALL ftg_write("pxtte_vdf", pxtte_vdf, LBOUND(pxtte_vdf), UBOUND(pxtte_vdf))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pz0m)
++    !$ACC UPDATE HOST( pz0m )
++#endif
++    
 +    CALL ftg_write("pz0m", pz0m, LBOUND(pz0m), UBOUND(pz0m))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pthvvar)
++    !$ACC UPDATE HOST( pthvvar )
++#endif
++    
 +    CALL ftg_write("pthvvar", pthvvar, LBOUND(pthvvar), UBOUND(pthvvar))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_ptotte)
++    !$ACC UPDATE HOST( ptotte )
++#endif
++    
 +    CALL ftg_write("ptotte", ptotte, LBOUND(ptotte), UBOUND(ptotte))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_psh_vdiff)
++    !$ACC UPDATE HOST( psh_vdiff )
++#endif
++    
 +    CALL ftg_write("psh_vdiff", psh_vdiff, LBOUND(psh_vdiff), UBOUND(psh_vdiff))
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_pqv_vdiff)
++    !$ACC UPDATE HOST( pqv_vdiff )
++#endif
++    
 +    CALL ftg_write("pqv_vdiff", pqv_vdiff, LBOUND(pqv_vdiff), UBOUND(pqv_vdiff))
 +    
 +    
@@ -334,6 +543,10 @@
 +    
 +    ! GLOBALS
 +    IF (ALLOCATED(mo_vdiff_solver__ibtm_var)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_vdiff_solver__ibtm_var)
++      !$ACC UPDATE HOST( mo_vdiff_solver__ibtm_var )
++#endif
++      
 +      CALL ftg_write("mo_vdiff_solver__ibtm_var", mo_vdiff_solver__ibtm_var, LBOUND(mo_vdiff_solver__ibtm_var), UBOUND( &
 +      &  mo_vdiff_solver__ibtm_var))
 +    END IF
@@ -349,6 +562,10 @@
 +    CALL ftg_write("mo_vdiff_solver__ixl", mo_vdiff_solver__ixl)
 +    CALL ftg_write("mo_vdiff_solver__ixv", mo_vdiff_solver__ixv)
 +    IF (ALLOCATED(mo_vdiff_solver__matrix_idx)) THEN
++#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_mo_vdiff_solver__matrix_idx)
++      !$ACC UPDATE HOST( mo_vdiff_solver__matrix_idx )
++#endif
++      
 +      CALL ftg_write("mo_vdiff_solver__matrix_idx", mo_vdiff_solver__matrix_idx, LBOUND(mo_vdiff_solver__matrix_idx), UBOUND( &
 +      &  mo_vdiff_solver__matrix_idx))
 +    END IF
@@ -365,6 +582,7 @@
 +    CALL work_mpi_barrier()
 +    !      CALL finish('FTG EXIT', 'Output captured: vdiff_up', 0)
 +    
++    CALL end_loc_timing(19)
 +  END IF
 +  
 +END SUBROUTINE ftg_vdiff_up_capture_output

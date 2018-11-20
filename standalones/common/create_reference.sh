@@ -23,6 +23,7 @@ interactive_step "get standalone files and configure them"
 if [[ ${run_next_part} -eq 1 ]]; then
 
   # Copy standalone files and tune for current install
+  run_command cp -r ${commondir}/src . || exit 1
   run_command cp -r ${scriptdir}/src . || exit 1
   while read -r f;do
     run_command sed -i -e "s|++FTGDATADIR++|${ftgoutputdir}|g" "$f" || exit 1

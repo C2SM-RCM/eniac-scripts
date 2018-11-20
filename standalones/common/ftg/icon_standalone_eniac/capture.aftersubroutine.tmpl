@@ -18,7 +18,7 @@
   !  CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(dir), cmdmsg=mkdirerr)
   !  IF (TRIM(mkdirerr) /= '') THEN
   !    WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
-  !  END IF 
+  !  END IF
 
     ignore_bullshit_max_dim_size = 100000
     ignore_bullshit_allow_negative_indices = .TRUE.
@@ -43,6 +43,7 @@
     USE mtime,     ONLY: calendarType
     USE mo_mpi,    ONLY: get_my_mpi_all_id
     USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
+    USE timing_tools, ONLY: start_loc_timing, end_loc_timing
 
     ${globals.imports}
 
@@ -52,6 +53,7 @@
     CHARACTER(len=256) :: ftg_c
 
     IF (ftg_${subroutine.name}_capture_input_active()) THEN
+      CALL start_loc_timing("${subroutine.name}: FTG capture input", 10)
 
       CALL ftg_${subroutine.name}_init_for_capture('input', ftg_${subroutine.name}_input_dir)
       CALL ftg_set_savepoint('input')
@@ -69,7 +71,7 @@
       ! OPTIONAL ARGUMENTS
       #for $var in $arguments.all.optional
       IF (PRESENT($var)) THEN
-        $ftg_write($var) END IF 
+        $ftg_write($var) END IF
       #end for
 
       ! TYPE MEMBERS
@@ -86,7 +88,10 @@
       WRITE (0,*) 'FTG FINALIZE INPUT DATA ${subroutine.name}', get_my_mpi_all_id()
       CALL ftg_destroy_serializer()
 
+      CALL end_loc_timing(10)
     END IF
+
+    CALL start_loc_timing("${subroutine.name}: computation", 11)
 
   END SUBROUTINE ftg_${subroutine.name}_capture_input
 
@@ -103,6 +108,7 @@
     USE mo_mpi, ONLY: work_mpi_barrier, get_my_mpi_all_id
     USE mo_exception, ONLY: finish
     USE m_ser_ftg, ONLY: ftg_set_savepoint, ftg_write, ftg_register_only, ftg_destroy_savepoint, ftg_destroy_serializer
+    USE timing_tools, ONLY: start_loc_timing, end_loc_timing
 
     ${globals.imports}
 
@@ -111,7 +117,10 @@
     INTEGER :: ftg_d1, ftg_d2, ftg_d3, ftg_d4
     CHARACTER(len=256) :: ftg_c
 
+    CALL end_loc_timing(11)
+
     IF (ftg_${subroutine.name}_capture_output_active()) THEN
+      CALL start_loc_timing("${subroutine.name}: FTG capture output", 19)
 
       CALL ftg_${subroutine.name}_init_for_capture('output', ftg_${subroutine.name}_output_dir)
       CALL ftg_set_savepoint('output')
@@ -127,7 +136,7 @@
       ! OPTIONAL ARGUMENTS
       #for $var in $arguments.output.optional
       IF (PRESENT($var)) THEN
-        $ftg_write($var) END IF 
+        $ftg_write($var) END IF
       #end for
 
       ! TYPE MEMBERS
@@ -147,16 +156,17 @@
       CALL work_mpi_barrier()
 !      CALL finish('FTG EXIT', 'Output captured: ${subroutine.name}', 0)
 
+      CALL end_loc_timing(19)
     END IF
 
   END SUBROUTINE ftg_${subroutine.name}_capture_output
 
   ! ================= END FORTRAN TEST GENERATOR (FTG) =========================
-################################################################################    
+################################################################################
 #def ftg_write($var)
   #if $dim($var) > 4 or $type($var).upper().startswith('CHARACTER'):
-    ! *** WARNING: Type not supported by serialbox *** 
-    !     $var 
+    ! *** WARNING: Type not supported by serialbox ***
+    !     $var
     !     $type($var) | dimension: $dim($var)
   #else
     #if $isReferencable($var)
@@ -174,7 +184,7 @@
               CALL ftg_register_only("$container", "$contType", LBOUND($container), UBOUND($container))$setRegistered($container)
             #else
               CALL ftg_register_only("$container", "$contType")$setRegistered($container)
-            #end if $setRegistered($container) 
+            #end if $setRegistered($container)
             #if $aa
               END IF
             #end if
@@ -186,18 +196,18 @@
         IF ($aa) THEN
       #end if
       #if $isArray($var)
+        $ftg_acc_copyout($var)
         CALL ftg_write("$var", $var, LBOUND($var), UBOUND($var))
       #else
         CALL ftg_write("$var", $var)
-      #end if  
+      #end if
       #if $aa
         END IF
       #end if
     #else
-
       #set $mandDims = $getNumberOfMandatoryDimensions($var)
       #set $topContainer = $var
-      #set $aa = '' 
+      #set $aa = ''
       #set $ifAA = ''
       #for $d in range(1, $mandDims + 1)
         #set $topContainer = $getContainer($var, $d)
@@ -216,7 +226,7 @@
               CALL ftg_register_only(ftg_c, "$contType", LBOUND($filledContainer), UBOUND($filledContainer))$setRegistered($container)
             #else
               CALL ftg_register_only(ftg_c, "$contType")$setRegistered($container)
-            #end if 
+            #end if
             #if $caa
               END IF
             #end if
@@ -225,8 +235,8 @@
         #set $aaNew = $allocatedOrAssociated($container, $d, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4")
         #if $aaNew and $aaNew != $aa
           IF ($aaNew) THEN
-          #set $ifAA += '1' 
-          #set $aa = $aaNew 
+          #set $ifAA += '1'
+          #set $aa = $aaNew
         #else
           #set $ifAA += '0'
           #if $aaNew != $aa
@@ -235,15 +245,15 @@
         #end if
         DO ftg_d$d = $lbound($var, $d, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4"), $ubound($var, $d, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4")
       #end for
-      #set $caa = '' 
+      #set $caa = ''
       #set $ifCAA = ''
       #for $level in sorted(set($levels($var)[:-1]) - set($levels($topContainer)))
         #set $container = $getExpression($var, $level)
         #set $caaNew = $allocatedOrAssociated($container, $mandDims, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4")
         #if $caaNew and $caaNew != $caa
           IF ($caaNew) THEN
-          #set $ifCAA += '1' 
-          #set $caa = $caaNew 
+          #set $ifCAA += '1'
+          #set $caa = $caaNew
         #else
           #set $ifCAA += '0'
           #if $caaNew != $caa
@@ -252,18 +262,19 @@
         #end if
         #if $needsRegistration($container)
           #set $contType = $type($container)
-          $writeVarNameWithFilledIndicesToString($container, "ftg_c", $mandDims, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4")        
+          $writeVarNameWithFilledIndicesToString($container, "ftg_c", $mandDims, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4")
           #if $mandDims < $totalDim($container)
             #set $filledContainer = $fillIndices($container, $mandDims, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4")
             CALL ftg_register_only(ftg_c, "$contType", LBOUND($filledContainer), UBOUND($filledContainer))$setRegistered($container)
           #else
             CALL ftg_register_only(ftg_c, "$contType")$setRegistered($container)
-          #end if 
+          #end if
         #end if
       #end for
       $writeVarNameWithFilledIndicesToString($var, "ftg_c", $mandDims, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4")
       #set $filled = $fillIndices($var, $mandDims, "ftg_d1", "ftg_d2", "ftg_d3", "ftg_d4")
       #if $mandDims < $totalDim($var)
+        $ftg_acc_copyout($filled)
         CALL ftg_write(ftg_c, $filled, LBOUND($filled), UBOUND($filled))
       #else
         CALL ftg_write(ftg_c, $filled)
@@ -282,5 +293,25 @@
         #set $ifAA = $ifAA[:-1]
       #end for
     #end if
+  #end if
+#end def
+#def ftg_acc_copyout($var)
+  #if $isArray($var)
+    #if '(' in $var
+      #import hashlib
+      #set tmpHash = $hashlib.sha1($var).hexdigest()[:6]
+\#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_TYPE_$tmpHash)
+      ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+      !NOACC UPDATE HOST( $var )
+\#endif
+    #else if '%' in $var
+\#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_$var.replace('%','_'))
+      ! THIS IS CURRENTLY DISABLED AS DEALING WITH DERIVED TYPES DOES NOT WORK
+      !NOACC UPDATE HOST( $var )
+\#endif
+    #else
+\#if defined(FTG_ACC_COPYOUT) && !defined(FTG_ACC_NOCOPYOUT_$var)
+      !\$ACC UPDATE HOST( $var )
+\#endif #end if
   #end if
 #end def
