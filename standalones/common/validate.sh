@@ -21,12 +21,7 @@ elif [ "${slave}" = "daint" ]; then
   module load cray-python/3.6.1.1 || exit 1
 fi
 
-if [ "${compiler}" = "gcc" ]; then
-  sercompiler="gnu"
-else
-  sercompiler=${compiler}
-fi
-compare_cmd="/project/c14/install/${slave}/serialbox2/${sercompiler}/python/compare/compare.py"
+compare_cmd="$(grep "SERIALBOX2ROOT *=" ${workdir}/Makefile | sed -e 's/SERIALBOX2ROOT *= *//' -e 's/ *$//')/python/compare/compare.py"
 metadata=MetaData-ftg_${testroutine}_output_0.json
 # Ignore meta data errors
 compare_options+=" -w"
