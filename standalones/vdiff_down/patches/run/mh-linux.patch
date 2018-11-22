@@ -26,7 +26,7 @@ index 98ae74c09..3252580d0 100644
                              *standalone)
 -                                FFLAGS      = ${FFLAGS} -I\$(SERIALBOX2ROOT)/include
 +                                FFLAGS      = ${FFLAGS} -D_LOC_TIMING -DFTG_ACC_COPYIN -DFTG_ACC_COPYOUT -I\$(SERIALBOX2ROOT)/include
-                                 OTHER_LIBS  = ${OTHER_LIBS} -L\$(SERIALBOX2ROOT)/lib -lSerialboxFortran ${GCC_PATH}/snos/lib64/libstdc++fs.a -lstdc++
+                                 OTHER_LIBS  = ${OTHER_LIBS} \$(SERIALBOX2ROOT)/lib/libSerialboxFortran.a ${GCC_PATH}/snos/lib64/libstdc++fs.a -lstdc++
                                  ;;
                          esac
 @@ -434,7 +434,7 @@ case "$ac_sitename" in
