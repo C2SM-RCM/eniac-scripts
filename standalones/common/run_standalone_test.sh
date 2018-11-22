@@ -6,7 +6,12 @@ source ${commondir}/interactive_step.sh
 # Build compiler name for configure script by extending with target (except CPU)
 compiler_target="${compiler}"
 if [ "${target}" = "gpu" ]; then
-  compiler_target+="_${target}"
+  if [[ "${target}" =~ "_" ]]; then
+    compiler_target+="$(echo ${target} | sed -e 's/.[a-zA-Z]_/&gpu_')"
+  else
+    compiler_target+="_${target}"
+  fi
+  echo "COMPILER TARGET: ${compiler_target}"
 fi
 
 # Allow for interactive interruption
