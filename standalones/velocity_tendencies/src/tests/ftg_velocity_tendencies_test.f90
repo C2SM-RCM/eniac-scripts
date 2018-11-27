@@ -21,7 +21,7 @@ PROGRAM ftg_velocity_tendencies_test
   USE mo_nonhydrostatic_config, ONLY: mo_nonhydrostatic_config__lextra_diffu => lextra_diffu
   USE mo_timer, ONLY: mo_timer__timer_solve_nh_veltend => timer_solve_nh_veltend, mo_timer__timer_intp => timer_intp
   USE mo_vertical_grid, ONLY: mo_vertical_grid__nrdmax => nrdmax
-  USE mo_parallel_config, ONLY: mo_parallel_config__nproma => nproma
+  USE mo_parallel_config, ONLY: nproma
   
   USE mo_nonhydro_types, ONLY: t_nh_metrics, t_nh_diag, t_nh_prog
   USE mo_model_domain, ONLY: t_patch
@@ -451,7 +451,7 @@ CONTAINS
     !$ACC ENTER DATA COPYIN( mo_init_vgrid__nflatlev )
 #endif
     
-    CALL ftg_read("mo_parallel_config__nproma", mo_parallel_config__nproma)
+    CALL ftg_read("mo_parallel_config__nproma", nproma)
     
     CALL ftg_read("mo_vertical_grid__nrdmax", mo_vertical_grid__nrdmax)
 #if defined(FTG_ACC_COPYIN) && !defined(FTG_ACC_NOCOPYIN_mo_vertical_grid__nrdmax)
