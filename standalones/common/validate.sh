@@ -31,7 +31,7 @@ if [ -e  "${tolerance_file}" ]; then
   compare_options+=" -T ${tolerance_file}"
   run_command echo "Using tolerance file with compare.py tool" || exit 1
 fi
-python3 "${compare_cmd}" ${compare_options} ${ftgoutputdir}/data/output/${metadata} ${ftgoutputdir}/data/output_test/${metadata} > validation_nproma_${nproma}.result || true
+nice python3 "${compare_cmd}" ${compare_options} ${ftgoutputdir}/data/output/${metadata} ${ftgoutputdir}/data/output_test/${metadata} > validation_nproma_${nproma}.result || true
 grep -B 5 '\[  FAILED  \].* (' validation_nproma_${nproma}.result > validation_nproma_${nproma}.failed || true
 if [ "$(wc -l <validation_nproma_${nproma}.result)" -eq 0 ]; then
   run_command echo '[  FAILED  ] compare.py failed!' > validation_nproma_${nproma}.failed || exit 1
