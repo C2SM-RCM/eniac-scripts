@@ -38,11 +38,11 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Configure build
   run_command echo "Configuring standalone ..." || exit 1
-  run_command ./configure --with-fortran="${compiler_target}_standalone" >& standalone_configure.log || exit 1
+  run_command nice ./configure --with-fortran="${compiler_target}_standalone" >& standalone_configure.log || exit 1
 
   # Build
   run_command echo "Building standalone ..." || exit 1
-  run_command ./build_command >& standalone_build.log || exit 1
+  run_command nice ./build_command >& standalone_build.log || exit 1
 
 fi
 

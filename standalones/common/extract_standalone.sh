@@ -81,11 +81,11 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Configure build
   run_command echo "Configuring standalone ..." || exit 1
-  run_command ./configure --with-fortran=gcc_ftg >& standalone_configure_c.log || exit 1
+  run_command nice ./configure --with-fortran=gcc_ftg >& standalone_configure_c.log || exit 1
 
   # Build
   run_command echo "Building standalone ..." || exit 1
-  run_command ./build_command >& standalone_build_c.log || exit 1
+  run_command nice ./build_command >& standalone_build_c.log || exit 1
 
   # Generate capture code
   run_command echo "Generating capture code ..." || exit 1
@@ -122,11 +122,11 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Configure build
   run_command echo "Configuring standalone ..." || exit 1
-  run_command ./configure --with-fortran=gcc_ftg >& standalone_configure_r.log || exit 1
+  run_command nice ./configure --with-fortran=gcc_ftg >& standalone_configure_r.log || exit 1
 
   # Build
   run_command echo "Building standalone ..." || exit 1
-  run_command ./build_command >& standalone_build_r.log || exit 1
+  run_command nice ./build_command >& standalone_build_r.log || exit 1
 
   # Generate replay code
   run_command echo "Generating replay code ..." || exit 1
