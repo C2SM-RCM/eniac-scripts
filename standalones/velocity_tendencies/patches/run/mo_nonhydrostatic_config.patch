@@ -1,0 +1,17 @@
+--- eniac_a/src/configure_model/mo_nonhydrostatic_config.f90	2019-04-16 14:07:57.000000000 +0200
++++ eniac_b/src/configure_model/mo_nonhydrostatic_config.f90	2019-04-16 14:06:53.000000000 +0200
+@@ -104,6 +104,14 @@
+ !  TYPE(t_nonhydrostatic_config) :: nonhydrostatic_config(max_dom) ! config state 
+ 
+ 
++
++! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++
++PUBLIC :: lextra_diffu
++
++
++! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++
+ CONTAINS
+ 
+   !>

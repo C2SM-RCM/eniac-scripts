@@ -3,6 +3,9 @@
 source ${commondir}/run_command.sh
 source ${commondir}/interactive_step.sh
 
+FCG_VERSION_TAG="v1.8.1"
+FTG_VERSION_TAG="v1.11.1"
+
 # This only works with GCC on CPU
 if [[ !("${compiler}" == "gcc" && "${target}" == "cpu") ]]; then
   echo "Extraction of standalone only works with GCC on CPU"
@@ -50,10 +53,17 @@ if [[ ${run_next_part} -eq 1 ]]; then
 
   # Clone and configure FCG and FTG
   run_command git clone https://github.com/fortesg/fortrancallgraph || exit 1
+  run_command pushd fortrancallgraph/ > /dev/null || exit 1
+  run_command git checkout "$FCG_VERSION_TAG" || exit
+  run_command popd > /dev/null || exit 1
   run_command sed -e "s|++ICONDIR++|${workdir}|g" ${commondir}/ftg/config_fortrancallgraph.py.tmpl > fortrancallgraph/config_fortrancallgraph.py || exit 1
   run_command git clone https://github.com/fortesg/fortrantestgenerator || exit 1
+  run_command pushd fortrantestgenerator/ > /dev/null || exit 1
+  run_command git checkout "$FTG_VERSION_TAG" || exit
+  run_command popd > /dev/null || exit 1
   run_command sed -e "s|++ICONDIR++|${workdir}|g" ${commondir}/ftg/config_fortrantestgenerator.py.tmpl > fortrantestgenerator/config_fortrantestgenerator.py || exit 1
-  run_command cp -r ${commondir}/ftg/icon_standalone_eniac fortrantestgenerator/templates || exit 1
+  run_command cp -r ${commondir}/ftg/IconJsbachMock fortrantestgenerator/templates || exit 1
+  run_command mkdir -p experiments/ftg || exit 1
 
   # Copy required tools
   run_command cp -r ${commondir}/src . || exit 1

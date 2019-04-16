@@ -1,0 +1,17 @@
+--- eniac_a/src/shared/mo_real_timer.f90	2019-04-16 14:07:57.000000000 +0200
++++ eniac_b/src/shared/mo_real_timer.f90	2019-04-16 14:06:53.000000000 +0200
+@@ -206,6 +206,14 @@
+ 
+   END INTERFACE
+ 
++
++! ================= BEGIN FORTRAN TEST GENERATOR (FTG) =======================
++
++PUBLIC :: active_timers, active_timers_top, delta_i, timer_top, rt, srt
++
++
++! ================= END FORTRAN TEST GENERATOR (FTG) =========================
++
+ CONTAINS
+ 
+   SUBROUTINE mo_real_timer_init

@@ -1,0 +1,34 @@
+#if $subroutine.calls('__mo_jsb_interface_MOD_interface_full')
+$prologue $mergeBegin('ftg')
+$mergeBegin('ftg')
+SUBROUTINE ftg_${subroutine.name}_start_jsbach_capture()
+
+  USE mo_mpi,  ONLY: get_my_mpi_all_id
+
+  CHARACTER(len=1024) :: basename, mkdirerr
+
+  IF (ftg_${subroutine.name}_capture_active()) THEN
+    WRITE (0,'(A,I0.2,A)') 'FTG START JSBACH CAPTURE ${subroutine.name} (Rank #', get_my_mpi_all_id(), ')'
+    WRITE (basename,'(A,I0.2)') 'ftg_${subroutine.name}_jsbach_', get_my_mpi_all_id()
+
+    mkdirerr = ''
+    CALL EXECUTE_COMMAND_LINE('mkdir -p '//TRIM(ftg_${subroutine.name}_jsbach_dir), cmdmsg=mkdirerr)
+    IF (TRIM(mkdirerr) /= '') THEN
+      WRITE (0,*) 'FTG INIT *** ERROR: ', TRIM(mkdirerr)
+    END IF 
+  
+    CALL jsbmock_start_capture(ftg_${subroutine.name}_jsbach_dir, basename)
+  END IF
+
+END SUBROUTINE ftg_${subroutine.name}_start_jsbach_capture
+
+SUBROUTINE ftg_${subroutine.name}_stop_jsbach_capture()
+
+  USE mo_mpi,  ONLY: get_my_mpi_all_id
+
+  WRITE (0,'(A,I0.2,A)') 'FTG STOP JSBACH CAPTURE ${subroutine.name} (Rank #', get_my_mpi_all_id(), ')'
+  CALL jsbmock_stop()
+
+END SUBROUTINE ftg_${subroutine.name}_stop_jsbach_capture
+$epilogue $mergeEnd('ftg')
+#end if
