@@ -7,7 +7,11 @@ expdir="${workdir}/experiments/${expname}"
 ftgoutputdir="${expdir}/ftg"
 datadir=${datadir:="ERROR_DATA_SHOULD_NOT_BE_NEEDED"}
 dataftgdir="${datadir}/ftg"
-fdepdir=/project/c14/data-eniac/standalones/fdependencies
+if [ "${slave}" == "fangorn" ]; then
+  fdepdir=/home/meteo/Documents/ICON/fdependencies
+else
+  fdepdir=/project/c14/data-eniac/standalones/fdependencies
+fi
 scriptdir="${workdir}/eniac-scripts/standalones/${testroutine}"
 standalonedir="standalone/${testroutine}"
 updatedfilesdir="updated_eniac-scripts_files/${testroutine}"
